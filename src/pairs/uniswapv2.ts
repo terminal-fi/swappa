@@ -20,14 +20,14 @@ export class PairUniswapV2 extends PairXYeqK {
 		this.factory = new kit.web3.eth.Contract(FactoryABI, factoryAddr) as unknown as IUniswapV2Factory
 	}
 
-	public async init(): Promise<void> {
+	public async _init() {
 		const pairAddr = await this.factory.methods.getPair(this.tokenA, this.tokenB).call()
 		if (pairAddr === "0x0000000000000000000000000000000000000000") {
 			throw new Error(`pair: ${this.tokenA}/${this.tokenB} doesn't exist!`)
 		}
 		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 		this.pairToken0 = await this.pair.methods.token0().call()
-		return this.refresh()
+		return {extraDataHex: ""}
 	}
 
 	public async refresh(): Promise<void> {

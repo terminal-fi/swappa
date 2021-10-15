@@ -9,7 +9,9 @@ export class PairMToken extends Pair {
 		super(mToken, underlyingToken)
 	}
 
-	public async init(): Promise<void> {}
+	public async _init() {
+		return {extraDataHex: ""}
+	}
 	public async refresh(): Promise<void> {}
 	public outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber {
 		if (inputToken !== this.tokenA && inputToken !== this.tokenB) {

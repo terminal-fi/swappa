@@ -15,7 +15,7 @@ export class PairMento extends PairXYeqK {
 		super(celo, cSTB)
 	}
 
-	public async init(): Promise<void> {
+	public async _init() {
 		const celo = await this.kit.contracts.getGoldToken()
 		if (celo.address !== this.tokenA) {
 			throw new Error(`invalid celo: ${this.tokenA} !== ${celo.address}`)
@@ -25,7 +25,7 @@ export class PairMento extends PairXYeqK {
 			throw new Error(`invalid cSTB: ${this.tokenB} !== ${cSTB.address}`)
 		}
 		this.exchange = await this.kit.contracts.getExchange(this.stableToken)
-		return this.refresh()
+		return {extraDataHex: ""}
 	}
 
 	public async refresh(): Promise<void> {
