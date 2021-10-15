@@ -25,6 +25,7 @@ export class PairMento extends PairXYeqK {
 			throw new Error(`invalid cSTB: ${this.tokenB} !== ${cSTB.address}`)
 		}
 		this.exchange = await this.kit.contracts.getExchange(this.stableToken)
+		return this.refresh()
 	}
 
 	public async refresh(): Promise<void> {

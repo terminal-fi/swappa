@@ -26,7 +26,6 @@ export class RegistryUniswapV2 {
 		}
 		const pairAddrs = (await Promise.all(pairAddrsP)).filter((p) => p.pair !== "0x0000000000000000000000000000000000000000")
 		const pairs = await Promise.all(pairAddrs.map((p) => new PairUniswapV2(this.kit, this.factoryAddr, p.tokenA, p.tokenB)))
-		await Promise.all(pairs.map((p) => p.init()))
 		return pairs
 	}
 }

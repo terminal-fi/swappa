@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-import { newKit } from '@celo/contractkit';
 import commander from 'commander';
+import { newKit } from '@celo/contractkit';
+import BigNumber from 'bignumber.js';
 
 import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap.token-list.json'
 import { RegistryUniswapV2 } from '../registries/uniswapv2';
 import { findBestRoutesForFixedInputAmount } from '../router';
 import { Pair } from '../pair';
-import BigNumber from 'bignumber.js';
 import { RegistryMoola } from '../registries/moola';
+import { RegistryMento } from '../registries/mento';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "https://forno.celo.org")
@@ -39,8 +40,9 @@ async function main() {
 	const inputAmount = new BigNumber(opts.amount)
 
 	const registries = [
-		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
+		new RegistryMento(kit),
 		new RegistryMoola(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA"),
+		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
 	]
 	const pairsAll = await Promise.all(registries.map((r) => r.findPairs(tokenWhitelist)))
 	console.info(`Pairs:`)
@@ -64,6 +66,11 @@ async function main() {
 		})
 	})
 
+	console.info(`Initializing pairs...`)
+	await Promise.all(
+		([] as Pair[]).concat(...pairsAll).map((p) => p.init()))
+	console.info(`Finding routes...`)
+	const startT0 = Date.now()
 	const routes = findBestRoutesForFixedInputAmount(
 		pairsByToken,
 		inputToken,
@@ -71,9 +78,10 @@ async function main() {
 		inputAmount,
 	)
 
-	console.info(`Top 5 routes:`)
+	console.info(`Top 5 routes (elapsed: ${Date.now() - startT0}ms):`)
 	for (const route of routes.slice(0, 5)) {
-		console.info(`Output: ${route.outputAmount.shiftedBy(-18).toFixed(6)}, ${route.path.join(", ")}`)
+		const path = route.pairs.map((p, idx) => `${(p as any).constructor.name}:${route.path[idx + 1]}`)
+		console.info(`Output: ${route.outputAmount.shiftedBy(-18).toFixed(6)}, ${path.join(" -> ")}`)
 	}
 }
 
