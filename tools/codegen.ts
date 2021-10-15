@@ -20,7 +20,7 @@ async function generateContractTypes() {
   await tsGenerator({ cwd: ROOT_DIR, loggingLvl: 'info' }, web3Generator)
   // HAX: remove `receive` functions from ABI because web3 doesn't recognize them.
   // const extraFlag = process.platform === "darwin" ? "''" : ""
-  // execSync(`sed -e '/type\:\ \"receive\"/d' -i ${extraFlag} ${path.join(typesDir, "SavingsCELOWithUbeV1.ts")}`, {cwd: ROOT_DIR})
+  // execSync(`sed -e '/type\:\ \"receive\"/d' -i ${extraFlag} ${path.join(typesDir, "XXX.ts")}`, {cwd: ROOT_DIR})
 }
 
 generateContractTypes()

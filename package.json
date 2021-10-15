@@ -27,7 +27,7 @@
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "scripts": {
-    "compile:contracts": "yarn truffle compile && yarn typechain --target=truffle-v5 'build/contracts/*.json' && yarn ts-node ./src/codegen.ts",
+    "compile:contracts": "yarn truffle compile && yarn typechain --target=truffle-v5 'build/contracts/*.json' && yarn ts-node ./tools/codegen.ts",
     "compile:ts": "yarn tsc -b",
     "build": "yarn compile:contracts && yarn compile:ts",
     "clean": "rm -rf ./build ./dist ./types",
