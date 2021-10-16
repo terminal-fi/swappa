@@ -8,10 +8,10 @@ import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap.token-list.j
 import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
 import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 
+import { SwappaManager } from '../swappa-manager';
 import { RegistryUniswapV2 } from '../registries/uniswapv2';
 import { RegistryAave } from '../registries/aave';
 import { RegistryMento } from '../registries/mento';
-import SwappaManager from '../swappa-manager';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")

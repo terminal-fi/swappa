@@ -1,4 +1,4 @@
-export * as SwappaManager from "./swappa-manager"
+export * from "./swappa-manager"
 export * from "./pair"
 export * from "./registry"
 export * from "./router"

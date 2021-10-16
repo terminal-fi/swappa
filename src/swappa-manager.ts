@@ -9,7 +9,7 @@ import { Address, Pair } from "./pair"
 import { Registry } from "./registry"
 import { findBestRoutesForFixedInputAmount, Route, RouterOpts } from "./router"
 
-class SwappaManager {
+export class SwappaManager {
 	private swappaRouter: SwappaRouterV1
 	private pairs: Pair[] = []
 	private pairsByToken = new Map<string, Pair[]>()
@@ -84,5 +84,3 @@ class SwappaManager {
 		return tx
 	}
 }
-
-export default SwappaManager
