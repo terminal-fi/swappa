@@ -47,7 +47,7 @@ export const findBestRoutesForFixedInputAmount = (
 				if (!outputT) {
 					throw new Error(`pairsByToken is invalid? ${pair.tokenA}/${pair.tokenB} !== ${route.outputToken}`)
 				}
-				if (route.pairs.indexOf(pair) >= 0) {
+				if (!pair.allowRepeats && route.pairs.indexOf(pair) >= 0) {
 					continue // skip already used pairs.
 				}
 				const outputTAmount = pair.outputAmount(route.outputToken, route.outputAmount)

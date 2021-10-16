@@ -3,6 +3,8 @@ import { Address, Pair } from "../pair"
 import { address as pairATokenAddress } from "../../tools/deployed/mainnet.PairAToken.addr.json"
 
 export class PairAToken extends Pair {
+	allowRepeats = true
+
 	constructor(
 		private providerAddr: Address,
 		private isUnderlyingCELO: boolean,

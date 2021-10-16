@@ -6,6 +6,8 @@ import { Address, PairXYeqK } from "../pair"
 import { address as pairUniswapV2Address } from "../../tools/deployed/mainnet.PairUniswapV2.addr.json"
 
 export class PairUniswapV2 extends PairXYeqK {
+	allowRepeats = false
+
 	private factory: IUniswapV2Factory
 	private pair?: IUniswapV2Pair
 	private pairToken0?: Address

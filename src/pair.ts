@@ -8,6 +8,8 @@ export interface SwapData {
 }
 
 export abstract class Pair {
+	public abstract readonly allowRepeats: boolean;
+
 	constructor(
 		public readonly tokenA: Address,
 		public readonly tokenB: Address,

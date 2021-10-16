@@ -8,6 +8,8 @@ import { SortedOraclesWrapper } from "@celo/contractkit/lib/wrappers/SortedOracl
 import { StableTokenContract } from "@celo/contractkit/lib/base";
 
 export class PairMento extends PairXYeqK {
+	allowRepeats = false
+
 	private exchange?: ExchangeWrapper
 	private reserve?: ReserveWrapper
 	private sortedOracles?: SortedOraclesWrapper
