@@ -15,9 +15,14 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		address to,
 		bytes calldata data
 	) external override {
-		require(data.length == 21, "PairUniswapV2: invalid data!");
+		address pairAddr = parseData(data);
 		uint inputAmount = IERC20(input).balanceOf(address(this));
-		address pairAddr = abi.decode(data[1:21], (address));
+		require(
+			IERC20(input).approve(pairAddr, 0),
+			"PairUniswapV2: approve reset failed!");
+		require(
+			IERC20(input).approve(pairAddr, inputAmount),
+			"PairUniswapV2: approve failed!");
 		IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
 		(uint reserve0, uint reserve1,) = pair.getReserves();
 		if (pair.token0() == input) {
@@ -27,6 +32,13 @@ contract PairUniswapV2 is ISwappaPairV1 {
 			uint outputAmount = getAmountOut(inputAmount, reserve1, reserve0);
 			pair.swap(outputAmount, 0, to, new bytes(0));
 		}
+	}
+
+	function parseData(bytes memory data) private pure returns (address pairAddr) {
+		require(data.length == 20, "PairUniswapV2: invalid data!");
+    assembly {
+      pairAddr := mload(add(data, 20))
+    }
 	}
 
 	function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
