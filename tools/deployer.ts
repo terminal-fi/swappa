@@ -6,6 +6,7 @@ import { ContractKit, newKit } from "@celo/contractkit"
 
 import SwappaRouterV1Json from "../build/contracts/SwappaRouterV1.json"
 import PairUniswapV2 from "../build/contracts/PairUniswapV2.json"
+import PairMento from "../build/contracts/PairMento.json"
 
 
 process.on('unhandledRejection', (reason, _promise) => {
@@ -90,6 +91,11 @@ async function main() {
 		kit, opts.network,
 		"PairUniswapV2",
 		PairUniswapV2.bytecode,
+	)
+	await readAddressOrDeployContract(
+		kit, opts.network,
+		"PairMento",
+		PairMento.bytecode,
 	)
 }
 

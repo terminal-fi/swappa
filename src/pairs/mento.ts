@@ -2,6 +2,7 @@ import { ContractKit, StableToken } from "@celo/contractkit";
 import { ExchangeWrapper } from "@celo/contractkit/lib/wrappers/Exchange";
 import BigNumber from "bignumber.js";
 import { Address, PairXYeqK } from "../pair";
+import { address as PairMentoAddress } from "../../tools/deployed/mainnet.PairMento.addr.json"
 
 export class PairMento extends PairXYeqK {
 	private exchange?: ExchangeWrapper
@@ -16,6 +17,9 @@ export class PairMento extends PairXYeqK {
 	}
 
 	public async _init() {
+		if ((await this.kit.web3.eth.getChainId()) !== 42220) {
+			throw new Error(`PairMento only exists on mainnet!`)
+		}
 		const celo = await this.kit.contracts.getGoldToken()
 		if (celo.address !== this.tokenA) {
 			throw new Error(`invalid celo: ${this.tokenA} !== ${celo.address}`)
@@ -25,7 +29,7 @@ export class PairMento extends PairXYeqK {
 			throw new Error(`invalid cSTB: ${this.tokenB} !== ${cSTB.address}`)
 		}
 		this.exchange = await this.kit.contracts.getExchange(this.stableToken)
-		return {addr: "", extra: ""}
+		return {addr: PairMentoAddress, extra: this.exchange.address}
 	}
 
 	public async refresh(): Promise<void> {

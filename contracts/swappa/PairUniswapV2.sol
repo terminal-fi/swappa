@@ -44,4 +44,6 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		uint denominator = reserveIn.mul(1000).add(amountInWithFee);
 		amountOut = numerator / denominator;
   }
+
+	receive() external payable {}
 }

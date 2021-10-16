@@ -42,5 +42,8 @@ contract SwappaRouterV1 {
 		require(
 			outputERC20.transfer(to, outputAmount),
 			"SwappaRouter: Final transfer failed!");
+		return outputAmount;
 	}
+
+	receive() external payable {}
 }

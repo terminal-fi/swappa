@@ -45,9 +45,9 @@ async function main() {
 	const inputAmount = new BigNumber(opts.amount)
 
 	const registries = [
-		// new RegistryMento(kit),
+		new RegistryMento(kit),
 		// new RegistryMoola(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA"),
-		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
+		// new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
 	]
 	console.info(`Finding pairs...`)
 	const pairsAll = await Promise.all(registries.map((r) => r.findPairs(tokenWhitelist)))
