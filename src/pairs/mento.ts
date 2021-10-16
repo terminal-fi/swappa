@@ -5,7 +5,6 @@ import { Address, PairXYeqK } from "../pair";
 import { address as pairMentoAddress } from "../../tools/deployed/mainnet.PairMento.addr.json"
 import { ReserveWrapper } from "@celo/contractkit/lib/wrappers/Reserve";
 import { SortedOraclesWrapper } from "@celo/contractkit/lib/wrappers/SortedOracles";
-import { StableTokenContract } from "@celo/contractkit/lib/base";
 
 export class PairMento extends PairXYeqK {
 	allowRepeats = false

@@ -26,8 +26,8 @@ module.exports = {
       version: "0.6.8",
       settings: {
         optimizer: {
-          enabled: false,
-          // runs: 200,
+          enabled: true,
+          runs: 10000,
         },
         evmVersion: "istanbul",
       }
