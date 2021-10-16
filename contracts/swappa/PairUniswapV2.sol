@@ -18,11 +18,8 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		address pairAddr = parseData(data);
 		uint inputAmount = IERC20(input).balanceOf(address(this));
 		require(
-			IERC20(input).approve(pairAddr, 0),
-			"PairUniswapV2: approve reset failed!");
-		require(
-			IERC20(input).approve(pairAddr, inputAmount),
-			"PairUniswapV2: approve failed!");
+			IERC20(input).transfer(pairAddr, inputAmount),
+			"PairUniswapV2: transfer failed!");
 		IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
 		(uint reserve0, uint reserve1,) = pair.getReserves();
 		if (pair.token0() == input) {
