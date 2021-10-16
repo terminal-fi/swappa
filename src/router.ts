@@ -32,6 +32,10 @@ export const findBestRoutesForFixedInputAmount = (
 			}
 		]
 	])
+	const maxOutputAmounts = new Map<Address, BigNumber>([
+		[inputToken, inputAmount],
+	])
+
 	for (let d = 0; d < maxSwaps; d += 1) {
 		const nextRoutes = new Map<string, Route>()
 		for (const route of currentRoutes.values()) {
@@ -47,22 +51,20 @@ export const findBestRoutesForFixedInputAmount = (
 					continue // skip already used pairs.
 				}
 				const outputTAmount = pair.outputAmount(route.outputToken, route.outputAmount)
-				if (outputTAmount.eq(0)) {
-					continue // not enough liquidity to actually trade.
+				const maxOutputAmount = maxOutputAmounts.get(outputT) || new BigNumber(0)
+				if (maxOutputAmount.gte(outputTAmount)) {
+					continue // we have already explored better routes before.
 				}
+				maxOutputAmounts.set(outputT, outputTAmount)
 				const routeT: Route = {
 					pairs: [...route.pairs, pair],
 					path: [...route.path, outputT],
 					outputToken: outputT,
 					outputAmount: outputTAmount,
 				}
+				nextRoutes.set(outputT, routeT)
 				if (outputT === outputToken) {
 					completedRoutes.push(routeT)
-				}
-
-				const nextRoute = nextRoutes.get(outputT)
-				if (!nextRoute || nextRoute.outputAmount.lt(outputTAmount)) {
-					nextRoutes.set(outputT, routeT)
 				}
 			}
 		}

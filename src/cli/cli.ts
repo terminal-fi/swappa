@@ -52,7 +52,7 @@ async function main() {
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
-	console.info(`Pairs:`)
+	console.info(`Pairs (${pairs.length}):`)
 	for (const pair of pairs) {
 		console.info(`${(pair as any).constructor?.name}: ${pair.tokenA} / ${pair.tokenB}`)
 	}
