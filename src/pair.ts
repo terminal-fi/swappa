@@ -2,14 +2,12 @@ import BigNumber from "bignumber.js";
 
 export type Address = string
 
-export interface PairData {
+export interface SwapData {
 	addr: string
 	extra: string
 }
 
 export abstract class Pair {
-	public data?: PairData
-
 	constructor(
 		public readonly tokenA: Address,
 		public readonly tokenB: Address,
@@ -17,11 +15,12 @@ export abstract class Pair {
 	}
 
 	public async init(): Promise<void> {
-		this.data = await this._init()
+		await this._init()
 		return this.refresh()
 	}
-	public abstract _init(): Promise<PairData>;
+	public abstract _init(): Promise<void>;
 	public abstract refresh(): Promise<void>;
+	public abstract swapData(inputToken: Address): SwapData;
 	public abstract outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber;
 }
 

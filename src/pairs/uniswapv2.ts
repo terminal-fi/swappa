@@ -31,7 +31,6 @@ export class PairUniswapV2 extends PairXYeqK {
 		}
 		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 		this.pairToken0 = await this.pair.methods.token0().call()
-		return {addr: PairUniswapV2Address, extra: pairAddr}
 	}
 
 	public async refresh(): Promise<void> {
@@ -41,5 +40,9 @@ export class PairUniswapV2 extends PairXYeqK {
 		const reserves = await this.pair.methods.getReserves().call()
 		const [bucketA, bucketB] = this.pairToken0 === this.tokenA ? [reserves[0], reserves[1]] : [reserves[1], reserves[0]]
 		this.refreshBuckets(this.fixedFee, new BigNumber(bucketA), new BigNumber(bucketB))
+	}
+
+	public swapData() {
+		return {addr: PairUniswapV2Address, extra: this.pair!.options.address}
 	}
 }

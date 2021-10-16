@@ -2,10 +2,10 @@ import { ContractKit } from "@celo/contractkit";
 import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contracts/ILendingPool";
 import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider";
 import { Address } from "../pair";
-import { PairMToken } from "../pairs/mtoken";
+import { PairAToken } from "../pairs/atoken";
 import { filterPairsByWhitelist } from "../utils";
 
-export class RegistryMoola {
+export class RegistryAave {
 	private lendingPoolAddrProvider: ILendingPoolAddressesProvider
 
 	constructor(private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
@@ -26,8 +26,14 @@ export class RegistryMoola {
 		const pairs = await Promise.all(
 			reservesMatched.map(async (r) => {
 				const data = await lendingPool.methods.getReserveData(r).call()
-				const underlying = r !== celoReserve ? r : celo.address
-				return new PairMToken(data.aTokenAddress, underlying)
+				const isUnderlyingCELO = r === celoReserve
+				const underlying = !isUnderlyingCELO ? r : celo.address
+				return new PairAToken(
+					this.lendingPoolAddrProvider.options.address,
+					isUnderlyingCELO,
+					data.aTokenAddress,
+					underlying,
+				)
 			})
 		)
 		return filterPairsByWhitelist(pairs, tokenWhitelist)

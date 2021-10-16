@@ -5,14 +5,15 @@ import BigNumber from 'bignumber.js';
 import { toTransactionObject } from '@celo/connect';
 
 import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap.token-list.json'
-import { RegistryUniswapV2 } from '../registries/uniswapv2';
-import { findBestRoutesForFixedInputAmount } from '../router';
-import { Pair } from '../pair';
-import { RegistryMoola } from '../registries/moola';
-import { RegistryMento } from '../registries/mento';
 import { SwappaRouterV1, ABI as SwappaRouterABI } from '../../types/web3-v1-contracts/SwappaRouterV1';
 import { address as SwappaRouterAddress} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
+
+import { findBestRoutesForFixedInputAmount } from '../router';
+import { Pair } from '../pair';
+import { RegistryUniswapV2 } from '../registries/uniswapv2';
+import { RegistryAave } from '../registries/aave';
+import { RegistryMento } from '../registries/mento';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
@@ -45,9 +46,9 @@ async function main() {
 	const inputAmount = new BigNumber(opts.amount)
 
 	const registries = [
-		new RegistryMento(kit),
-		// new RegistryMoola(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA"),
-		// new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
+		// new RegistryMento(kit),
+		new RegistryAave(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA"),
+		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
 	]
 	console.info(`Finding pairs...`)
 	const pairsAll = await Promise.all(registries.map((r) => r.findPairs(tokenWhitelist)))
@@ -106,12 +107,13 @@ async function main() {
 			console.info(`TX Done: ${approveReceipt.transactionHash}`)
 		}
 
+		const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
 		const tx = toTransactionObject(
 			kit.connection,
 			swappaRouter.methods.swapExactInputForOutput(
 				route.path,
-				route.pairs.map((p) => p.data?.addr || ""),
-				route.pairs.map((p) => p.data?.extra || ""),
+				routeData.map((d) => d.addr),
+				routeData.map((d) => d.extra),
 				inputAmount.toFixed(0),
 				route.outputAmount.multipliedBy(0.995).toFixed(0),
 				from,

@@ -29,7 +29,6 @@ export class PairMento extends PairXYeqK {
 			throw new Error(`invalid cSTB: ${this.tokenB} !== ${cSTB.address}`)
 		}
 		this.exchange = await this.kit.contracts.getExchange(this.stableToken)
-		return {addr: PairMentoAddress, extra: this.exchange.address}
 	}
 
 	public async refresh(): Promise<void> {
@@ -45,5 +44,9 @@ export class PairMento extends PairXYeqK {
 			this.exchange.getBuyAndSellBuckets(false),
 		])
 		this.refreshBuckets(new BigNumber(1).minus(spread), bucketCELO, bucketSTB)
+	}
+
+	public swapData() {
+		return {addr: PairMentoAddress, extra: this.exchange!.address}
 	}
 }

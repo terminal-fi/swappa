@@ -7,7 +7,7 @@ import { ContractKit, newKit } from "@celo/contractkit"
 import SwappaRouterV1Json from "../build/contracts/SwappaRouterV1.json"
 import PairUniswapV2 from "../build/contracts/PairUniswapV2.json"
 import PairMento from "../build/contracts/PairMento.json"
-
+import PairAToken from "../build/contracts/PairAToken.json"
 
 process.on('unhandledRejection', (reason, _promise) => {
 	// @ts-ignore
@@ -83,20 +83,13 @@ async function main() {
 	kit.defaultAccount = opts.from
 
 	await readAddressOrDeployContract(
-		kit, opts.network,
-		"SwappaRouterV1",
-		SwappaRouterV1Json.bytecode,
-	)
+		kit, opts.network, "SwappaRouterV1", SwappaRouterV1Json.bytecode)
 	await readAddressOrDeployContract(
-		kit, opts.network,
-		"PairUniswapV2",
-		PairUniswapV2.bytecode,
-	)
+		kit, opts.network, "PairUniswapV2", PairUniswapV2.bytecode)
 	await readAddressOrDeployContract(
-		kit, opts.network,
-		"PairMento",
-		PairMento.bytecode,
-	)
+		kit, opts.network, "PairMento", PairMento.bytecode)
+	await readAddressOrDeployContract(
+		kit, opts.network, "PairAToken", PairAToken.bytecode)
 }
 
 main()

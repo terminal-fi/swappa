@@ -22,4 +22,6 @@ interface ILendingPool {
 		);
 
 	function getReserves() external view returns (address[] memory);
+
+	function deposit(address _reserve, uint256 _amount, uint16 _referralCode) external payable;
 }
