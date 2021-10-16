@@ -27,7 +27,7 @@ export class PairUniswapV2 extends PairXYeqK {
 		}
 		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 		this.pairToken0 = await this.pair.methods.token0().call()
-		return {extraDataHex: ""}
+		return {addr: "", extra: pairAddr}
 	}
 
 	public async refresh(): Promise<void> {

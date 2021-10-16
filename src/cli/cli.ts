@@ -9,6 +9,8 @@ import { findBestRoutesForFixedInputAmount } from '../router';
 import { Pair } from '../pair';
 import { RegistryMoola } from '../registries/moola';
 import { RegistryMento } from '../registries/mento';
+import { SwappaRouterV1, ABI as SwappaRouterABI } from '../../types/web3-v1-contracts/SwappaRouterV1';
+import { toTransactionObject } from '@celo/connect';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "https://forno.celo.org")
@@ -83,6 +85,25 @@ async function main() {
 		const path = route.pairs.map((p, idx) => `${(p as any).constructor.name}:${route.path[idx + 1]}`)
 		console.info(`Output: ${route.outputAmount.shiftedBy(-18).toFixed(6)}, ${path.join(" -> ")}`)
 	}
+
+	const route = routes[0]
+	const swappaRouter = new kit.web3.eth.Contract(SwappaRouterABI, swappaRouterAddr) as unknown as SwappaRouterV1
+	const from = opts.from
+
+	const tx = toTransactionObject(
+		kit.connection,
+		swappaRouter.methods.swapExactInputForOutput(
+			route.path,
+			route.pairs.map((p) => p.data?.addr || ""),
+			route.pairs.map((p) => p.data?.extra || ""),
+			inputAmount.toFixed(0),
+			route.outputAmount.multipliedBy(0.995).toFixed(0),
+			from,
+			Math.floor(Date.now() / 1000 + 60),
+		))
+	console.info(`sending TX...`)
+	const receipt = await tx.sendAndWaitForReceipt()
+	console.info(`TX Done: ${receipt.transactionHash}`)
 }
 
 main()

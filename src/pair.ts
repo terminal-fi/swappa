@@ -2,8 +2,14 @@ import BigNumber from "bignumber.js";
 
 export type Address = string
 
+export interface PairData {
+	addr: string
+	extra: string
+}
+
 export abstract class Pair {
-	public extraDataHex: string = ""
+	public data?: PairData
+
 	constructor(
 		public readonly tokenA: Address,
 		public readonly tokenB: Address,
@@ -11,10 +17,10 @@ export abstract class Pair {
 	}
 
 	public async init(): Promise<void> {
-		this.extraDataHex = (await this._init()).extraDataHex
+		this.data = await this._init()
 		return this.refresh()
 	}
-	public abstract _init(): Promise<{extraDataHex: string}>;
+	public abstract _init(): Promise<PairData>;
 	public abstract refresh(): Promise<void>;
 	public abstract outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber;
 }
