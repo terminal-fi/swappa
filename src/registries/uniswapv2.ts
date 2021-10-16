@@ -1,4 +1,6 @@
 import { ContractKit } from "@celo/contractkit";
+import { concurrentMap } from '@celo/utils/lib/async'
+
 import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contracts/IUniswapV2Factory";
 import { Address, Pair } from "../pair";
 import { PairUniswapV2 } from "../pairs/uniswapv2";
@@ -15,17 +17,24 @@ export class RegistryUniswapV2 {
 
 	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
 		const pairAddrsP: Promise<{pair: Address, tokenA: Address, tokenB: Address}>[] = []
+		const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
+
 		for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
 			for (let j = i + 1; j < tokenWhitelist.length; j += 1) {
-				pairAddrsP.push(
-					this.factory.methods.getPair(tokenWhitelist[i], tokenWhitelist[j])
-						.call()
-						.then((r) => ({pair: r, tokenA: tokenWhitelist[i], tokenB: tokenWhitelist[j]}))
-				)
+				pairsToFetch.push({tokenA: tokenWhitelist[i], tokenB: tokenWhitelist[j]})
 			}
 		}
-		const pairAddrs = (await Promise.all(pairAddrsP)).filter((p) => p.pair !== "0x0000000000000000000000000000000000000000")
-		const pairs = await Promise.all(pairAddrs.map((p) => new PairUniswapV2(this.kit, this.factoryAddr, p.tokenA, p.tokenB)))
+		const pairsFetched = await concurrentMap(
+			10,
+			pairsToFetch,
+			async (toFetch) => {
+				const pairAddr = await this.factory.methods.getPair(toFetch.tokenA, toFetch.tokenB).call()
+				if (pairAddr === "0x0000000000000000000000000000000000000000") {
+					return null
+				}
+				return new PairUniswapV2(this.kit, this.factoryAddr, toFetch.tokenA, toFetch.tokenB)
+			})
+		const pairs = pairsFetched.filter((p) => p !== null) as Pair[]
 		return pairs
 	}
 }

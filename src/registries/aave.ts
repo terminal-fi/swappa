@@ -1,4 +1,6 @@
 import { ContractKit } from "@celo/contractkit";
+import { concurrentMap } from '@celo/utils/lib/async'
+
 import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contracts/ILendingPool";
 import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider";
 import { Address } from "../pair";
@@ -23,8 +25,10 @@ export class RegistryAave {
 			celoReserve,
 			...reserves.filter((r) => tokenWhitelist.indexOf(r) >= 0),
 		]
-		const pairs = await Promise.all(
-			reservesMatched.map(async (r) => {
+		const pairs = await concurrentMap(
+			5,
+			reservesMatched,
+			async (r) => {
 				const data = await lendingPool.methods.getReserveData(r).call()
 				const isUnderlyingCELO = r === celoReserve
 				const underlying = !isUnderlyingCELO ? r : celo.address
@@ -35,7 +39,6 @@ export class RegistryAave {
 					underlying,
 				)
 			})
-		)
 		return filterPairsByWhitelist(pairs, tokenWhitelist)
 	}
 }

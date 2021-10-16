@@ -8,12 +8,18 @@ export interface Route {
 	outputAmount: BigNumber
 }
 
+export interface RouterOpts {
+	maxSwaps?: number,
+}
+
 export const findBestRoutesForFixedInputAmount = (
 	pairsByToken: Map<Address, Pair[]>,
 	inputToken: Address,
 	outputToken: Address,
 	inputAmount: BigNumber,
-	maxSwaps = 10) => {
+	opts?: RouterOpts) => {
+
+	const maxSwaps = opts?.maxSwaps || 10
 
 	const completedRoutes: Route[] = []
 	let currentRoutes = new Map<Address, Route>([
