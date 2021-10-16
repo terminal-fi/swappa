@@ -46,7 +46,8 @@ async function main() {
 	const registries = [
 		new RegistryMento(kit),
 		new RegistryAave(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA"),
-		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
+		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"), // ubeswap
+		new RegistryUniswapV2(kit, "0xc35DADB65012eC5796536bD9864eD8773aBc74C4"), // sushiswap
 	]
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
