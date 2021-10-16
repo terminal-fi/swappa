@@ -83,7 +83,6 @@ class SwappaManager {
 			))
 		return tx
 	}
-
 }
 
 export default SwappaManager

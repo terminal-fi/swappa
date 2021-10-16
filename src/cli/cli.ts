@@ -6,7 +6,7 @@ import { toTransactionObject } from '@celo/connect';
 
 import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap.token-list.json'
 import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
-import { address as SwappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
+import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 
 import { RegistryUniswapV2 } from '../registries/uniswapv2';
 import { RegistryAave } from '../registries/aave';
@@ -48,7 +48,7 @@ async function main() {
 		new RegistryAave(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA"),
 		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"),
 	]
-	const manager = new SwappaManager(kit, SwappaRouterV1Address, registries)
+	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs:`)

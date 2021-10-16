@@ -3,7 +3,7 @@ import BigNumber from "bignumber.js"
 import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contracts/IUniswapV2Factory"
 import { IUniswapV2Pair, ABI as PairABI } from "../../types/web3-v1-contracts/IUniswapV2Pair"
 import { Address, PairXYeqK } from "../pair"
-import { address as PairUniswapV2Address } from "../../tools/deployed/mainnet.PairUniswapV2.addr.json"
+import { address as pairUniswapV2Address } from "../../tools/deployed/mainnet.PairUniswapV2.addr.json"
 
 export class PairUniswapV2 extends PairXYeqK {
 	private factory: IUniswapV2Factory
@@ -43,6 +43,6 @@ export class PairUniswapV2 extends PairXYeqK {
 	}
 
 	public swapData() {
-		return {addr: PairUniswapV2Address, extra: this.pair!.options.address}
+		return {addr: pairUniswapV2Address, extra: this.pair!.options.address}
 	}
 }

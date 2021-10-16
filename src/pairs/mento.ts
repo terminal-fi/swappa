@@ -2,7 +2,7 @@ import { ContractKit, StableToken } from "@celo/contractkit";
 import { ExchangeWrapper } from "@celo/contractkit/lib/wrappers/Exchange";
 import BigNumber from "bignumber.js";
 import { Address, PairXYeqK } from "../pair";
-import { address as PairMentoAddress } from "../../tools/deployed/mainnet.PairMento.addr.json"
+import { address as pairMentoAddress } from "../../tools/deployed/mainnet.PairMento.addr.json"
 
 export class PairMento extends PairXYeqK {
 	private exchange?: ExchangeWrapper
@@ -47,6 +47,6 @@ export class PairMento extends PairXYeqK {
 	}
 
 	public swapData() {
-		return {addr: PairMentoAddress, extra: this.exchange!.address}
+		return {addr: pairMentoAddress, extra: this.exchange!.address}
 	}
 }

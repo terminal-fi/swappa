@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js"
 import { Address, Pair } from "../pair"
-import { address as PairATokenAddress } from "../../tools/deployed/mainnet.PairAToken.addr.json"
+import { address as pairATokenAddress } from "../../tools/deployed/mainnet.PairAToken.addr.json"
 
 export class PairAToken extends Pair {
 	constructor(
@@ -19,7 +19,7 @@ export class PairAToken extends Pair {
 		const swapType =
 			inputToken === this.aToken ? "01" :
 			this.isUnderlyingCELO ? "02" : "03"
-		return {addr: PairATokenAddress, extra: `${this.providerAddr}${swapType}`}
+		return {addr: pairATokenAddress, extra: `${this.providerAddr}${swapType}`}
 	}
 
 	public outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber {
