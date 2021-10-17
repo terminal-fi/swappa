@@ -4,6 +4,7 @@ import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contra
 import { IUniswapV2Pair, ABI as PairABI } from "../../types/web3-v1-contracts/IUniswapV2Pair"
 import { Address, PairXYeqK } from "../pair"
 import { address as pairUniswapV2Address } from "../../tools/deployed/mainnet.PairUniswapV2.addr.json"
+import { selectAddress } from "../utils"
 
 export class PairUniswapV2 extends PairXYeqK {
 	allowRepeats = false
@@ -23,16 +24,16 @@ export class PairUniswapV2 extends PairXYeqK {
 		this.factory = new kit.web3.eth.Contract(FactoryABI, factoryAddr) as unknown as IUniswapV2Factory
 	}
 
-	public async _init() {
-		if ((await this.kit.web3.eth.getChainId()) !== 42220) {
-			throw new Error(`PairUniswapV2 only exists on mainnet!`)
-		}
+	protected async _init() {
 		const pairAddr = await this.factory.methods.getPair(this.tokenA, this.tokenB).call()
 		if (pairAddr === "0x0000000000000000000000000000000000000000") {
 			throw new Error(`pair: ${this.tokenA}/${this.tokenB} doesn't exist!`)
 		}
 		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 		this.pairToken0 = await this.pair.methods.token0().call()
+		return {
+			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairUniswapV2Address})
+		}
 	}
 
 	public async refresh(): Promise<void> {
@@ -44,7 +45,7 @@ export class PairUniswapV2 extends PairXYeqK {
 		this.refreshBuckets(this.fixedFee, new BigNumber(bucketA), new BigNumber(bucketB))
 	}
 
-	public swapData() {
-		return {addr: pairUniswapV2Address, extra: this.pair!.options.address}
+	protected swapExtraData() {
+		return this.pair!.options.address
 	}
 }

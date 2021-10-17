@@ -9,6 +9,7 @@ export interface SwapData {
 
 export abstract class Pair {
 	public abstract readonly allowRepeats: boolean;
+	protected swappaPairAddress: Address = "";
 
 	constructor(
 		public readonly tokenA: Address,
@@ -17,12 +18,19 @@ export abstract class Pair {
 	}
 
 	public async init(): Promise<void> {
-		await this._init()
+		const r = await this._init()
+		this.swappaPairAddress = r.swappaPairAddress
 		return this.refresh()
 	}
-	public abstract _init(): Promise<void>;
+	protected abstract _init(): Promise<{swappaPairAddress: Address}>;
 	public abstract refresh(): Promise<void>;
-	public abstract swapData(inputToken: Address): SwapData;
+	public swapData(inputToken: Address): SwapData {
+		return {
+			addr: this.swappaPairAddress,
+			extra: this.swapExtraData(inputToken),
+		}
+	}
+	protected abstract swapExtraData(inputToken: Address): string;
 	public abstract outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber;
 }
 

@@ -33,6 +33,7 @@ export class RegistryAave {
 				const isUnderlyingCELO = r === celoReserve
 				const underlying = !isUnderlyingCELO ? r : celo.address
 				return new PairAToken(
+					this.kit,
 					this.lendingPoolAddrProvider.options.address,
 					isUnderlyingCELO,
 					data.aTokenAddress,

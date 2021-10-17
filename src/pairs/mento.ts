@@ -5,6 +5,7 @@ import { Address, PairXYeqK } from "../pair";
 import { address as pairMentoAddress } from "../../tools/deployed/mainnet.PairMento.addr.json"
 import { ReserveWrapper } from "@celo/contractkit/lib/wrappers/Reserve";
 import { SortedOraclesWrapper } from "@celo/contractkit/lib/wrappers/SortedOracles";
+import { selectAddress } from "../utils";
 
 export class PairMento extends PairXYeqK {
 	allowRepeats = false
@@ -22,10 +23,7 @@ export class PairMento extends PairXYeqK {
 		super(celo, cSTB)
 	}
 
-	public async _init() {
-		if ((await this.kit.web3.eth.getChainId()) !== 42220) {
-			throw new Error(`PairMento only exists on mainnet!`)
-		}
+	protected async _init() {
 		const celo = await this.kit.contracts.getGoldToken()
 		if (celo.address !== this.tokenA) {
 			throw new Error(`invalid celo: ${this.tokenA} !== ${celo.address}`)
@@ -37,6 +35,9 @@ export class PairMento extends PairXYeqK {
 		this.exchange = await this.kit.contracts.getExchange(this.stableToken)
 		this.reserve = await this.kit.contracts.getReserve()
 		this.sortedOracles = await this.kit.contracts.getSortedOracles()
+		return {
+			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairMentoAddress})
+		}
 	}
 
 	public async refresh(): Promise<void> {
@@ -94,7 +95,7 @@ export class PairMento extends PairXYeqK {
 		return {bucketCELO, bucketSTB}
 	}
 
-	public swapData() {
-		return {addr: pairMentoAddress, extra: this.exchange!.address}
+	protected swapExtraData() {
+		return this.exchange!.address
 	}
 }
