@@ -2,7 +2,7 @@
 pragma solidity 0.6.8;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ISwappaPairV1.sol";
 
 contract SwappaRouterV1 {
@@ -34,7 +34,7 @@ contract SwappaRouterV1 {
 		require(pairs.length > 0, "SwappaRouter: Must have at least one pair!");
 
 		require(
-			IERC20(path[0]).transferFrom(msg.sender, pairs[0], inputAmount),
+			ERC20(path[0]).transferFrom(msg.sender, pairs[0], inputAmount),
 			"SwappaRouter: Initial transferFrom failed!");
 		for (uint i; i < pairs.length; i++) {
 			(address pairInput, address pairOutput) = (path[i], path[i + 1]);
@@ -45,11 +45,11 @@ contract SwappaRouterV1 {
 		// Perform final output check in the router as a final safeguard to make sure
 		// minOutputAmount restriction is honored no matter what.
 		address output = path[path.length - 1];
-		outputAmount = IERC20(output).balanceOf(address(this));
+		outputAmount = ERC20(output).balanceOf(address(this));
 		require(
 			outputAmount >= minOutputAmount, "SwappaRouter: Insufficient output amount!");
 		require(
-			IERC20(output).transfer(to, outputAmount),
+			ERC20(output).transfer(to, outputAmount),
 			"SwappaRouter: Final transfer failed!");
 		emit Swap(msg.sender, to, path[0], output, inputAmount, outputAmount);
 	}

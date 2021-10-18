@@ -20,7 +20,7 @@ export class RegistryMento {
 			})
 		const celo = await this.kit.contracts.getGoldToken()
 		const pairs = cSTBs.map((cSTB) => {
-			return new PairMento(this.kit, cSTB.name, celo.address, cSTB.wrapper.address)
+			return new PairMento(this.kit, cSTB.name)
 		})
 		return filterPairsByWhitelist(pairs, tokenWhitelist)
 	}

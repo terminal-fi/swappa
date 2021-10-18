@@ -2,7 +2,7 @@
 pragma solidity 0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ISwappaPairV1.sol";
 import "../interfaces/aave/ILendingPool.sol";
 import "../interfaces/aave/ILendingPoolAddressesProvider.sol";
@@ -21,7 +21,7 @@ contract PairAToken is ISwappaPairV1 {
 		bytes calldata data
 	) external override {
 		(address providerAddr, uint8 inputType) = parseData(data);
-		uint inputAmount = IERC20(input).balanceOf(address(this));
+		uint inputAmount = ERC20(input).balanceOf(address(this));
 		if (inputType == 1) {
 			// Redeem AToken.
 			IAToken(input).redeem(inputAmount);
@@ -37,13 +37,12 @@ contract PairAToken is ISwappaPairV1 {
 			address lendingPoolAddr = ILendingPoolAddressesProvider(providerAddr).getLendingPool();
 			address lendingPoolCoreAddr = ILendingPoolAddressesProvider(providerAddr).getLendingPoolCore();
 			require(
-				IERC20(input).approve(lendingPoolCoreAddr, inputAmount),
+				ERC20(input).approve(lendingPoolCoreAddr, inputAmount),
 				"PairAToken: approve failed!");
 			ILendingPool(lendingPoolAddr).deposit(input, inputAmount, 0x0);
 		}
-		uint outputAmount = IERC20(output).balanceOf(address(this));
 		require(
-			IERC20(output).transfer(to, outputAmount),
+			ERC20(output).transfer(to, inputAmount),
 			"PairAToken: transfer failed!");
 	}
 

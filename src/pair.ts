@@ -9,20 +9,22 @@ export interface SwapData {
 
 export abstract class Pair {
 	public abstract readonly allowRepeats: boolean;
+	public tokenA: Address = "";
+	public tokenB: Address = "";
 	protected swappaPairAddress: Address = "";
-
-	constructor(
-		public readonly tokenA: Address,
-		public readonly tokenB: Address,
-		) {
-	}
 
 	public async init(): Promise<void> {
 		const r = await this._init()
+		this.tokenA = r.tokenA
+		this.tokenB = r.tokenB
 		this.swappaPairAddress = r.swappaPairAddress
 		return this.refresh()
 	}
-	protected abstract _init(): Promise<{swappaPairAddress: Address}>;
+	protected abstract _init(): Promise<{
+		tokenA: Address,
+		tokenB: Address,
+		swappaPairAddress: Address,
+	}>;
 	public abstract refresh(): Promise<void>;
 	public swapData(inputToken: Address): SwapData {
 		return {
@@ -38,13 +40,6 @@ export abstract class PairXYeqK extends Pair {
 	private fee: BigNumber = new BigNumber(0)
 	private bucketA: BigNumber = new BigNumber(0)
 	private bucketB: BigNumber = new BigNumber(0)
-
-	constructor(
-		public readonly tokenA: Address,
-		public readonly tokenB: Address,
-		) {
-		super(tokenA, tokenB)
-	}
 
 	protected refreshBuckets(fee: BigNumber, bucketA: BigNumber, bucketB: BigNumber) {
 		this.fee = fee

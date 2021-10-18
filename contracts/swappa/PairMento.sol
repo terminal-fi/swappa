@@ -2,7 +2,7 @@
 pragma solidity 0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ISwappaPairV1.sol";
 
 interface IExchange {
@@ -20,15 +20,15 @@ contract PairMento is ISwappaPairV1 {
 		bytes calldata data
 	) external override {
 		address exchangeAddr = parseData(data);
-		uint inputAmount = IERC20(input).balanceOf(address(this));
+		uint inputAmount = ERC20(input).balanceOf(address(this));
 		require(
-			IERC20(input).approve(exchangeAddr, inputAmount),
+			ERC20(input).approve(exchangeAddr, inputAmount),
 			"PairMento: approve failed!");
 		IExchange exchange = IExchange(exchangeAddr);
 		bool sellGold = (exchange.stable() != input);
 		uint outputAmount = exchange.sell(inputAmount, 0, sellGold);
 		require(
-			IERC20(output).transfer(to, outputAmount),
+			ERC20(output).transfer(to, outputAmount),
 			"PairMento: transfer failed!");
 	}
 

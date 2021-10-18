@@ -9,31 +9,24 @@ import { selectAddress } from "../utils"
 export class PairUniswapV2 extends PairXYeqK {
 	allowRepeats = false
 
-	private factory: IUniswapV2Factory
-	private pair?: IUniswapV2Pair
-	private pairToken0?: Address
+	private pair: IUniswapV2Pair
 
 	constructor(
 		private kit: ContractKit,
-		factoryAddr: Address,
-		public readonly tokenA: Address,
-		public readonly tokenB: Address,
+		pairAddr: Address,
 		private fixedFee: BigNumber = new BigNumber(0.997),
 	) {
-		super(tokenA, tokenB)
-		this.factory = new kit.web3.eth.Contract(FactoryABI, factoryAddr) as unknown as IUniswapV2Factory
+		super()
+		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 	}
 
 	protected async _init() {
-		const pairAddr = await this.factory.methods.getPair(this.tokenA, this.tokenB).call()
-		if (pairAddr === "0x0000000000000000000000000000000000000000") {
-			throw new Error(`pair: ${this.tokenA}/${this.tokenB} doesn't exist!`)
-		}
-		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
-		this.pairToken0 = await this.pair.methods.token0().call()
-		return {
-			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairUniswapV2Address})
-		}
+		const [tokenA, tokenB, swappaPairAddress] = await Promise.all([
+			this.pair.methods.token0().call(),
+			this.pair.methods.token0().call(),
+			selectAddress(this.kit, {mainnet: pairUniswapV2Address}),
+		])
+		return { tokenA, tokenB, swappaPairAddress }
 	}
 
 	public async refresh(): Promise<void> {
@@ -41,8 +34,7 @@ export class PairUniswapV2 extends PairXYeqK {
 			throw new Error(`not initialized!`)
 		}
 		const reserves = await this.pair.methods.getReserves().call()
-		const [bucketA, bucketB] = this.pairToken0 === this.tokenA ? [reserves[0], reserves[1]] : [reserves[1], reserves[0]]
-		this.refreshBuckets(this.fixedFee, new BigNumber(bucketA), new BigNumber(bucketB))
+		this.refreshBuckets(this.fixedFee, new BigNumber(reserves[0]), new BigNumber(reserves[1]))
 	}
 
 	protected swapExtraData() {

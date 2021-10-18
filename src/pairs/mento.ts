@@ -17,25 +17,19 @@ export class PairMento extends PairXYeqK {
 	constructor(
 		private kit: ContractKit,
 		private stableToken: StableToken,
-		celo: Address,
-		cSTB: Address,
 	) {
-		super(celo, cSTB)
+		super()
 	}
 
 	protected async _init() {
 		const celo = await this.kit.contracts.getGoldToken()
-		if (celo.address !== this.tokenA) {
-			throw new Error(`invalid celo: ${this.tokenA} !== ${celo.address}`)
-		}
 		const cSTB = await this.kit.contracts.getStableToken(this.stableToken)
-		if (cSTB.address !== this.tokenB) {
-			throw new Error(`invalid cSTB: ${this.tokenB} !== ${cSTB.address}`)
-		}
 		this.exchange = await this.kit.contracts.getExchange(this.stableToken)
 		this.reserve = await this.kit.contracts.getReserve()
 		this.sortedOracles = await this.kit.contracts.getSortedOracles()
 		return {
+			tokenA: celo.address,
+			tokenB: cSTB.address,
 			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairMentoAddress})
 		}
 	}

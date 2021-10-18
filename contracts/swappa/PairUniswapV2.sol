@@ -2,7 +2,7 @@
 pragma solidity 0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/uniswap/IUniswapV2Pair.sol";
 import "./ISwappaPairV1.sol";
 
@@ -16,9 +16,9 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		bytes calldata data
 	) external override {
 		address pairAddr = parseData(data);
-		uint inputAmount = IERC20(input).balanceOf(address(this));
+		uint inputAmount = ERC20(input).balanceOf(address(this));
 		require(
-			IERC20(input).transfer(pairAddr, inputAmount),
+			ERC20(input).transfer(pairAddr, inputAmount),
 			"PairUniswapV2: transfer failed!");
 		IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
 		(uint reserve0, uint reserve1,) = pair.getReserves();

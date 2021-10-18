@@ -32,7 +32,7 @@ export class RegistryUniswapV2 {
 				if (pairAddr === "0x0000000000000000000000000000000000000000") {
 					return null
 				}
-				return new PairUniswapV2(this.kit, this.factoryAddr, toFetch.tokenA, toFetch.tokenB)
+				return new PairUniswapV2(this.kit, pairAddr)
 			})
 		const pairs = pairsFetched.filter((p) => p !== null) as Pair[]
 		return pairs
