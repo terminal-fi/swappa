@@ -4,19 +4,19 @@ import { concurrentMap } from '@celo/utils/lib/async'
 import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contracts/IUniswapV2Factory";
 import { Address, Pair } from "../pair";
 import { PairUniswapV2 } from "../pairs/uniswapv2";
+import { initPairsAndFilterByWhitelist } from "../utils";
 
 export class RegistryUniswapV2 {
 	private factory: IUniswapV2Factory
 
 	constructor(
 		private kit: ContractKit,
-		private factoryAddr: Address,
+		factoryAddr: Address,
 	) {
 		this.factory = new kit.web3.eth.Contract(FactoryABI, factoryAddr) as unknown as IUniswapV2Factory
 	}
 
 	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
-		const pairAddrsP: Promise<{pair: Address, tokenA: Address, tokenB: Address}>[] = []
 		const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
 
 		for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
@@ -35,6 +35,6 @@ export class RegistryUniswapV2 {
 				return new PairUniswapV2(this.kit, pairAddr)
 			})
 		const pairs = pairsFetched.filter((p) => p !== null) as Pair[]
-		return pairs
+		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
 	}
 }

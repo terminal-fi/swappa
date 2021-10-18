@@ -23,7 +23,7 @@ export class PairUniswapV2 extends PairXYeqK {
 	protected async _init() {
 		const [tokenA, tokenB, swappaPairAddress] = await Promise.all([
 			this.pair.methods.token0().call(),
-			this.pair.methods.token0().call(),
+			this.pair.methods.token1().call(),
 			selectAddress(this.kit, {mainnet: pairUniswapV2Address}),
 		])
 		return { tokenA, tokenB, swappaPairAddress }

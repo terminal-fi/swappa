@@ -3,7 +3,7 @@ import { concurrentMap } from '@celo/utils/lib/async'
 
 import { Address } from "../pair"
 import { PairMento } from "../pairs/mento"
-import { filterPairsByWhitelist } from "../utils"
+import { initPairsAndFilterByWhitelist } from "../utils"
 
 export class RegistryMento {
 	constructor(private kit: ContractKit) {}
@@ -18,10 +18,7 @@ export class RegistryMento {
 					wrapper: wrapper,
 				}))
 			})
-		const celo = await this.kit.contracts.getGoldToken()
-		const pairs = cSTBs.map((cSTB) => {
-			return new PairMento(this.kit, cSTB.name)
-		})
-		return filterPairsByWhitelist(pairs, tokenWhitelist)
+		const pairs = cSTBs.map((cSTB) => (new PairMento(this.kit, cSTB.name)))
+		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
 	}
 }

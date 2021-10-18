@@ -12,6 +12,7 @@ import { SwappaManager } from '../swappa-manager';
 import { RegistryUniswapV2 } from '../registries/uniswapv2';
 import { RegistryAave } from '../registries/aave';
 import { RegistryMento } from '../registries/mento';
+import { RegistryMobius } from '../registries/mobius';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
@@ -48,6 +49,7 @@ async function main() {
 		new RegistryAave(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA"),
 		new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE"), // ubeswap
 		new RegistryUniswapV2(kit, "0xc35DADB65012eC5796536bD9864eD8773aBc74C4"), // sushiswap
+		new RegistryMobius(kit),
 	]
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
@@ -68,7 +70,8 @@ async function main() {
 	console.info(`Top 5 routes (elapsed: ${Date.now() - startT0}ms):`)
 	for (const route of routes.slice(0, 5)) {
 		const path = route.pairs.map((p, idx) => `${(p as any).constructor.name}:${route.path[idx + 1]}`)
-		console.info(`Output: ${route.outputAmount.shiftedBy(-18).toFixed(6)}, ${path.join(" -> ")}`)
+		const outInfo = ubeswapTokens.tokens.find((t) => t.address === outputToken)!
+		console.info(`Output: ${route.outputAmount.shiftedBy(-outInfo.decimals).toFixed(6)} ${outInfo.symbol}, ${path.join(" -> ")}`)
 	}
 
 	const from = opts.from

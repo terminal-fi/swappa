@@ -1,8 +1,10 @@
 import { ContractKit } from "@celo/contractkit"
+import { concurrentMap } from '@celo/utils/lib/async'
+
 import { Address, Pair } from "./pair"
 
-
-export const filterPairsByWhitelist = (pairs: Pair[], tokenWhitelist: Address[]) => {
+export const initPairsAndFilterByWhitelist = async (pairs: Pair[], tokenWhitelist: Address[]) => {
+	await concurrentMap(10, pairs, (p) => p.init())
 	return pairs.filter((p) => (
 		tokenWhitelist.indexOf(p.tokenA) >= 0 &&
 		tokenWhitelist.indexOf(p.tokenB) >= 0

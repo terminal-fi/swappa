@@ -23,9 +23,9 @@ contract PairStableSwap is ISwappaPairV1 {
 		ISwap swapPool = ISwap(swapPoolAddr);
 		uint outputAmount;
 		if (swapPool.getToken(0) == input) {
-			outputAmount = swapPool.swap(0, 1, inputAmount, 0, block.number);
+			outputAmount = swapPool.swap(0, 1, inputAmount, 0, block.timestamp);
 		} else {
-			outputAmount = swapPool.swap(1, 0, inputAmount, 0, block.number);
+			outputAmount = swapPool.swap(1, 0, inputAmount, 0, block.timestamp);
 		}
 		require(
 			ERC20(output).transfer(to, outputAmount),

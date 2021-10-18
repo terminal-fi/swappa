@@ -4,7 +4,7 @@ import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contrac
 import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider"
 import { Address } from "../pair"
 import { PairAToken, ReserveCELO } from "../pairs/atoken"
-import { filterPairsByWhitelist } from "../utils"
+import { initPairsAndFilterByWhitelist } from "../utils"
 
 export class RegistryAave {
 	private lendingPoolAddrProvider: ILendingPoolAddressesProvider
@@ -24,6 +24,6 @@ export class RegistryAave {
 		]
 		const pairs = reservesMatched.map((r) => (
 			new PairAToken(this.kit, this.lendingPoolAddrProvider.options.address, r)))
-		return filterPairsByWhitelist(pairs, tokenWhitelist)
+		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
 	}
 }

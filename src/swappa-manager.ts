@@ -39,7 +39,6 @@ export class SwappaManager {
 				}
 			})
 		})
-		await concurrentMap(10, this.pairs, (p) => p.init())
 		return this.pairs
 	}
 
