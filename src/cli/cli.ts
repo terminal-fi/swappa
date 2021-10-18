@@ -10,6 +10,7 @@ import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.Sw
 
 import { SwappaManager } from '../swappa-manager';
 import { mainnetRegistriesAll } from '../registry-cfg';
+import { mainnetRegistrySavingsCELO } from '..';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
@@ -41,6 +42,9 @@ async function main() {
 	}
 	const inputAmount = new BigNumber(opts.amount)
 	const registries = mainnetRegistriesAll(kit)
+	// const registries = [
+	// 	mainnetRegistrySavingsCELO(kit),
+	// ]
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
@@ -65,7 +69,7 @@ async function main() {
 	}
 
 	const from = opts.from
-	if (from) {
+	if (from && routes.length > 0) {
 		const route = routes[0]
 		const inputTKN = new kit.web3.eth.Contract(Ierc20ABI, route.path[0]) as unknown as Ierc20
 
