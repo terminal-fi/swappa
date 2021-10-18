@@ -6,6 +6,7 @@ import { Erc20, ABI as Erc20ABI } from '../../types/web3-v1-contracts/ERC20';
 
 import { Address, Pair } from "../pair"
 import { selectAddress } from "../utils"
+import { address as pairStableSwapAddress } from "../../tools/deployed/mainnet.PairStableSwap.addr.json"
 
 export class PairStableSwap extends Pair {
 	allowRepeats = false
@@ -34,7 +35,7 @@ export class PairStableSwap extends Pair {
 		] = await Promise.all([
 			this.swapPool.methods.getToken(0).call(),
 			this.swapPool.methods.getToken(1).call(),
-			selectAddress(this.kit, {mainnet: ""}),
+			selectAddress(this.kit, {mainnet: pairStableSwapAddress}),
 		])
 		const erc20A = new this.kit.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
 		const erc20B = new this.kit.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
@@ -78,29 +79,24 @@ export class PairStableSwap extends Pair {
 			.plus(this.balancesWithAdjustedPrecision[tokenIndexFrom])
 		const y = this.getY(
 			x,
-			tokenIndexTo,
 			this.balancesWithAdjustedPrecision,
-			this.preciseA,
-			)
+			this.preciseA)
 		const outputAmountWithFee = this.balancesWithAdjustedPrecision[tokenIndexTo].minus(y).minus(1)
 		const fee = outputAmountWithFee.multipliedBy(this.swapFee)
-  	const outputAmount = outputAmountWithFee.minus(fee).div(this.tokenPrecisionMultipliers[tokenIndexTo])
+  	const outputAmount = outputAmountWithFee.minus(fee).div(this.tokenPrecisionMultipliers[tokenIndexTo]).integerValue()
 		return outputAmount
 	}
 
-	private getY = (x: BigNumber, tokenIndexTo: number, xp: BigNumber[], a: BigNumber) => {
+	private getY = (x: BigNumber, xp: BigNumber[], a: BigNumber) => {
 		// See: https://github.com/mobiusAMM/mobiusV1/blob/master/contracts/SwapUtils.sol#L531
 		const d = this.getD(xp, a)
 		const nTokens = xp.length
 		const nA = a.multipliedBy(nTokens)
 
-		const s = x.plus(this.balancesWithAdjustedPrecision[tokenIndexTo])
-		// NOTE(zviad): Calculation for `c` is more precise here than in solidity, thus it may
-		// not match it 100% perfectly, but that small of a difference should be negligable in all
-		// circumstances for routing purposes.
+		const s = x
 		const c = d
 			.multipliedBy(d).div(x.multipliedBy(nTokens))
-			.multipliedBy(d).div(this.balancesWithAdjustedPrecision[tokenIndexTo].multipliedBy(nTokens))
+			.integerValue()
 			.multipliedBy(d).multipliedBy(PairStableSwap.A_PRECISION).div(nA.multipliedBy(nTokens))
 			.integerValue()
 		const b = s.plus(d.multipliedBy(PairStableSwap.A_PRECISION).div(nA)).integerValue()
@@ -109,7 +105,9 @@ export class PairStableSwap extends Pair {
 		let y = d
 		for (let i = 0; i < 256; i++) {
 			yPrev = y
-			y = y.multipliedBy(y).plus(c).div(y.multipliedBy(2).plus(b).minus(d)).integerValue()
+			y = y.multipliedBy(y).plus(c).div(
+				y.multipliedBy(2).plus(b).minus(d))
+				.integerValue()
 			if (y.minus(yPrev).abs().lte(1)) {
 				return y
 			}
@@ -144,7 +142,7 @@ export class PairStableSwap extends Pair {
 				return d
 			}
 		}
-		throw new Error("SwapPool D does not converge")
+		throw new Error("SwapPool D does not converge!")
 	}
 
 	protected swapExtraData() {

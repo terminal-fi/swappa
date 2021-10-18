@@ -8,6 +8,7 @@ import SwappaRouterV1Json from "../build/contracts/SwappaRouterV1.json"
 import PairUniswapV2 from "../build/contracts/PairUniswapV2.json"
 import PairMento from "../build/contracts/PairMento.json"
 import PairAToken from "../build/contracts/PairAToken.json"
+import PairStableSwap from "../build/contracts/PairStableSwap.json"
 
 process.on('unhandledRejection', (reason, _promise) => {
 	// @ts-ignore
@@ -90,6 +91,8 @@ async function main() {
 		kit, opts.network, "PairMento", PairMento.bytecode)
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairAToken", PairAToken.bytecode)
+	await readAddressOrDeployContract(
+		kit, opts.network, "PairStableSwap", PairStableSwap.bytecode)
 }
 
 main()

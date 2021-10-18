@@ -24,7 +24,7 @@ export const selectAddressUsingChainId = (chainId: number, addresses: AddressesB
 	switch (chainId) {
 	case 42220:
 		if (!addresses.mainnet) {
-			throw new Error(`no address provided for Mainnet (422220)!`)
+			throw new Error(`no address provided for Mainnet (42220)!`)
 		}
 		return addresses.mainnet
 	case 62320:
