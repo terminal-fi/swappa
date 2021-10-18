@@ -25,6 +25,7 @@ async function generateContractTypes() {
   execSync(`sed -e '/type\:\ \"receive\"/d' -i ${extraFlag} ${path.join(typesDir, "PairMento.ts")}`, {cwd: ROOT_DIR})
   execSync(`sed -e '/type\:\ \"receive\"/d' -i ${extraFlag} ${path.join(typesDir, "PairAToken.ts")}`, {cwd: ROOT_DIR})
   execSync(`sed -e '/type\:\ \"receive\"/d' -i ${extraFlag} ${path.join(typesDir, "PairStableSwap.ts")}`, {cwd: ROOT_DIR})
+  execSync(`sed -e '/type\:\ \"receive\"/d' -i ${extraFlag} ${path.join(typesDir, "PairSavingsCELO.ts")}`, {cwd: ROOT_DIR})
 }
 
 generateContractTypes()
