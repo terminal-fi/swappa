@@ -3,6 +3,7 @@ import { SavingsCELOAddressMainnet } from "@terminal-fi/savingscelo"
 import { PairSavingsCELO } from "./pairs/savingscelo"
 import { PairStableSwap } from "./pairs/stableswap"
 import { RegistryAave } from "./registries/aave"
+import { RegistryAaveV2 } from "./registries/aave-v2"
 import { RegistryMento } from "./registries/mento"
 import { RegistryStatic } from "./registries/static"
 import { RegistryUniswapV2 } from "./registries/uniswapv2"
@@ -28,6 +29,8 @@ export const mainnetRegistrySavingsCELO =
 	(kit: ContractKit) =>  new RegistryStatic([
 		new PairSavingsCELO(kit, SavingsCELOAddressMainnet),
 	])
+export const mainnetRegistryMoolaV2 =
+	(kit: ContractKit) => new RegistryAaveV2(kit, "0xD1088091A174d33412a968Fa34Cb67131188B332")
 
 export const mainnetRegistriesAll = (kit: ContractKit) => ([
 	new RegistryMento(kit),
@@ -36,4 +39,5 @@ export const mainnetRegistriesAll = (kit: ContractKit) => ([
 	mainnetRegistrySushiswap(kit),
 	mainnetRegistryMobius(kit),
 	mainnetRegistrySavingsCELO(kit),
+	mainnetRegistryMoolaV2(kit),
 ])

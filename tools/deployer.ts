@@ -10,6 +10,7 @@ import PairMento from "../build/contracts/PairMento.json"
 import PairAToken from "../build/contracts/PairAToken.json"
 import PairStableSwap from "../build/contracts/PairStableSwap.json"
 import PairSavingsCELO from "../build/contracts/PairSavingsCELO.json"
+import PairATokenV2 from "../build/contracts/PairATokenV2.json"
 
 process.on('unhandledRejection', (reason, _promise) => {
 	// @ts-ignore
@@ -96,6 +97,8 @@ async function main() {
 		kit, opts.network, "PairStableSwap", PairStableSwap.bytecode)
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairSavingsCELO", PairSavingsCELO.bytecode)
+	await readAddressOrDeployContract(
+		kit, opts.network, "PairATokenV2", PairATokenV2.bytecode)
 }
 
 main()
