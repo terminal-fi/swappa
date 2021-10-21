@@ -26,10 +26,12 @@ async function main() {
 	const cUSD = await kit.contracts.getStableToken(StableToken.cUSD)
 	const inputAmount = new BigNumber(1337e18)
 
-	const ubeswap_CELO_mcUSD = new PairUniswapV2(kit, "0xf5b1BC6C9c180b64F5711567b1d6a51A350f8422")
-	await ubeswap_CELO_mcUSD.init()
-	const outputAmount_mcUSD = ubeswap_CELO_mcUSD.outputAmount(celo.address, inputAmount)
-	console.info(`ubeswap: CELO/mcUSD: ${inputAmount} CELO -> ${outputAmount_mcUSD} mcUSD`)
+	const ubeswap_CELO_cUSD = new PairUniswapV2(kit, "0x1e593f1fe7b61c53874b54ec0c59fd0d5eb8621e")
+	await ubeswap_CELO_cUSD.init()
+	const outputAmount_cUSD = ubeswap_CELO_cUSD.outputAmount(celo.address, inputAmount)
+	console.info(`ubeswap: CELO/cUSD: ${inputAmount} CELO -> ${outputAmount_cUSD} cUSD`)
+	const inputAmount_CELO = ubeswap_CELO_cUSD.inputAmount(cUSD.address, outputAmount_cUSD)
+	console.info(`ubeswap: CELO/cUSD: ${inputAmount_CELO} CELO -> ${outputAmount_cUSD} cUSD`)
 
 	const mobius_cUSD_USDC = new PairStableSwap(kit, "0xA5037661989789d0310aC2B796fa78F1B01F195D")
 	await mobius_cUSD_USDC.init()

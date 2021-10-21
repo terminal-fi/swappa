@@ -58,4 +58,15 @@ export abstract class PairXYeqK extends Pair {
 		const outputAmount = buckets[1].multipliedBy(amountWithFee).dividedToIntegerBy(buckets[0].plus(amountWithFee))
 		return !outputAmount.isNaN() ? outputAmount : new BigNumber(0)
 	}
+
+	public inputAmount(outputToken: Address, outputAmount: BigNumber): BigNumber {
+		const buckets =
+			outputToken === this.tokenB ? [this.bucketA, this.bucketB] :
+			outputToken === this.tokenA ? [this.bucketB, this.bucketA] : null
+		if (buckets === null) {
+			throw new Error(`unsupported output: ${outputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
+		}
+		return buckets[0].multipliedBy(outputAmount).div(
+			buckets[1].minus(outputAmount).multipliedBy(this.fee))
+	}
 }
