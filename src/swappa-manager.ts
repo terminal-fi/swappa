@@ -61,7 +61,10 @@ export class SwappaManager {
 	}
 
 	public swap = (
-		route: Route,
+		route: {
+			pairs: Pair[],
+			path: Address[],
+		},
 		inputAmount: BigNumber,
 		minOutputAmount: BigNumber,
 		to: Address,
