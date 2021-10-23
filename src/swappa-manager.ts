@@ -1,4 +1,4 @@
-import { CeloTransactionObject, toTransactionObject } from "@celo/connect"
+import { CeloTransactionObject, CeloTxObject, toTransactionObject } from "@celo/connect"
 import { ContractKit } from "@celo/contractkit"
 import { concurrentMap } from '@celo/utils/lib/async'
 import BigNumber from "bignumber.js"
@@ -60,6 +60,29 @@ export class SwappaManager {
 			opts)
 	}
 
+	public swapTXO = (
+		route: {
+			pairs: Pair[],
+			path: Address[],
+		},
+		inputAmount: BigNumber,
+		minOutputAmount: BigNumber,
+		to: Address,
+		deadlineMs?: number,
+		): CeloTxObject<unknown> => {
+		const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
+		deadlineMs = deadlineMs || (Date.now() / 1000 + 60)
+		return this.swappaRouter.methods.swapExactInputForOutput(
+			route.path,
+			routeData.map((d) => d.addr),
+			routeData.map((d) => d.extra),
+			inputAmount.toFixed(0),
+			minOutputAmount.multipliedBy(0.995).toFixed(0),
+			to,
+			deadlineMs.toFixed(0),
+		)
+	}
+
 	public swap = (
 		route: {
 			pairs: Pair[],
@@ -70,19 +93,9 @@ export class SwappaManager {
 		to: Address,
 		deadlineMs?: number,
 		): CeloTransactionObject<unknown> => {
-		const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
-		deadlineMs = deadlineMs || (Date.now() / 1000 + 60)
 		const tx = toTransactionObject(
 			this.kit.connection,
-			this.swappaRouter.methods.swapExactInputForOutput(
-				route.path,
-				routeData.map((d) => d.addr),
-				routeData.map((d) => d.extra),
-				inputAmount.toFixed(0),
-				minOutputAmount.multipliedBy(0.995).toFixed(0),
-				to,
-				deadlineMs.toFixed(0),
-			))
+			this.swapTXO(route, inputAmount, minOutputAmount, to, deadlineMs))
 		return tx
 	}
 }
