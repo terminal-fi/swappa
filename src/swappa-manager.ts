@@ -10,7 +10,6 @@ import { Registry } from "./registry"
 import { findBestRoutesForFixedInputAmount, Route, RouterOpts } from "./router"
 
 export class SwappaManager {
-	private swappaRouter: SwappaRouterV1
 	private pairs: Pair[] = []
 	private pairsByToken = new Map<string, Pair[]>()
 
@@ -19,7 +18,6 @@ export class SwappaManager {
 		public readonly routerAddr: Address,
 		private registries: Registry[],
 	) {
-		this.swappaRouter = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
 	}
 
 	public reinitializePairs = async (tokenWhitelist: Address[]) => {
@@ -80,12 +78,12 @@ export const swapTX = (
 	to: Address,
 	deadlineMs?: number,
 	): CeloTransactionObject<unknown> => {
-	const swappaRouter = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
+	const router = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
 	const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
 	deadlineMs = deadlineMs || (Date.now() / 1000 + 60)
 	const tx = toTransactionObject(
 		kit.connection,
-		swappaRouter.methods.swapExactInputForOutput(
+		router.methods.swapExactInputForOutput(
 			route.path,
 			routeData.map((d) => d.addr),
 			routeData.map((d) => d.extra),
