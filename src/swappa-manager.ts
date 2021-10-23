@@ -1,4 +1,4 @@
-import { CeloTransactionObject, CeloTxObject, toTransactionObject } from "@celo/connect"
+import { CeloTransactionObject, toTransactionObject } from "@celo/connect"
 import { ContractKit } from "@celo/contractkit"
 import { concurrentMap } from '@celo/utils/lib/async'
 import BigNumber from "bignumber.js"
@@ -60,19 +60,32 @@ export class SwappaManager {
 			opts)
 	}
 
-	public swapTXO = (
-		route: {
-			pairs: Pair[],
-			path: Address[],
-		},
+	public swap = (
+		route: Route,
 		inputAmount: BigNumber,
 		minOutputAmount: BigNumber,
 		to: Address,
 		deadlineMs?: number,
-		): CeloTxObject<unknown> => {
-		const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
-		deadlineMs = deadlineMs || (Date.now() / 1000 + 60)
-		return this.swappaRouter.methods.swapExactInputForOutput(
+		): CeloTransactionObject<unknown> => {
+		return swapTX(this.kit, this.routerAddr, route, inputAmount, minOutputAmount, to, deadlineMs)
+	}
+}
+
+export const swapTX = (
+	kit: ContractKit,
+	routerAddr: Address,
+	route: Route,
+	inputAmount: BigNumber,
+	minOutputAmount: BigNumber,
+	to: Address,
+	deadlineMs?: number,
+	): CeloTransactionObject<unknown> => {
+	const swappaRouter = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
+	const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
+	deadlineMs = deadlineMs || (Date.now() / 1000 + 60)
+	const tx = toTransactionObject(
+		kit.connection,
+		swappaRouter.methods.swapExactInputForOutput(
 			route.path,
 			routeData.map((d) => d.addr),
 			routeData.map((d) => d.extra),
@@ -80,22 +93,6 @@ export class SwappaManager {
 			minOutputAmount.multipliedBy(0.995).toFixed(0),
 			to,
 			deadlineMs.toFixed(0),
-		)
-	}
-
-	public swap = (
-		route: {
-			pairs: Pair[],
-			path: Address[],
-		},
-		inputAmount: BigNumber,
-		minOutputAmount: BigNumber,
-		to: Address,
-		deadlineMs?: number,
-		): CeloTransactionObject<unknown> => {
-		const tx = toTransactionObject(
-			this.kit.connection,
-			this.swapTXO(route, inputAmount, minOutputAmount, to, deadlineMs))
-		return tx
-	}
+		))
+	return tx
 }
