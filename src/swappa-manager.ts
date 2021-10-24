@@ -94,7 +94,7 @@ export const swapTX = (
 			routeData.map((d) => d.addr),
 			routeData.map((d) => d.extra),
 			inputAmount.toFixed(0),
-			minOutputAmount.multipliedBy(0.995).toFixed(0),
+			minOutputAmount.toFixed(0),
 			to,
 			deadlineMs.toFixed(0),
 		))
