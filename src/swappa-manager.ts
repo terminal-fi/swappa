@@ -59,7 +59,10 @@ export class SwappaManager {
 	}
 
 	public swap = (
-		route: Route,
+		route: {
+			pairs: Pair[],
+			path: Address[],
+		},
 		inputAmount: BigNumber,
 		minOutputAmount: BigNumber,
 		to: Address,
@@ -72,7 +75,10 @@ export class SwappaManager {
 export const swapTX = (
 	kit: ContractKit,
 	routerAddr: Address,
-	route: Route,
+	route: {
+		pairs: Pair[],
+		path: Address[],
+	},
 	inputAmount: BigNumber,
 	minOutputAmount: BigNumber,
 	to: Address,
