@@ -32,6 +32,7 @@ export class PairAToken extends Pair {
 		const tokenA = data.aTokenAddress
 		const tokenB = this.reserve === ReserveCELO ? (await this.kit.contracts.getGoldToken()).address : this.reserve
 		return {
+			pairKey: null,
 			tokenA, tokenB,
 			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairATokenAddress})
 		}

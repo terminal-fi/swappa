@@ -50,7 +50,9 @@ export class PairStableSwap extends Pair {
 			new BigNumber(10).pow(PairStableSwap.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsA)),
 			new BigNumber(10).pow(PairStableSwap.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsB)),
 		]
-		return { tokenA,  tokenB, swappaPairAddress}
+		return {
+			pairKey: this.swapPoolAddr,
+			tokenA,  tokenB, swappaPairAddress}
 	}
 
 	public async refresh() {

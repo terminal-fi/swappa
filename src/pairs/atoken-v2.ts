@@ -27,6 +27,7 @@ export class PairATokenV2 extends Pair {
 		const tokenA = data.aTokenAddress
 		const tokenB = this.reserve
 		return {
+			pairKey: null,
 			tokenA, tokenB,
 			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairATokenV2Address})
 		}

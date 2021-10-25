@@ -8,19 +8,24 @@ export interface SwapData {
 }
 
 export abstract class Pair {
-	public abstract readonly allowRepeats: boolean;
+	// pairKey is used to identify conflicting pairs. In a single route, every non-null pairKey must
+	// be unique. On the otherhand, Pair-s with null pairKey can be used unlimited amount of times in
+	// a single route.
+	public pairKey: string | null = null;
 	public tokenA: Address = "";
 	public tokenB: Address = "";
 	protected swappaPairAddress: Address = "";
 
 	public async init(): Promise<void> {
 		const r = await this._init()
+		this.pairKey = r.pairKey
 		this.tokenA = r.tokenA
 		this.tokenB = r.tokenB
 		this.swappaPairAddress = r.swappaPairAddress
 		return this.refresh()
 	}
 	protected abstract _init(): Promise<{
+		pairKey: string | null,
 		tokenA: Address,
 		tokenB: Address,
 		swappaPairAddress: Address,

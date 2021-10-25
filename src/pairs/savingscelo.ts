@@ -25,6 +25,7 @@ export class PairSavingsCELO extends Pair {
 		const tokenA = celo.address
 		const tokenB = this.savingsKit.contractAddress
 		return {
+			pairKey: null,
 			tokenA, tokenB,
 			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairSavingsCELOAddress})
 		}

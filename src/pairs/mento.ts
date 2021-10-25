@@ -28,6 +28,7 @@ export class PairMento extends PairXYeqK {
 		this.reserve = await this.kit.contracts.getReserve()
 		this.sortedOracles = await this.kit.contracts.getSortedOracles()
 		return {
+			pairKey: this.exchange.address,
 			tokenA: celo.address,
 			tokenB: cSTB.address,
 			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairMentoAddress})

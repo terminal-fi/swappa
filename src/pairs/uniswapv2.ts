@@ -13,7 +13,7 @@ export class PairUniswapV2 extends PairXYeqK {
 
 	constructor(
 		private kit: ContractKit,
-		pairAddr: Address,
+		private pairAddr: Address,
 		private fixedFee: BigNumber = new BigNumber(0.997),
 	) {
 		super()
@@ -26,7 +26,10 @@ export class PairUniswapV2 extends PairXYeqK {
 			this.pair.methods.token1().call(),
 			selectAddress(this.kit, {mainnet: pairUniswapV2Address}),
 		])
-		return { tokenA, tokenB, swappaPairAddress }
+		return {
+			pairKey: this.pairAddr,
+			tokenA, tokenB, swappaPairAddress,
+		}
 	}
 
 	public async refresh(): Promise<void> {
