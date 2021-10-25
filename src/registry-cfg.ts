@@ -24,6 +24,8 @@ export const mainnetRegistryMobius =
 		new PairStableSwap(kit, "0xA5037661989789d0310aC2B796fa78F1B01F195D"), // cUSD <-> USDC
 		new PairStableSwap(kit, "0x2080AAa167e2225e1FC9923250bA60E19a180Fb2"), // cUSD <-> pUSDC
 		new PairStableSwap(kit, "0x63C1914bf00A9b395A2bF89aaDa55A5615A3656e"), // cUSD <-> asUSDC
+		new PairStableSwap(kit, "0x382Ed834c6b7dBD10E4798B08889eaEd1455E820"), // cEUR <-> pEUR
+		new PairStableSwap(kit, "0x413FfCc28e6cDDE7e93625Ef4742810fE9738578"), // CELO <-> pCELO
 	])
 export const mainnetRegistrySavingsCELO =
 	(kit: ContractKit) =>  new RegistryStatic([
