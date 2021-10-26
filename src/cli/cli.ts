@@ -52,7 +52,7 @@ async function main() {
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs (${pairs.length}):`)
 	for (const pair of pairs) {
-		console.info(`${(pair as any).constructor?.name}: ${pair.tokenA} / ${pair.tokenB}`)
+		console.info(`${(pair as any).constructor?.name}:${pair.pairKey}: ${pair.tokenA} / ${pair.tokenB}`)
 	}
 
 	console.info(`Finding routes...`)
