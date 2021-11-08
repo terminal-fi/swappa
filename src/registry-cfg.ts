@@ -48,5 +48,4 @@ export const mainnetRegistriesAll = (kit: ContractKit) => ([
 	mainnetRegistryMobius(kit),
 	mainnetRegistrySavingsCELO(kit),
 	mainnetRegistryMoolaV2(kit),
-	mainnetRegistryCeloDex(kit),
 ])
