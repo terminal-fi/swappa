@@ -15,7 +15,7 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		address to,
 		bytes calldata data
 	) external override {
-		address pairAddr = parseData(data);
+		(address pairAddr, uint feeK) = parseData(data);
 		uint inputAmount = ERC20(input).balanceOf(address(this));
 		require(
 			ERC20(input).transfer(pairAddr, inputAmount),
@@ -23,23 +23,24 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
 		(uint reserve0, uint reserve1,) = pair.getReserves();
 		if (pair.token0() == input) {
-			uint outputAmount = getAmountOut(inputAmount, reserve0, reserve1);
+			uint outputAmount = getAmountOut(inputAmount, reserve0, reserve1, feeK);
 			pair.swap(0, outputAmount, to, new bytes(0));
 		} else {
-			uint outputAmount = getAmountOut(inputAmount, reserve1, reserve0);
+			uint outputAmount = getAmountOut(inputAmount, reserve1, reserve0, feeK);
 			pair.swap(outputAmount, 0, to, new bytes(0));
 		}
 	}
 
-	function parseData(bytes memory data) private pure returns (address pairAddr) {
-		require(data.length == 20, "PairUniswapV2: invalid data!");
+	function parseData(bytes memory data) private pure returns (address pairAddr, uint fee) {
+		require(data.length == 21, "PairUniswapV2: invalid data!");
+		fee = uint(1000).sub(uint8(data[20]));
     assembly {
       pairAddr := mload(add(data, 20))
     }
 	}
 
-	function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) internal pure returns (uint amountOut) {
-		uint amountInWithFee = amountIn.mul(997);
+	function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, uint feeK) internal pure returns (uint amountOut) {
+		uint amountInWithFee = amountIn.mul(feeK);
 		uint numerator = amountInWithFee.mul(reserveOut);
 		uint denominator = reserveIn.mul(1000).add(amountInWithFee);
 		amountOut = numerator / denominator;

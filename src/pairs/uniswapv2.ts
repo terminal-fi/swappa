@@ -10,6 +10,7 @@ export class PairUniswapV2 extends PairXYeqK {
 	allowRepeats = false
 
 	private pair: IUniswapV2Pair
+	private feeKData: string
 
 	constructor(
 		private kit: ContractKit,
@@ -18,6 +19,11 @@ export class PairUniswapV2 extends PairXYeqK {
 	) {
 		super()
 		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
+		const feeKInv = new BigNumber(1000).minus(this.fixedFee.multipliedBy(1000))
+		if (!feeKInv.isInteger() || !feeKInv.gt(0) || !feeKInv.lt(100)) {
+			throw new Error(`Invalida fixedFee: ${this.fixedFee}!`)
+		}
+		this.feeKData = feeKInv.toString(16).padStart(2, "0")
 	}
 
 	protected async _init() {
@@ -41,6 +47,6 @@ export class PairUniswapV2 extends PairXYeqK {
 	}
 
 	protected swapExtraData() {
-		return this.pair!.options.address
+		return `${this.pair!.options.address}${this.feeKData}`
 	}
 }

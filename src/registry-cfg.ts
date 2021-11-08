@@ -36,7 +36,7 @@ export const mainnetRegistryMoolaV2 =
 	(kit: ContractKit) => new RegistryAaveV2(kit, "0xD1088091A174d33412a968Fa34Cb67131188B332")
 export const mainnetRegistryCeloDex =
 	(kit: ContractKit) => new RegistryUniswapV2(kit, "0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6", {
-		fixedFee: new BigNumber(0.998),
+		fixedFee: new BigNumber(0.997), // TODO(zviadm): Figure out actual fee for CeloDex pairs.
 		fetchUsingAllPairs: true,
 	})
 

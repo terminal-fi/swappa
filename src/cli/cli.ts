@@ -88,7 +88,7 @@ async function main() {
 		}
 
 		const tx = manager.swap(
-			route, inputAmount, route.outputAmount.multipliedBy(0.995), from)
+			route, inputAmount, route.outputAmount.multipliedBy(0.9999), from)
 		console.info(`sending TX...`)
 		const receipt = await tx.sendAndWaitForReceipt({from: from})
 		console.info(`TX Done: ${receipt.transactionHash}`)
