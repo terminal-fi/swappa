@@ -10,6 +10,7 @@ import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.Sw
 
 import { SwappaManager } from '../swappa-manager';
 import { mainnetRegistriesAll } from '../registry-cfg';
+import { mainnetRegistryCeloDex } from '..';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
@@ -47,6 +48,7 @@ async function main() {
 	}
 	const inputAmount = new BigNumber(opts.amount)
 	const registries = mainnetRegistriesAll(kit)
+	// const registries = [mainnetRegistryCeloDex(kit)]
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)

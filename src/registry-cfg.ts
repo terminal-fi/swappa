@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js"
 import { ContractKit } from "@celo/contractkit"
 import { SavingsCELOAddressMainnet } from "@terminal-fi/savingscelo"
 import { PairSavingsCELO } from "./pairs/savingscelo"
@@ -33,6 +34,11 @@ export const mainnetRegistrySavingsCELO =
 	])
 export const mainnetRegistryMoolaV2 =
 	(kit: ContractKit) => new RegistryAaveV2(kit, "0xD1088091A174d33412a968Fa34Cb67131188B332")
+export const mainnetRegistryCeloDex =
+	(kit: ContractKit) => new RegistryUniswapV2(kit, "0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6", {
+		fixedFee: new BigNumber(0.998),
+		fetchUsingAllPairs: true,
+	})
 
 export const mainnetRegistriesAll = (kit: ContractKit) => ([
 	new RegistryMento(kit),
@@ -42,4 +48,5 @@ export const mainnetRegistriesAll = (kit: ContractKit) => ([
 	mainnetRegistryMobius(kit),
 	mainnetRegistrySavingsCELO(kit),
 	mainnetRegistryMoolaV2(kit),
+	mainnetRegistryCeloDex(kit),
 ])
