@@ -32,12 +32,6 @@ async function main() {
 	const chainId = await kit.web3.eth.getChainId()
 
 	const tokenWhitelist = ubeswapTokens.tokens.filter((v) => v.chainId === chainId).map((v) => v.address)
-	// HAX(zviadm): manually add MoolaV2 tokens since they don't exist in Ubeswap Token list just yet.
-	tokenWhitelist.push(
-		"0x7D00cd74FF385c955EA3d79e47BF06bD7386387D", // mCELO v2
-		"0x918146359264C492BD6934071c6Bd31C854EDBc3", // mcUSD v2
-		"0xE273Ad7ee11dCfAA87383aD5977EE1504aC07568", // mcEUR v2
-	)
 	const inputToken = opts.input
 	if (tokenWhitelist.indexOf(inputToken) < 0) {
 		throw new Error("invalid --input token!")

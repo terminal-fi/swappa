@@ -40,12 +40,17 @@ export const mainnetRegistryCeloDex =
 		fetchUsingAllPairs: true,
 	})
 
-export const mainnetRegistriesAll = (kit: ContractKit) => ([
+// mainnetRegistriesWhitelist contains list of more established protocols with
+// overall higher TVL.
+export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	new RegistryMento(kit),
-	mainnetRegistryMoola(kit),
+	// Uniswap forks:
 	mainnetRegistryUbeswap(kit),
 	mainnetRegistrySushiswap(kit),
+	// Stableswap forks:
 	mainnetRegistryMobius(kit),
-	mainnetRegistrySavingsCELO(kit),
+	// Direct conversion protocols:
+	mainnetRegistryMoola(kit),
 	mainnetRegistryMoolaV2(kit),
+	mainnetRegistrySavingsCELO(kit),
 ])
