@@ -9,8 +9,12 @@ import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
 import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 
 import { SwappaManager } from '../swappa-manager';
-import { mainnetRegistriesAll } from '../registry-cfg';
-import { mainnetRegistryCeloDex } from '..';
+import {
+	mainnetRegistryMobius, mainnetRegistryMoola, mainnetRegistryMoolaV2,
+	mainnetRegistrySavingsCELO, mainnetRegistrySushiswap, mainnetRegistryUbeswap,
+	mainnetRegistryCeloDex,
+} from '../registry-cfg';
+import { RegistryMento } from '../registries/mento';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
@@ -41,8 +45,16 @@ async function main() {
 		throw new Error("invalid --output token!")
 	}
 	const inputAmount = new BigNumber(opts.amount)
-	const registries = mainnetRegistriesAll(kit)
-	// const registries = [mainnetRegistryCeloDex(kit)]
+	const registries = [
+		new RegistryMento(kit),
+		mainnetRegistryUbeswap(kit),
+		mainnetRegistrySushiswap(kit),
+		mainnetRegistryMobius(kit),
+		mainnetRegistryMoola(kit),
+		mainnetRegistryMoolaV2(kit),
+		mainnetRegistrySavingsCELO(kit),
+		mainnetRegistryCeloDex(kit),
+	]
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
