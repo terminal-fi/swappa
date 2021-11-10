@@ -2,6 +2,7 @@
 pragma solidity 0.6.8;
 
 interface ISwap {
+	function paused() external view returns (bool);
 	function getToken(uint8 index) external view returns (address);
 	function getBalances() external view returns (uint256[] memory);
 	function getSwapFee() external view returns (uint256);

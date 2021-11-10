@@ -11,6 +11,8 @@ import { address as pairStableSwapAddress } from "../../tools/deployed/mainnet.P
 export class PairStableSwap extends Pair {
 	allowRepeats = false
 	private swapPool: ISwap
+
+	private paused: boolean = false
 	private tokenPrecisionMultipliers: BigNumber[] = []
 	private balancesWithAdjustedPrecision: BigNumber[] = []
 	private swapFee: BigNumber = new BigNumber(0)
@@ -57,10 +59,12 @@ export class PairStableSwap extends Pair {
 
 	public async refresh() {
 		const [
+			paused,
 			balances,
 			swapFee,
 			preciseA,
 		 ] = await Promise.all([
+			this.swapPool.methods.paused().call(),
 			this.swapPool.methods.getBalances().call(),
 			this.swapPool.methods.getSwapFee().call(),
 			this.swapPool.methods.getAPrecise().call(),
@@ -68,12 +72,17 @@ export class PairStableSwap extends Pair {
 		if (balances.length !== 2) {
 			throw new Error("pool must have only 2 tokens!")
 		}
+		this.paused = paused
 		this.balancesWithAdjustedPrecision = balances.map((b, idx) => this.tokenPrecisionMultipliers[idx].multipliedBy(b))
 		this.swapFee = new BigNumber(swapFee).div(new BigNumber(10).pow(10))
 		this.preciseA = new BigNumber(preciseA)
 	}
 
 	public outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber {
+		if (this.paused) {
+			return new BigNumber(0)
+		}
+
 		// See: https://github.com/mobiusAMM/mobiusV1/blob/master/contracts/SwapUtils.sol#L617
 		const [tokenIndexFrom, tokenIndexTo] = inputToken === this.tokenA ? [0, 1] : [1, 0]
 		const x = inputAmount
