@@ -5,7 +5,6 @@
     "url": "https://github.com/terminal-fi/swappa"
   },
   "dependencies": {
-    "@aave/protocol-v2": "^1.0.1",
     "@celo/connect": "^1.2.4",
     "@celo/contractkit": "^1.2.4",
     "@terminal-fi/savingscelo": "^3.4.0",

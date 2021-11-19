@@ -3,22 +3,8 @@ pragma solidity 0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../interfaces/aave-v2/ILendingPoolV2.sol";
 import "./ISwappaPairV1.sol";
-
-interface ILendingPoolV2 {
-  function withdraw(
-    address asset,
-    uint256 amount,
-    address to
-  ) external returns (uint256);
-
-  function deposit(
-    address asset,
-    uint256 amount,
-    address onBehalfOf,
-    uint16 referralCode
-  ) external;
-}
 
 contract PairATokenV2 is ISwappaPairV1 {
 	using SafeMath for uint;

@@ -1,17 +1,16 @@
 import BigNumber from "bignumber.js"
 import { ContractKit } from "@celo/contractkit"
 
-import * as LendingPoolJson from "@aave/protocol-v2/artifacts/contracts/protocol/lendingpool/LendingPool.sol/LendingPool.json"
+import { ILendingPoolV2, ABI as ILendingPoolV2ABI } from "../../types/web3-v1-contracts/ILendingPoolV2"
 
 import { Address, Pair } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairATokenV2Address } from "../../tools/deployed/mainnet.PairATokenV2.addr.json"
-import { AbiItem } from "web3-utils"
 
 export class PairATokenV2 extends Pair {
 	allowRepeats = true
 
-	private pool
+	private pool: ILendingPoolV2
 
 	constructor(
 		private kit: ContractKit,
@@ -19,7 +18,7 @@ export class PairATokenV2 extends Pair {
 		private reserve: Address,
 	) {
 		super()
-		this.pool = new this.kit.web3.eth.Contract(LendingPoolJson.abi as AbiItem[], this.poolAddr)
+		this.pool = new this.kit.web3.eth.Contract(ILendingPoolV2ABI, this.poolAddr)
 	}
 
 	protected async _init() {
