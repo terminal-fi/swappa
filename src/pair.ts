@@ -46,7 +46,7 @@ export abstract class PairXYeqK extends Pair {
 	private bucketA: BigNumber = new BigNumber(0)
 	private bucketB: BigNumber = new BigNumber(0)
 
-	protected refreshBuckets(fee: BigNumber, bucketA: BigNumber, bucketB: BigNumber) {
+	public refreshBuckets(fee: BigNumber, bucketA: BigNumber, bucketB: BigNumber) {
 		this.fee = fee
 		this.bucketA = bucketA
 		this.bucketB = bucketB
