@@ -20,8 +20,8 @@ import { Registry } from '../registry';
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
 	.option("--registries <registries>", "Registries to use for routing.", "all")
-	.option("--input <input>", "Input token address or symbol.")
-	.option("--output <output>", "Output token address or symbol.")
+	.option("--input <input>", "Input token address or symbol.", "CELO")
+	.option("--output <output>", "Output token address or symbol.", "cUSD")
 	.option("--amount <amount>", "Input amount.", "0.001")
 	.option("--max-swaps <max-swaps>", "Maximum number of swaps in a route.")
 	.option("--from <from>", "If provided, will actally execute trade from given account.")

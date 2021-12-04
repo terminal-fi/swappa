@@ -29,6 +29,12 @@ export const mainnetRegistryMobius =
 		new PairStableSwap(kit, "0x413FfCc28e6cDDE7e93625Ef4742810fE9738578"), // CELO <-> pCELO
 		new PairStableSwap(kit, "0x02Db089fb09Fda92e05e92aFcd41D9AAfE9C7C7C"), // cUSD <-> pUSD
 		new PairStableSwap(kit, "0x0986B42F5f9C42FeEef66fC23eba9ea1164C916D"), // cUSD <-> aaUSDC
+		// Opticsv2: https://github.com/mobiusAMM/mobius-interface/blob/main/src/constants/StablePools.ts
+		new PairStableSwap(kit, "0x9906589Ea8fd27504974b7e8201DF5bBdE986b03"), // cUSD <-> USDCv2
+		new PairStableSwap(kit, "0xF3f65dFe0c8c8f2986da0FEc159ABE6fd4E700B4"), // cUSD <-> DAIv2
+		new PairStableSwap(kit, "0x74ef28D635c6C5800DD3Cd62d4c4f8752DaACB09"), // cETH <-> WETHv2
+		new PairStableSwap(kit, "0xaEFc4e8cF655a182E8346B24c8AbcE45616eE0d2"), // cBTC <-> WBTCv2
+		new PairStableSwap(kit, "0xcCe0d62Ce14FB3e4363Eb92Db37Ff3630836c252"), // cUSD <-> pUSDCv2
 	])
 export const mainnetRegistrySavingsCELO =
 	(kit: ContractKit) =>  new RegistryStatic([
