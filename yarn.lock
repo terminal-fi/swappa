@@ -2676,9 +2676,9 @@
   integrity sha512-fbF6oTd4sGGy0xjHPKAt+eS2CrxJ3+6gQ3FGcBoIJR2TLAyCkCyI8JqZNy+FeON0AhVgNJoUumVoZQjBFUqHkw==
 
 "@ubeswap/default-token-list@^4.0.11":
-  version "4.0.27"
-  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.0.27.tgz#7dbd0e4ae852e7e7e981df6a9b5008013c0ebfca"
-  integrity sha512-Ei9m69WbF4KMm8wjn+whNFBMo7tzcKEUHhGheTPGJc6FWTBzMYybjGoE0lPBYKrwdJv2QiKyiJ6Bplg5f+IP0w==
+  version "4.0.29"
+  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.0.29.tgz#ae5659126da231a98712eaef85856cef08e18afc"
+  integrity sha512-0GgBptMAz5XxB6cHrnM/eNVA/w1FUfuZl1OVrAiw2KFmLHeRDy2KbJMoal/OTRnW402CCMETvYjWYLTWDwn3iQ==
 
 "@wry/context@^0.6.0":
   version "0.6.1"
