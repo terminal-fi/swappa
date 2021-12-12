@@ -31,11 +31,19 @@ export abstract class Pair {
 		swappaPairAddress: Address,
 	}>;
 	public abstract refresh(): Promise<void>;
-	public swapData(inputToken: Address): SwapData {
+	public swapData(inputToken: Address, inputAmount?: BigNumber): SwapData {
 		return {
 			addr: this.swappaPairAddress,
-			extra: this.swapExtraData(inputToken),
+			extra: this.swapExtraDataWithInputAmount(inputToken, inputAmount),
 		}
+	}
+	protected swapExtraDataWithInputAmount(inputToken: Address, inputAmount?: BigNumber): string {
+		const swapExtraData = this.swapExtraData(inputToken)
+		if (!inputAmount) {
+			return swapExtraData
+		}
+		const inputAmountData = inputAmount.integerValue().toString(16).padStart(64, "0")
+		return `${swapExtraData}${inputAmountData}`
 	}
 	protected abstract swapExtraData(inputToken: Address): string;
 	public abstract outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber;
