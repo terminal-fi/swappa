@@ -18,19 +18,30 @@ contract PairSavingsCELO is ISwappaPairV1 {
 		address to,
 		bytes calldata data
 	) external override {
-		address savingsCELOAddr = parseData(data);
+		(address savingsCELOAddr, uint minInputAmount) = parseData(data);
 		uint inputAmount = ERC20(input).balanceOf(address(this));
+		require(inputAmount >= minInputAmount, "PairSavingsCELO: insufficient input amount");
 		uint outputAmount = ISavingsCELO(savingsCELOAddr).deposit{value: inputAmount}();
 		require(
 			ERC20(output).transfer(to, outputAmount),
 			"PairSavingsCELO: transfer failed!");
 	}
 
-	function parseData(bytes memory data) private pure returns (address savingsCELOAddr) {
-		require(data.length == 20, "PairSavingsCELO: invalid data!");
+	function parseData(bytes memory data) private pure returns (address savingsCELOAddr, uint minInputAmount) {
+		require(data.length == 20 || data.length == 20 + 32, "PairSavingsCELO: invalid data!");
     assembly {
-      savingsCELOAddr := mload(add(data, 20))
+      savingsCELOAddr := mload(add(data, 0x20))
     }
+		if (data.length == 20) {
+			minInputAmount = 0;
+		} else {
+			assembly {
+				// 0x20 is the first slot of array containing the length
+				// offset by 20 bytes for address
+				// minimal input amount start 0x34
+				minInputAmount := mload(add(data, 0x34))
+			}
+		}
 	}
 
 	receive() external payable {}

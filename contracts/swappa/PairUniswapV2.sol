@@ -15,8 +15,9 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		address to,
 		bytes calldata data
 	) external override {
-		(address pairAddr, uint feeK) = parseData(data);
+		(address pairAddr, uint feeK, uint minInputAmount) = parseData(data);
 		uint inputAmount = ERC20(input).balanceOf(address(this));
+		require(inputAmount >= minInputAmount, "PairUniswapV2: insufficient input amount");
 		require(
 			ERC20(input).transfer(pairAddr, inputAmount),
 			"PairUniswapV2: transfer failed!");
@@ -31,12 +32,22 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		}
 	}
 
-	function parseData(bytes memory data) private pure returns (address pairAddr, uint fee) {
-		require(data.length == 21, "PairUniswapV2: invalid data!");
+	function parseData(bytes memory data) private pure returns (address pairAddr, uint fee, uint minInputAmount) {
+		require(data.length == 21 || data.length == 21 + 32, "PairUniswapV2: invalid data!");
 		fee = uint(1000).sub(uint8(data[20]));
     assembly {
-      pairAddr := mload(add(data, 20))
+      pairAddr := mload(add(data, 0x20))
     }
+		if (data.length == 21) {
+			minInputAmount = 0;
+		} else {
+			assembly {
+				// 0x20 is the first slot of array containing the length
+				// offset by 20 bytes for address and 1 byte for fee
+				// minimal input amount start 0x35
+				minInputAmount := mload(add(data, 0x35))
+			}
+		}
 	}
 
 	function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, uint feeK) internal pure returns (uint amountOut) {

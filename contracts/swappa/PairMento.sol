@@ -19,8 +19,9 @@ contract PairMento is ISwappaPairV1 {
 		address to,
 		bytes calldata data
 	) external override {
-		address exchangeAddr = parseData(data);
+		(address exchangeAddr, uint minInputAmount) = parseData(data);
 		uint inputAmount = ERC20(input).balanceOf(address(this));
+		require(inputAmount >= minInputAmount, "PairMento: insufficient input amount");
 		require(
 			ERC20(input).approve(exchangeAddr, inputAmount),
 			"PairMento: approve failed!");
@@ -32,11 +33,21 @@ contract PairMento is ISwappaPairV1 {
 			"PairMento: transfer failed!");
 	}
 
-	function parseData(bytes memory data) private pure returns (address exchangeAddr) {
-		require(data.length == 20, "PairMento: invalid data!");
+	function parseData(bytes memory data) private pure returns (address exchangeAddr, uint minInputAmount) {
+		require(data.length == 20 || data.length == 20 + 32, "PairMento: invalid data!");
     assembly {
-      exchangeAddr := mload(add(data, 20))
+      exchangeAddr := mload(add(data, 0x20))
     }
+		if (data.length == 20) {
+			minInputAmount = 0;
+		} else {
+			assembly {
+				// 0x20 is the first slot of array containing the length
+				// offset by 20 bytes for address
+				// minimal input amount start 0x34
+				minInputAmount := mload(add(data, 0x34))
+			}
+		}
 	}
 
 	receive() external payable {}

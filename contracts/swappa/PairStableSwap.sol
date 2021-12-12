@@ -15,8 +15,9 @@ contract PairStableSwap is ISwappaPairV1 {
 		address to,
 		bytes calldata data
 	) external override {
-		address swapPoolAddr = parseData(data);
+		(address swapPoolAddr, uint minInputAmount) = parseData(data);
 		uint inputAmount = ERC20(input).balanceOf(address(this));
+		require(inputAmount >= minInputAmount, "PairStableSwap: insufficient input amount");
 		require(
 			ERC20(input).approve(swapPoolAddr, inputAmount),
 			"PairStableSwap: approve failed!");
@@ -32,11 +33,21 @@ contract PairStableSwap is ISwappaPairV1 {
 			"PairStableSwap: transfer failed!");
 	}
 
-	function parseData(bytes memory data) private pure returns (address swapPoolAddr) {
-		require(data.length == 20, "PairStableSwap: invalid data!");
+	function parseData(bytes memory data) private pure returns (address swapPoolAddr, uint minInputAmount) {
+		require(data.length == 20 || data.length == 20 + 32, "PairStableSwap: invalid data!");
     assembly {
-      swapPoolAddr := mload(add(data, 20))
+      swapPoolAddr := mload(add(data, 0x20))
     }
+		if (data.length == 20) {
+			minInputAmount = 0;
+		} else {
+			assembly {
+				// 0x20 is the first slot of array containing the length
+				// offset by 20 bytes for address
+				// minimal input amount start 0x34
+				minInputAmount := mload(add(data, 0x34))
+			}
+		}
 	}
 
 	receive() external payable {}
