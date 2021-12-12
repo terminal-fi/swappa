@@ -6,6 +6,8 @@ export interface Route {
 	path: Address[]
 	outputToken: Address
 	outputAmount: BigNumber
+	// the input amounts for each step of the path
+	pathInputAmounts: BigNumber[]
 }
 
 export interface RouterOpts {
@@ -29,6 +31,7 @@ export const findBestRoutesForFixedInputAmount = (
 				path: [inputToken],
 				outputToken: inputToken,
 				outputAmount: inputAmount,
+				pathInputAmounts: []
 			}
 		]
 	])
@@ -50,7 +53,8 @@ export const findBestRoutesForFixedInputAmount = (
 				if (pair.pairKey !== null && route.pairs.find((p) => p.pairKey === pair.pairKey)) {
 					continue // skip already used or conflicting pairs.
 				}
-				const outputTAmount = pair.outputAmount(route.outputToken, route.outputAmount)
+				const inputTAmount = route.outputAmount;
+				const outputTAmount = pair.outputAmount(route.outputToken, inputTAmount)
 				const maxOutputAmount = maxOutputAmounts.get(outputT) || new BigNumber(0)
 				if (maxOutputAmount.gte(outputTAmount)) {
 					continue // we have already explored better routes before.
@@ -59,6 +63,7 @@ export const findBestRoutesForFixedInputAmount = (
 				const routeT: Route = {
 					pairs: [...route.pairs, pair],
 					path: [...route.path, outputT],
+					pathInputAmounts: [...route.pathInputAmounts, inputTAmount],
 					outputToken: outputT,
 					outputAmount: outputTAmount,
 				}
