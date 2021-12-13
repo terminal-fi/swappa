@@ -42,10 +42,12 @@ contract SwappaRouterV1 {
 			for (uint i; i < pairs.length; i++) {
 				address pairInput = path[i];
 				bytes memory data = extras[i];
-				dryrunAmount = ISwappaPairV1(pairs[i]).getOutputAmount(pairInput, dryrunAmount, data);
+				dryrunAmount =
+					ISwappaPairV1(pairs[i]).getOutputAmount(pairInput, dryrunAmount, data);
 			}
 			require(
-				dryrunAmount >= minOutputAmount, "SwappaRouter: Insufficient dryrun output amount!");
+				dryrunAmount >= minOutputAmount,
+				"SwappaRouter: Insufficient dryrun output amount!");
 		}
 
 		for (uint i; i < pairs.length; i++) {
