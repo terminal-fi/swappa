@@ -54,5 +54,13 @@ contract PairAToken is ISwappaPairV1 {
     }
 	}
 
+	function calculateAmountOut(
+		address input,
+		uint amountIn,
+		bytes calldata data
+	) external view override returns (uint amountOut) {
+		return amountIn;
+	}
+
 	receive() external payable {}
 }

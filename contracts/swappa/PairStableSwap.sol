@@ -39,5 +39,19 @@ contract PairStableSwap is ISwappaPairV1 {
     }
 	}
 
+	function calculateAmountOut(
+		address input,
+		uint amountIn,
+		bytes calldata data
+	) external view override returns (uint amountOut) {
+		address swapPoolAddr = parseData(data);
+		ISwap swapPool = ISwap(swapPoolAddr);
+		if (swapPool.getToken(0) == input) {
+			return swapPool.calculateSwap(0, 1, amountIn);
+		} else {
+			return swapPool.calculateSwap(1, 0, amountIn);
+		}
+	}
+
 	receive() external payable {}
 }

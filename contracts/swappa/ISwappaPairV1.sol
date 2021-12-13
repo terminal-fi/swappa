@@ -8,4 +8,10 @@ interface ISwappaPairV1 {
 		address to,
 		bytes calldata data
 	) external;
+
+	function calculateAmountOut(
+		address input,
+		uint amountIn,
+		bytes calldata data
+	) external view returns (uint amountOut);
 }
