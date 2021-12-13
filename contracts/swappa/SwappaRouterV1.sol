@@ -36,6 +36,18 @@ contract SwappaRouterV1 {
 		require(
 			ERC20(path[0]).transferFrom(msg.sender, pairs[0], inputAmount),
 			"SwappaRouter: Initial transferFrom failed!");
+		{
+			// Perform dryrun of swaps to verify the final output
+			uint dryrunAmount = inputAmount;
+			for (uint i; i < pairs.length; i++) {
+				address pairInput = path[i];
+				bytes memory data = extras[i];
+				dryrunAmount = ISwappaPairV1(pairs[i]).calculateAmountOut(pairInput, dryrunAmount, data);
+			}
+			require(
+				dryrunAmount >= minOutputAmount, "SwappaRouter: Insufficient dryrun output amount!");
+		}
+
 		for (uint i; i < pairs.length; i++) {
 			(address pairInput, address pairOutput) = (path[i], path[i + 1]);
 			address next = i < pairs.length - 1 ? pairs[i+1] : address(this);
