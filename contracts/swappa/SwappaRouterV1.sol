@@ -20,6 +20,21 @@ contract SwappaRouterV1 {
 		_;
 	}
 
+	function dryrunSwap(
+		address[] calldata path,
+		address[] calldata pairs,
+		bytes[] calldata extras,
+		uint256 inputAmount
+	) external view returns (uint256 outputAmount) {
+		outputAmount = inputAmount;
+		for (uint i; i < pairs.length; i++) {
+			address pairInput = path[i];
+			bytes memory data = extras[i];
+			outputAmount =
+				ISwappaPairV1(pairs[i]).getOutputAmount(pairInput, outputAmount, data);
+		}
+	}
+
 	function swapExactInputForOutput(
 		address[] calldata path,
 		address[] calldata pairs,
@@ -38,13 +53,7 @@ contract SwappaRouterV1 {
 			"SwappaRouter: Initial transferFrom failed!");
 		{
 			// Perform dryrun of swaps to verify the final output
-			uint dryrunAmount = inputAmount;
-			for (uint i; i < pairs.length; i++) {
-				address pairInput = path[i];
-				bytes memory data = extras[i];
-				dryrunAmount =
-					ISwappaPairV1(pairs[i]).getOutputAmount(pairInput, dryrunAmount, data);
-			}
+			uint dryrunAmount = this.dryrunSwap(path, pairs, extras, inputAmount);
 			require(
 				dryrunAmount >= minOutputAmount,
 				"SwappaRouter: Insufficient dryrun output amount!");
