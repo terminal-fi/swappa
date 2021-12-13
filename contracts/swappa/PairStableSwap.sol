@@ -39,7 +39,7 @@ contract PairStableSwap is ISwappaPairV1 {
     }
 	}
 
-	function calculateAmountOut(
+	function getOutputAmount(
 		address input,
 		uint amountIn,
 		bytes calldata data

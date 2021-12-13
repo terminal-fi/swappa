@@ -39,7 +39,7 @@ contract PairUniswapV2 is ISwappaPairV1 {
     }
 	}
 
-	function calculateAmountOut(
+	function getOutputAmount(
 		address input,
 		uint amountIn,
 		bytes calldata data
