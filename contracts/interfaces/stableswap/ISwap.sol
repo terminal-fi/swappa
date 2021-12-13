@@ -17,8 +17,8 @@ interface ISwap {
 	) external returns (uint256);
 
 	function calculateSwap(
-        uint8 tokenIndexFrom,
-        uint8 tokenIndexTo,
-        uint256 dx
-    ) external view returns (uint256);
+		uint8 tokenIndexFrom,
+		uint8 tokenIndexTo,
+		uint256 dx
+	) external view returns (uint256);
 }

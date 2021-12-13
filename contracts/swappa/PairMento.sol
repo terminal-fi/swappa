@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ISwappaPairV1.sol";
 
 interface IExchange {
-	function stable() external returns (address);
+	function stable() external view returns (address);
 	function sell(uint256 sellAmount, uint256 minBuyAmount, bool sellGold) external returns (uint256);
 	function getBuyTokenAmount(uint256 sellAmount, bool sellGold) external view returns (uint256);
 }

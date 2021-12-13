@@ -7,6 +7,7 @@ import "./ISwappaPairV1.sol";
 
 interface ISavingsCELO {
 	function deposit() external payable returns (uint256 toMint);
+	function celoToSavings(uint256 celoAmount) external view returns (uint256);
 }
 
 contract PairSavingsCELO is ISwappaPairV1 {
@@ -31,6 +32,15 @@ contract PairSavingsCELO is ISwappaPairV1 {
     assembly {
       savingsCELOAddr := mload(add(data, 20))
     }
+	}
+
+	function calculateAmountOut(
+		address input,
+		uint amountIn,
+		bytes calldata data
+	) external view override returns (uint amountOut) {
+		address savingsCELOAddr = parseData(data);
+		return ISavingsCELO(savingsCELOAddr).celoToSavings(amountIn);
 	}
 
 	receive() external payable {}
