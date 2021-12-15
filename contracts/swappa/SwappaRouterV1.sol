@@ -20,7 +20,7 @@ contract SwappaRouterV1 {
 		_;
 	}
 
-	function dryrunSwap(
+	function getOutputAmount(
 		address[] calldata path,
 		address[] calldata pairs,
 		bytes[] calldata extras,
@@ -51,13 +51,6 @@ contract SwappaRouterV1 {
 		require(
 			ERC20(path[0]).transferFrom(msg.sender, pairs[0], inputAmount),
 			"SwappaRouter: Initial transferFrom failed!");
-		{
-			// Perform dryrun of swaps to verify the final output
-			uint dryrunAmount = this.dryrunSwap(path, pairs, extras, inputAmount);
-			require(
-				dryrunAmount >= minOutputAmount,
-				"SwappaRouter: Insufficient dryrun output amount!");
-		}
 
 		for (uint i; i < pairs.length; i++) {
 			(address pairInput, address pairOutput) = (path[i], path[i + 1]);
