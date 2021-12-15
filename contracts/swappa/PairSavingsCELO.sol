@@ -41,12 +41,12 @@ contract PairSavingsCELO is ISwappaPairV1 {
 		bytes calldata data
 	) external view override returns (uint amountOut) {
 		address savingsCELOAddr = parseData(data);
-		if (input == 0x2879BFD5e7c4EF331384E908aaA3Bd3014b703fA) {
-			// Savings CELO
-			return ISavingsCELO(savingsCELOAddr).savingsToCELO(amountIn);
-		} else if (input == 0x471EcE3750Da237f93B8E339c536989b8978a438) {
+		if (input == 0x471EcE3750Da237f93B8E339c536989b8978a438) {
 			// CELO
 			return ISavingsCELO(savingsCELOAddr).celoToSavings(amountIn);
+		} else if (input == 0x2879BFD5e7c4EF331384E908aaA3Bd3014b703fA) {
+			// Savings CELO
+			return ISavingsCELO(savingsCELOAddr).savingsToCELO(amountIn);
 		} else {
 			return 0;
 		}

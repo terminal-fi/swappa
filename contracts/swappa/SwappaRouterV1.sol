@@ -51,7 +51,6 @@ contract SwappaRouterV1 {
 		require(
 			ERC20(path[0]).transferFrom(msg.sender, pairs[0], inputAmount),
 			"SwappaRouter: Initial transferFrom failed!");
-
 		for (uint i; i < pairs.length; i++) {
 			(address pairInput, address pairOutput) = (path[i], path[i + 1]);
 			address next = i < pairs.length - 1 ? pairs[i+1] : address(this);
