@@ -39,12 +39,24 @@ contract PairUniswapV2 is ISwappaPairV1 {
     }
 	}
 
+	function getOutputAmount(
+		address input,
+		uint amountIn,
+		bytes calldata data
+	) external view override returns (uint amountOut) {
+		(address pairAddr, uint feeK) = parseData(data);
+		IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
+		(uint reserve0, uint reserve1,) = pair.getReserves();
+		(uint reserveIn, uint reserveOut) = pair.token0() == input ? (reserve0, reserve1) : (reserve1, reserve0);
+		return getAmountOut(amountIn, reserveIn, reserveOut, feeK);
+	}
+
 	function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, uint feeK) internal pure returns (uint amountOut) {
 		uint amountInWithFee = amountIn.mul(feeK);
 		uint numerator = amountInWithFee.mul(reserveOut);
 		uint denominator = reserveIn.mul(1000).add(amountInWithFee);
 		amountOut = numerator / denominator;
-  }
+  	}
 
 	receive() external payable {}
 }
