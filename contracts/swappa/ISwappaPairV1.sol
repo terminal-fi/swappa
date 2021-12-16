@@ -13,6 +13,7 @@ interface ISwappaPairV1 {
 	// Output amount is undefined if input token is invalid for the swap pair.
 	function getOutputAmount(
 		address input,
+		address output,
 		uint amountIn,
 		bytes calldata data
 	) external view returns (uint amountOut);
