@@ -4,6 +4,7 @@ import { Address, Pair } from "./pair"
 export interface Route {
 	pairs: Pair[]
 	path: Address[]
+	pathAmounts: BigNumber[]
 	outputToken: Address
 	outputAmount: BigNumber
 }
@@ -27,6 +28,7 @@ export const findBestRoutesForFixedInputAmount = (
 			inputToken, {
 				pairs: [],
 				path: [inputToken],
+				pathAmounts: [inputAmount],
 				outputToken: inputToken,
 				outputAmount: inputAmount,
 			}
@@ -59,6 +61,7 @@ export const findBestRoutesForFixedInputAmount = (
 				const routeT: Route = {
 					pairs: [...route.pairs, pair],
 					path: [...route.path, outputT],
+					pathAmounts: [...route.pathAmounts, outputTAmount],
 					outputToken: outputT,
 					outputAmount: outputTAmount,
 				}

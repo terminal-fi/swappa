@@ -6,8 +6,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ISwappaPairV1.sol";
 
 interface IExchange {
-	function stable() external returns (address);
+	function stable() external view returns (address);
 	function sell(uint256 sellAmount, uint256 minBuyAmount, bool sellGold) external returns (uint256);
+	function getBuyTokenAmount(uint256 sellAmount, bool sellGold) external view returns (uint256);
 }
 
 contract PairMento is ISwappaPairV1 {
@@ -37,6 +38,17 @@ contract PairMento is ISwappaPairV1 {
     assembly {
       exchangeAddr := mload(add(data, 20))
     }
+	}
+
+	function getOutputAmount(
+		address input,
+		uint amountIn,
+		bytes calldata data
+	) external view override returns (uint amountOut) {
+		address exchangeAddr = parseData(data);
+		IExchange exchange = IExchange(exchangeAddr);
+		bool sellGold = (exchange.stable() != input);
+		return exchange.getBuyTokenAmount(amountIn, sellGold);
 	}
 
 	receive() external payable {}

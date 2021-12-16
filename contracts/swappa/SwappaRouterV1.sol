@@ -20,6 +20,21 @@ contract SwappaRouterV1 {
 		_;
 	}
 
+	function getOutputAmount(
+		address[] calldata path,
+		address[] calldata pairs,
+		bytes[] calldata extras,
+		uint256 inputAmount
+	) external view returns (uint256 outputAmount) {
+		outputAmount = inputAmount;
+		for (uint i; i < pairs.length; i++) {
+			address pairInput = path[i];
+			bytes memory data = extras[i];
+			outputAmount =
+				ISwappaPairV1(pairs[i]).getOutputAmount(pairInput, outputAmount, data);
+		}
+	}
+
 	function swapExactInputForOutput(
 		address[] calldata path,
 		address[] calldata pairs,
