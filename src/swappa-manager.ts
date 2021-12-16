@@ -66,9 +66,12 @@ export class SwappaManager {
 		inputAmount: BigNumber,
 		minOutputAmount: BigNumber,
 		to: Address,
-		deadlineMs?: number,
+		opts?: {
+			precheckOutputAmount?: boolean,
+			deadlineMs?: number,
+		}
 		): CeloTransactionObject<unknown> => {
-		return swapTX(this.kit, this.routerAddr, route, inputAmount, minOutputAmount, to, deadlineMs)
+		return swapTX(this.kit, this.routerAddr, route, inputAmount, minOutputAmount, to, opts)
 	}
 }
 
@@ -82,14 +85,18 @@ export const swapTX = (
 	inputAmount: BigNumber,
 	minOutputAmount: BigNumber,
 	to: Address,
-	deadlineMs?: number,
+	opts?: {
+		precheckOutputAmount?: boolean,
+		deadlineMs?: number,
+	}
 	): CeloTransactionObject<unknown> => {
 	const router = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
 	const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
-	deadlineMs = deadlineMs || (Date.now() / 1000 + 60)
+	const deadlineMs = opts?.deadlineMs || (Date.now() / 1000 + 60)
+	const swapF = opts?.precheckOutputAmount ? router.methods.swapExactInputForOutputWithPrecheck : router.methods.swapExactInputForOutput
 	const tx = toTransactionObject(
 		kit.connection,
-		router.methods.swapExactInputForOutput(
+		swapF(
 			route.path,
 			routeData.map((d) => d.addr),
 			routeData.map((d) => d.extra),
