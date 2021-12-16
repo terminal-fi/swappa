@@ -42,7 +42,7 @@ contract PairSavingsCELO is ISwappaPairV1 {
 		bytes calldata data
 	) external view override returns (uint amountOut) {
 		address savingsCELOAddr = parseData(data);
-		// assume input is always CELO, on any other input `swap` will throw errors anyways.
+		require(output == savingsCELOAddr, "PairSavingsCELO: invalid output!");
 		return ISavingsCELO(savingsCELOAddr).celoToSavings(amountIn);
 	}
 
