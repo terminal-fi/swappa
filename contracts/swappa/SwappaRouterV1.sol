@@ -80,8 +80,10 @@ contract SwappaRouterV1 {
 		require(pairs.length == extras.length, "SwappaRouter: Pairs and Extras mismatch!");
 		require(pairs.length > 0, "SwappaRouter: Must have at least one pair!");
 
-		// Note(zviadm): Full code copying is necessary because `bytes[]` arrays can only be defined
-		// as calldata. They can't easily be passed around as 'memory' without a lot of hackery.
+		// Note(zviadm): Full code copying is necessary because `bytes[]` arrays can not easily be
+		// passed around between `calldata` and `memory` locations. Manual copying would be necessary
+		// with quite a bit of annoying code to work around stack issues.
+
 		{
 			outputAmount = inputAmount; // reuse outputAmount variable to avoid "stack too deep" errors.
 			for (uint i; i < pairs.length; i++) {
