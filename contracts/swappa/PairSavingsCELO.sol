@@ -37,19 +37,13 @@ contract PairSavingsCELO is ISwappaPairV1 {
 
 	function getOutputAmount(
 		address input,
+		address output,
 		uint amountIn,
 		bytes calldata data
 	) external view override returns (uint amountOut) {
 		address savingsCELOAddr = parseData(data);
-		if (input == 0x471EcE3750Da237f93B8E339c536989b8978a438) {
-			// CELO
-			return ISavingsCELO(savingsCELOAddr).celoToSavings(amountIn);
-		} else if (input == 0x2879BFD5e7c4EF331384E908aaA3Bd3014b703fA) {
-			// Savings CELO
-			return ISavingsCELO(savingsCELOAddr).savingsToCELO(amountIn);
-		} else {
-			return 0;
-		}
+		require(output == savingsCELOAddr, "PairSavingsCELO: invalid output!");
+		return ISavingsCELO(savingsCELOAddr).celoToSavings(amountIn);
 	}
 
 	receive() external payable {}

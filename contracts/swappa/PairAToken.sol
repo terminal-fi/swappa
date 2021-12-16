@@ -56,6 +56,7 @@ contract PairAToken is ISwappaPairV1 {
 
 	function getOutputAmount(
 		address input,
+		address output,
 		uint amountIn,
 		bytes calldata data
 	) external view override returns (uint amountOut) {

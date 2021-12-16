@@ -22,6 +22,7 @@ contract PairStableSwap is ISwappaPairV1 {
 			"PairStableSwap: approve failed!");
 		ISwap swapPool = ISwap(swapPoolAddr);
 		uint outputAmount;
+		// TODO(zviadm): This will need to change to support multi-token pools.
 		if (swapPool.getToken(0) == input) {
 			outputAmount = swapPool.swap(0, 1, inputAmount, 0, block.timestamp);
 		} else {
@@ -41,11 +42,13 @@ contract PairStableSwap is ISwappaPairV1 {
 
 	function getOutputAmount(
 		address input,
+		address output,
 		uint amountIn,
 		bytes calldata data
 	) external view override returns (uint amountOut) {
 		address swapPoolAddr = parseData(data);
 		ISwap swapPool = ISwap(swapPoolAddr);
+		// TODO(zviadm): This will need to change to support multi-token pools.
 		if (swapPool.getToken(0) == input) {
 			return swapPool.calculateSwap(0, 1, amountIn);
 		} else {

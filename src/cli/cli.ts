@@ -26,6 +26,7 @@ const program = commander.program
 	.option("--max-swaps <max-swaps>", "Maximum number of swaps in a route.")
 	.option("--from <from>", "If provided, will actally execute trade from given account.")
 	.option("--max-slippage <max-slippage>", "Maximum allowed slippage.", "0.9999")
+	.option("--no-precheck", "If provided, will skip expected output precheck.")
 	.parse(process.argv)
 
 process.on('unhandledRejection', (reason: any, _promise: any) => {
@@ -112,8 +113,9 @@ async function main() {
 			console.info(`TX Done: ${approveReceipt.transactionHash}`)
 		}
 
+		const precheck: boolean = !opts.noPrecheck
 		const tx = manager.swap(
-			route, inputAmount, route.outputAmount.multipliedBy(opts.maxSlippage), from)
+			route, inputAmount, route.outputAmount.multipliedBy(opts.maxSlippage), from, {precheckOutputAmount: precheck})
 		console.info(`Sending TX...`)
 		const receipt = await tx.sendAndWaitForReceipt({from: from})
 		console.info(`TX Done: ${receipt.transactionHash}`)
