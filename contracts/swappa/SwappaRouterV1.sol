@@ -4,8 +4,9 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./ISwappaPairV1.sol";
+import "./ISwappaRouterV1.sol";
 
-contract SwappaRouterV1 {
+contract SwappaRouterV1 is ISwappaRouterV1 {
 	event Swap(
 		address indexed sender,
 		address to,
@@ -25,7 +26,7 @@ contract SwappaRouterV1 {
 		address[] calldata pairs,
 		bytes[] calldata extras,
 		uint256 inputAmount
-	) external view returns (uint256 outputAmount) {
+	) external override view returns (uint256 outputAmount) {
 		outputAmount = inputAmount;
 		for (uint i; i < pairs.length; i++) {
 			outputAmount =
@@ -41,7 +42,7 @@ contract SwappaRouterV1 {
 		uint256 minOutputAmount,
 		address to,
 		uint deadline
-	) external ensure(deadline) returns (uint256 outputAmount) {
+	) external override ensure(deadline) returns (uint256 outputAmount) {
 		require(path.length == pairs.length + 1 , "SwappaRouter: Path and Pairs mismatch!");
 		require(pairs.length == extras.length, "SwappaRouter: Pairs and Extras mismatch!");
 		require(pairs.length > 0, "SwappaRouter: Must have at least one pair!");
@@ -75,7 +76,7 @@ contract SwappaRouterV1 {
 		uint256 minOutputAmount,
 		address to,
 		uint deadline
-	) external ensure(deadline) returns (uint256 outputAmount) {
+	) external override ensure(deadline) returns (uint256 outputAmount) {
 		require(path.length == pairs.length + 1 , "SwappaRouter: Path and Pairs mismatch!");
 		require(pairs.length == extras.length, "SwappaRouter: Pairs and Extras mismatch!");
 		require(pairs.length > 0, "SwappaRouter: Must have at least one pair!");
