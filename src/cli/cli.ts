@@ -72,10 +72,14 @@ async function main() {
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs (${pairs.length}):`)
-	for (const pair of pairs) {
-		console.info(
-			`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
-			`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}`)
+
+	for (const registry of registries) {
+		for (const pair of manager.lookupPairs(registry)) {
+			console.info(
+				`${(registry as any).constructor?.name}:` +
+				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
+				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}`)
+		}
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)
