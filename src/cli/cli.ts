@@ -73,7 +73,7 @@ async function main() {
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs (${pairs.length}):`)
 	for (const registry of registries) {
-		for (const pair of manager.getPairsByRegistry(registry)) {
+		for (const pair of manager.getPairsByRegistry(registry.getName())) {
 			console.info(
 				`${registry.getName().padEnd(12)}` +
 				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +

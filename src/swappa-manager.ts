@@ -12,7 +12,7 @@ import { findBestRoutesForFixedInputAmount, Route, RouterOpts } from "./router"
 export class SwappaManager {
 	private pairs: Pair[] = []
 	private pairsByToken = new Map<string, Pair[]>()
-	private pairsByRegistry = new Map<Registry, Pair[]>()
+	private pairsByRegistry = new Map<string, Pair[]>()
 
 	constructor(
 		private kit: ContractKit,
@@ -22,10 +22,10 @@ export class SwappaManager {
 	}
 
 	public reinitializePairs = async (tokenWhitelist: Address[]) => {
-		this.pairsByRegistry = new Map<Registry, Pair[]>()
+		this.pairsByRegistry = new Map<string, Pair[]>()
 		const pairsAll = await concurrentMap(5, this.registries, (r) =>
 			r.findPairs(tokenWhitelist).then(pairs => {
-				this.pairsByRegistry.set(r, pairs)
+				this.pairsByRegistry.set(r.getName(), pairs)
 				return pairs
 			})
 		)
@@ -81,7 +81,7 @@ export class SwappaManager {
 		return swapTX(this.kit, this.routerAddr, route, inputAmount, minOutputAmount, to, opts)
 	}
 
-	public getPairsByRegistry(registry: Registry): Pair[] {
+	public getPairsByRegistry(registry: string): Pair[] {
 		return this.pairsByRegistry.get(registry) || []
 	}
 }
