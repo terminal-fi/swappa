@@ -75,7 +75,8 @@ async function main() {
 	for (const pair of pairs) {
 		console.info(
 			`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
-			`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}`)
+			`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol} ` +
+			`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)
