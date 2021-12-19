@@ -1,14 +1,14 @@
 import BigNumber from "bignumber.js"
 import { ContractKit } from "@celo/contractkit"
 
-import { Address, Pair, Snapshot } from "../pair"
+import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairSavingsCELOAddress } from "../../tools/deployed/mainnet.PairSavingsCELO.addr.json"
 import { celoToSavings, SavingsKit } from "@terminal-fi/savingscelo";
 
 interface PairSavingsCELOSnapshot extends Snapshot {
-	celoTotal: BigNumber
-	savingsTotal: BigNumber
+	celoTotal: BigNumberString
+	savingsTotal: BigNumberString
 }
 
 export class PairSavingsCELO extends Pair {
@@ -54,17 +54,16 @@ export class PairSavingsCELO extends Pair {
 	}
 
 	public snapshot(): PairSavingsCELOSnapshot {
-		const zero = new BigNumber(0)
 		return {
-			celoTotal: this.totalSupplies?.celoTotal || zero,
-			savingsTotal: this.totalSupplies?.savingsTotal || zero
+			celoTotal: this.totalSupplies?.celoTotal.toFixed() || '',
+			savingsTotal: this.totalSupplies?.savingsTotal.toFixed() || ''
 		}
 	}
 
 	public restore(snapshot: PairSavingsCELOSnapshot): void {
 		this.totalSupplies = {
-			celoTotal: snapshot.celoTotal,
-			savingsTotal: snapshot.savingsTotal
+			celoTotal: new BigNumber(snapshot.celoTotal),
+			savingsTotal: new BigNumber(snapshot.savingsTotal)
 		}
 	}
 }

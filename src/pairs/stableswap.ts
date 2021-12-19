@@ -4,16 +4,16 @@ import BigNumber from "bignumber.js"
 import { ISwap, ABI as SwapABI } from "../../types/web3-v1-contracts/ISwap"
 import { Erc20, ABI as Erc20ABI } from '../../types/web3-v1-contracts/ERC20';
 
-import { Address, Pair, Snapshot } from "../pair"
+import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairStableSwapAddress } from "../../tools/deployed/mainnet.PairStableSwap.addr.json"
 
 interface PairStableSwapSnapshot extends Snapshot {
 	paused: boolean
-	tokenPrecisionMultipliers: BigNumber[]
-	balancesWithAdjustedPrecision: BigNumber[]
-	swapFee: BigNumber
-	preciseA: BigNumber
+	tokenPrecisionMultipliers: BigNumberString[]
+	balancesWithAdjustedPrecision: BigNumberString[]
+	swapFee: BigNumberString
+	preciseA: BigNumberString
 }
 
 export class PairStableSwap extends Pair {
@@ -171,18 +171,18 @@ export class PairStableSwap extends Pair {
 	public snapshot(): PairStableSwapSnapshot {
 		return {
 			paused: this.paused,
-			tokenPrecisionMultipliers: this.tokenPrecisionMultipliers.slice(),
-			balancesWithAdjustedPrecision: this.balancesWithAdjustedPrecision.slice(),
-			swapFee: this.swapFee,
-			preciseA: this.preciseA
+			tokenPrecisionMultipliers: this.tokenPrecisionMultipliers.map(n => n.toFixed()),
+			balancesWithAdjustedPrecision: this.balancesWithAdjustedPrecision.map(n => n.toFixed()),
+			swapFee: this.swapFee.toFixed(),
+			preciseA: this.preciseA.toFixed()
 		}
 	}
 
 	public restore(snapshot: PairStableSwapSnapshot): void {
 		this.paused = snapshot.paused
-		this.tokenPrecisionMultipliers = snapshot.tokenPrecisionMultipliers.slice()
-		this.balancesWithAdjustedPrecision = snapshot.balancesWithAdjustedPrecision.slice()
-		this.swapFee = snapshot.swapFee
-		this.preciseA = snapshot.preciseA
+		this.tokenPrecisionMultipliers = snapshot.tokenPrecisionMultipliers.map(r => new BigNumber(r))
+		this.balancesWithAdjustedPrecision = snapshot.balancesWithAdjustedPrecision.map(r => new BigNumber(r))
+		this.swapFee = new BigNumber(snapshot.swapFee)
+		this.preciseA = new BigNumber(snapshot.preciseA)
 	}
 }
