@@ -81,7 +81,7 @@ export class SwappaManager {
 		return swapTX(this.kit, this.routerAddr, route, inputAmount, minOutputAmount, to, opts)
 	}
 
-	public lookupPairs(registry: Registry): Pair[] {
+	public getPairsByRegistry(registry: Registry): Pair[] {
 		return this.pairsByRegistry.get(registry) || []
 	}
 }

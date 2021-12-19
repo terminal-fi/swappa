@@ -3,10 +3,13 @@ import { concurrentMap } from '@celo/utils/lib/async'
 
 import { Address } from "../pair"
 import { PairMento } from "../pairs/mento"
+import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
 
-export class RegistryMento {
-	constructor(private kit: ContractKit) {}
+export class RegistryMento extends Registry{
+	constructor(private kit: ContractKit) {
+		super("Mento")
+	}
 
 	findPairs = async (tokenWhitelist: Address[]) => {
 		const cSTBs = await concurrentMap(
