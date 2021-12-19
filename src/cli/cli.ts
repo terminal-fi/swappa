@@ -75,7 +75,7 @@ async function main() {
 	for (const registry of registries) {
 		for (const pair of manager.getPairsByRegistry(registry)) {
 			console.info(
-				`${registry.getName()}:` +
+				`${registry.getName().padEnd(12)}` +
 				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
 				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}`)
 		}

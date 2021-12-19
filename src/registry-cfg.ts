@@ -12,9 +12,9 @@ import { RegistryUniswapV2 } from "./registries/uniswapv2"
 export const mainnetRegistryMoola =
 	(kit: ContractKit) => new RegistryAave(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA", "Moola")
 export const mainnetRegistryUbeswap =
-	(kit: ContractKit) => new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE", undefined, "Ubeswap")
+	(kit: ContractKit) => new RegistryUniswapV2(kit, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE", "Ubeswap")
 export const mainnetRegistrySushiswap =
-	(kit: ContractKit) => new RegistryUniswapV2(kit, "0xc35DADB65012eC5796536bD9864eD8773aBc74C4", undefined, "Sushiswap")
+	(kit: ContractKit) => new RegistryUniswapV2(kit, "0xc35DADB65012eC5796536bD9864eD8773aBc74C4", "Sushiswap")
 export const mainnetRegistryMobius =
 	(kit: ContractKit) => new RegistryStatic([
 		// Source: https://github.com/mobiusAMM/mobiusV1
@@ -43,10 +43,10 @@ export const mainnetRegistrySavingsCELO =
 export const mainnetRegistryMoolaV2 =
 	(kit: ContractKit) => new RegistryAaveV2(kit, "0xD1088091A174d33412a968Fa34Cb67131188B332", "MoolaV2")
 export const mainnetRegistryCeloDex =
-	(kit: ContractKit) => new RegistryUniswapV2(kit, "0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6", {
+	(kit: ContractKit) => new RegistryUniswapV2(kit, "0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6", "CeloDex", {
 		fixedFee: new BigNumber(0.997), // TODO(zviadm): Figure out actual fee for CeloDex pairs.
 		fetchUsingAllPairs: true,
-	}, "CeloDex")
+	})
 
 // mainnetRegistriesWhitelist contains list of more established protocols with
 // overall higher TVL.

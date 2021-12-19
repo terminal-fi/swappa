@@ -14,13 +14,13 @@ export class RegistryUniswapV2 extends Registry {
 	constructor(
 		private kit: ContractKit,
 		factoryAddr: Address,
+		name: string,
 		private opts?: {
 			fixedFee?: BigNumber,
 			fetchUsingAllPairs?: boolean,
 		},
-		name?: string,
 	) {
-		super(name || factoryAddr)
+		super(name)
 		this.factory = new kit.web3.eth.Contract(FactoryABI, factoryAddr) as unknown as IUniswapV2Factory
 	}
 
