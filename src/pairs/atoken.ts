@@ -38,12 +38,9 @@ export class PairAToken extends Pair {
     ) as unknown as ILendingPool;
     const data = await lendingPool.methods.getReserveData(this.reserve).call();
 
-	const chainId = await this.web3.eth.getChainId()
+    const chainId = await this.web3.eth.getChainId();
     const tokenA = data.aTokenAddress;
-    const tokenB =
-      this.reserve === ReserveCELO
-        ? CELO[chainId]
-        : this.reserve;
+    const tokenB = this.reserve === ReserveCELO ? CELO[chainId] : this.reserve;
     return {
       pairKey: null,
       tokenA,

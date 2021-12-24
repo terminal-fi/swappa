@@ -1,4 +1,4 @@
-import Web3 from "web3"
+import Web3 from "web3";
 
 import { ILendingPoolV2 } from "../../types/web3-v1-contracts/ILendingPoolV2";
 import { abi as ILendingPoolV2ABI } from "../../build/contracts/ILendingPoolV2.json";

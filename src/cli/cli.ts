@@ -79,14 +79,14 @@ async function main() {
   const inputAmount = new BigNumber(opts.amount).shiftedBy(inputToken.decimals);
 
   const registries = [
-     new RegistryMento(kit),
-     mainnetRegistryUbeswap(kit.web3 as unknown as Web3),
-     mainnetRegistrySushiswap(kit.web3 as unknown as Web3),
-     mainnetRegistryMobius(kit.web3 as unknown as Web3),
-     mainnetRegistryMoola(kit.web3 as unknown as Web3),
-     mainnetRegistryMoolaV2(kit.web3 as unknown as Web3),
-     mainnetRegistrySavingsCELO(kit),
-     mainnetRegistryCeloDex(kit.web3 as unknown as Web3),
+    new RegistryMento(kit),
+    mainnetRegistryUbeswap(kit.web3 as unknown as Web3),
+    mainnetRegistrySushiswap(kit.web3 as unknown as Web3),
+    mainnetRegistryMobius(kit.web3 as unknown as Web3),
+    mainnetRegistryMoola(kit.web3 as unknown as Web3),
+    mainnetRegistryMoolaV2(kit.web3 as unknown as Web3),
+    mainnetRegistrySavingsCELO(kit),
+    mainnetRegistryCeloDex(kit.web3 as unknown as Web3),
   ];
 
   const manager = new SwappaManager(

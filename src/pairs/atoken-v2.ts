@@ -28,7 +28,7 @@ export class PairATokenV2 extends Pair {
 
   protected async _init() {
     const data = await this.pool.methods.getReserveData(this.reserve).call();
-    const tokenA = data[11] // aTokenAddress;
+    const tokenA = data[11]; // aTokenAddress;
     const tokenB = this.reserve;
     return {
       pairKey: null,

@@ -1,4 +1,4 @@
-import Web3 from "web3"
+import Web3 from "web3";
 
 import { ILendingPool } from "../../types/web3-v1-contracts/ILendingPool";
 import { abi as LendingPoolABI } from "../../build/contracts/ILendingPool.json";

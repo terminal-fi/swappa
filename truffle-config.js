@@ -5,18 +5,18 @@
 
 module.exports = {
   mocha: {
-    reporter: 'eth-gas-reporter',
+    reporter: "eth-gas-reporter",
     reporterOptions: {
       currency: "ETH",
       gasPrice: 0.5,
-    }
+    },
   },
 
   networks: {
     development: {
-      host: "127.0.0.1",     // Localhost (default: none)
-      port: 7545,            // Standard Ethereum port (default: none)
-      network_id: "*",       // Any network (default: none)
+      host: "127.0.0.1", // Localhost (default: none)
+      port: 7545, // Standard Ethereum port (default: none)
+      network_id: "*", // Any network (default: none)
     },
   },
 
@@ -30,7 +30,7 @@ module.exports = {
           runs: 10000,
         },
         evmVersion: "istanbul",
-      }
+      },
     },
   },
 };
