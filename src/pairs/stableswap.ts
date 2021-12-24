@@ -1,5 +1,6 @@
-import { ContractKit } from "@celo/contractkit";
 import BigNumber from "bignumber.js";
+import { AbiItem } from "web3-utils";
+import Web3 from "web3";
 
 import { ISwap } from "../../types/web3-v1-contracts/ISwap";
 import { abi as SwapABI } from "../../build/contracts/ISwap.json";
@@ -9,7 +10,6 @@ import { abi as ERC20ABI } from "../../build/contracts/ERC20.json";
 import { Address, Pair } from "../pair";
 import { selectAddress } from "../utils";
 import { address as pairStableSwapAddress } from "../../tools/deployed/mainnet.PairStableSwap.addr.json";
-import { AbiItem } from "web3-utils";
 
 export class PairStableSwap extends Pair {
   allowRepeats = false;
@@ -24,9 +24,9 @@ export class PairStableSwap extends Pair {
   static readonly POOL_PRECISION_DECIMALS = 18;
   static readonly A_PRECISION = 100;
 
-  constructor(private kit: ContractKit, private swapPoolAddr: Address) {
+  constructor(private web3: Web3, private swapPoolAddr: Address) {
     super();
-    this.swapPool = new kit.web3.eth.Contract(
+    this.swapPool = new web3.eth.Contract(
       SwapABI as AbiItem[],
       swapPoolAddr
     ) as unknown as ISwap;
@@ -36,13 +36,13 @@ export class PairStableSwap extends Pair {
     const [tokenA, tokenB, swappaPairAddress] = await Promise.all([
       this.swapPool.methods.getToken(0).call(),
       this.swapPool.methods.getToken(1).call(),
-      selectAddress(this.kit, { mainnet: pairStableSwapAddress }),
+      selectAddress(this.web3, { mainnet: pairStableSwapAddress }),
     ]);
-    const ERC20A = new this.kit.web3.eth.Contract(
+    const ERC20A = new this.web3.eth.Contract(
       ERC20ABI as AbiItem[],
       tokenA
     ) as unknown as ERC20;
-    const ERC20B = new this.kit.web3.eth.Contract(
+    const ERC20B = new this.web3.eth.Contract(
       ERC20ABI as AbiItem[],
       tokenB
     ) as unknown as ERC20;

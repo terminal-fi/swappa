@@ -1,5 +1,5 @@
-import { ContractKit } from "@celo/contractkit"
 import { concurrentMap } from '@celo/utils/lib/async'
+import Web3 from 'web3'
 
 import { Address, Pair } from "./pair"
 
@@ -17,8 +17,8 @@ interface AddressesByNetwork {
 	alfajores?: Address,
 }
 
-export const selectAddress = async (kit: ContractKit, addresses: AddressesByNetwork) => {
-	const chainId = await kit.web3.eth.getChainId()
+export const selectAddress = async (web3: Web3, addresses: AddressesByNetwork) => {
+	const chainId = await web3.eth.getChainId()
 	return selectAddressUsingChainId(chainId, addresses)
 }
 

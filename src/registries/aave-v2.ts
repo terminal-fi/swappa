@@ -1,4 +1,4 @@
-import { ContractKit } from "@celo/contractkit";
+import Web3 from "web3"
 
 import { ILendingPoolV2 } from "../../types/web3-v1-contracts/ILendingPoolV2";
 import { abi as ILendingPoolV2ABI } from "../../build/contracts/ILendingPoolV2.json";
@@ -13,8 +13,8 @@ import { AbiItem } from "web3-utils";
 export class RegistryAaveV2 {
   private provider: ILendingPoolAddressesProviderV2;
 
-  constructor(private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
-    this.provider = new kit.web3.eth.Contract(
+  constructor(private web3: Web3, lendingPoolAddrProviderAddr: string) {
+    this.provider = new web3.eth.Contract(
       ILendingPoolAddressesProviderV2ABI as AbiItem[],
       lendingPoolAddrProviderAddr
     ) as unknown as ILendingPoolAddressesProviderV2;
@@ -24,7 +24,7 @@ export class RegistryAaveV2 {
     const poolAddr: string = await this.provider.methods
       .getLendingPool()
       .call();
-    const lendingPool = new this.kit.web3.eth.Contract(
+    const lendingPool = new this.web3.eth.Contract(
       ILendingPoolV2ABI as AbiItem[],
       poolAddr
     ) as unknown as ILendingPoolV2;
@@ -35,7 +35,7 @@ export class RegistryAaveV2 {
       (r) => tokenWhitelist.indexOf(r) >= 0
     );
     const pairs = reservesMatched.map(
-      (r) => new PairATokenV2(this.kit, poolAddr, r)
+      (r) => new PairATokenV2(this.web3, poolAddr, r)
     );
     return initPairsAndFilterByWhitelist(pairs, tokenWhitelist);
   };

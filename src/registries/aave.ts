@@ -1,4 +1,4 @@
-import { ContractKit } from "@celo/contractkit";
+import Web3 from "web3"
 
 import { ILendingPool } from "../../types/web3-v1-contracts/ILendingPool";
 import { abi as LendingPoolABI } from "../../build/contracts/ILendingPool.json";
@@ -12,8 +12,8 @@ import { AbiItem } from "web3-utils";
 export class RegistryAave {
   private lendingPoolAddrProvider: ILendingPoolAddressesProvider;
 
-  constructor(private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
-    this.lendingPoolAddrProvider = new kit.web3.eth.Contract(
+  constructor(private web3: Web3, lendingPoolAddrProviderAddr: string) {
+    this.lendingPoolAddrProvider = new web3.eth.Contract(
       LendingPoolAddressProviderABI as AbiItem[],
       lendingPoolAddrProviderAddr
     ) as unknown as ILendingPoolAddressesProvider;
@@ -23,7 +23,7 @@ export class RegistryAave {
     const lendingPoolAddr = await this.lendingPoolAddrProvider.methods
       .getLendingPool()
       .call();
-    const lendingPool = new this.kit.web3.eth.Contract(
+    const lendingPool = new this.web3.eth.Contract(
       LendingPoolABI as AbiItem[],
       lendingPoolAddr
     ) as unknown as ILendingPool;
@@ -35,7 +35,7 @@ export class RegistryAave {
     const pairs = reservesMatched.map(
       (r) =>
         new PairAToken(
-          this.kit,
+          this.web3,
           this.lendingPoolAddrProvider.options.address,
           r
         )

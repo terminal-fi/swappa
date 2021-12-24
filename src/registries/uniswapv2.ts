@@ -1,5 +1,5 @@
 import BigNumber from "bignumber.js";
-import { ContractKit } from "@celo/contractkit";
+import Web3 from "web3";
 import { concurrentMap } from "@celo/utils/lib/async";
 import { AbiItem } from "web3-utils";
 
@@ -13,14 +13,14 @@ export class RegistryUniswapV2 {
   private factory: IUniswapV2Factory;
 
   constructor(
-    private kit: ContractKit,
+    private web3: Web3,
     factoryAddr: Address,
     private opts?: {
       fixedFee?: BigNumber;
       fetchUsingAllPairs?: boolean;
     }
   ) {
-    this.factory = new kit.web3.eth.Contract(
+    this.factory = new web3.eth.Contract(
       FactoryABI as AbiItem[],
       factoryAddr
     ) as unknown as IUniswapV2Factory;
@@ -45,7 +45,7 @@ export class RegistryUniswapV2 {
         if (pairAddr === "0x0000000000000000000000000000000000000000") {
           return null;
         }
-        return new PairUniswapV2(this.kit, pairAddr, this.opts?.fixedFee);
+        return new PairUniswapV2(this.web3, pairAddr, this.opts?.fixedFee);
       });
     } else {
       const nPairs = Number.parseInt(
@@ -56,7 +56,7 @@ export class RegistryUniswapV2 {
         [...Array(nPairs).keys()],
         async (idx) => {
           const pairAddr = await this.factory.methods.allPairs(idx).call();
-          return new PairUniswapV2(this.kit, pairAddr, this.opts?.fixedFee);
+          return new PairUniswapV2(this.web3, pairAddr, this.opts?.fixedFee);
         }
       );
     }

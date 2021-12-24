@@ -2,7 +2,6 @@
 import commander from "commander";
 import { ContractKit, newKit } from "@celo/contractkit";
 import BigNumber from "bignumber.js";
-import { toTransactionObject } from "@celo/connect";
 import { AbiItem } from "web3-utils";
 
 import * as ubeswapTokens from "@ubeswap/default-token-list/ubeswap.token-list.json";
@@ -21,7 +20,6 @@ import {
   mainnetRegistryCeloDex,
 } from "../registry-cfg";
 import { RegistryMento } from "../registries/mento";
-import { Registry } from "../registry";
 import Web3 from "web3";
 
 const program = commander.program
@@ -58,17 +56,6 @@ process.on("unhandledRejection", (reason: any, _promise: any) => {
   process.exit(1);
 });
 
-const registriesByName: { [name: string]: (kit: ContractKit) => Registry } = {
-  mento: (kit: ContractKit) => new RegistryMento(kit),
-  ubeswap: mainnetRegistryUbeswap,
-  sushiswap: mainnetRegistrySushiswap,
-  mobius: mainnetRegistryMobius,
-  moola: mainnetRegistryMoola,
-  "moola-v2": mainnetRegistryMoolaV2,
-  savingscelo: mainnetRegistrySavingsCELO,
-  celodex: mainnetRegistryCeloDex,
-};
-
 function tokenByAddrOrSymbol(addressOrSymbol: string) {
   const t = ubeswapTokens.tokens.find(
     (t) => t.address === addressOrSymbol || t.symbol === addressOrSymbol
@@ -91,11 +78,17 @@ async function main() {
   const outputToken = tokenByAddrOrSymbol(opts.output);
   const inputAmount = new BigNumber(opts.amount).shiftedBy(inputToken.decimals);
 
-  const registryFs =
-    opts.registries === "all"
-      ? Object.values(registriesByName)
-      : (opts.registries as string).split(",").map((x) => registriesByName[x]);
-  const registries = registryFs.map((f) => f(kit));
+  const registries = [
+     new RegistryMento(kit),
+     mainnetRegistryUbeswap(kit.web3 as unknown as Web3),
+     mainnetRegistrySushiswap(kit.web3 as unknown as Web3),
+     mainnetRegistryMobius(kit.web3 as unknown as Web3),
+     mainnetRegistryMoola(kit.web3 as unknown as Web3),
+     mainnetRegistryMoolaV2(kit.web3 as unknown as Web3),
+     mainnetRegistrySavingsCELO(kit),
+     mainnetRegistryCeloDex(kit.web3 as unknown as Web3),
+  ];
+
   const manager = new SwappaManager(
     kit.web3 as unknown as Web3,
     swappaRouterV1Address,

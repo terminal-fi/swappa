@@ -1,5 +1,4 @@
 import BigNumber from "bignumber.js";
-import { ContractKit } from "@celo/contractkit";
 
 import { ILendingPoolV2 } from "../../types/web3-v1-contracts/ILendingPoolV2";
 import { abi as ILendingPoolV2ABI } from "../../build/contracts/ILendingPoolV2.json";
@@ -8,6 +7,7 @@ import { Address, Pair } from "../pair";
 import { selectAddress } from "../utils";
 import { address as pairATokenV2Address } from "../../tools/deployed/mainnet.PairATokenV2.addr.json";
 import { AbiItem } from "web3-utils";
+import Web3 from "web3";
 
 export class PairATokenV2 extends Pair {
   allowRepeats = true;
@@ -15,12 +15,12 @@ export class PairATokenV2 extends Pair {
   private pool: ILendingPoolV2;
 
   constructor(
-    private kit: ContractKit,
+    private web3: Web3,
     private poolAddr: Address,
     private reserve: Address
   ) {
     super();
-    this.pool = new this.kit.web3.eth.Contract(
+    this.pool = new this.web3.eth.Contract(
       ILendingPoolV2ABI as AbiItem[],
       this.poolAddr
     ) as unknown as ILendingPoolV2;
@@ -34,7 +34,7 @@ export class PairATokenV2 extends Pair {
       pairKey: null,
       tokenA,
       tokenB,
-      swappaPairAddress: await selectAddress(this.kit, {
+      swappaPairAddress: await selectAddress(this.web3, {
         mainnet: pairATokenV2Address,
       }),
     };

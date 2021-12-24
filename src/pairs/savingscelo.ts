@@ -5,6 +5,7 @@ import { Address, Pair } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairSavingsCELOAddress } from "../../tools/deployed/mainnet.PairSavingsCELO.addr.json"
 import { celoToSavings, SavingsKit } from "@terminal-fi/savingscelo";
+import Web3 from "web3"
 
 export class PairSavingsCELO extends Pair {
 	allowRepeats = true
@@ -27,7 +28,7 @@ export class PairSavingsCELO extends Pair {
 		return {
 			pairKey: null,
 			tokenA, tokenB,
-			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairSavingsCELOAddress})
+			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairSavingsCELOAddress})
 		}
 	}
 	public async refresh(): Promise<void> {

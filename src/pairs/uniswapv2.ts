@@ -1,4 +1,3 @@
-import { ContractKit } from "@celo/contractkit";
 import BigNumber from "bignumber.js";
 import { IUniswapV2Pair } from "../../types/web3-v1-contracts/IUniswapV2Pair";
 import { abi as PairABI } from "../../build/contracts/IUniswapV2Pair.json";
@@ -6,6 +5,7 @@ import { Address, PairXYeqK } from "../pair";
 import { address as pairUniswapV2Address } from "../../tools/deployed/mainnet.PairUniswapV2.addr.json";
 import { selectAddress } from "../utils";
 import { AbiItem } from "web3-utils";
+import Web3 from "web3";
 
 export class PairUniswapV2 extends PairXYeqK {
   allowRepeats = false;
@@ -14,12 +14,12 @@ export class PairUniswapV2 extends PairXYeqK {
   private feeKData: string;
 
   constructor(
-    private kit: ContractKit,
+    private web3: Web3,
     private pairAddr: Address,
     private fixedFee: BigNumber = new BigNumber(0.997)
   ) {
     super();
-    this.pair = new this.kit.web3.eth.Contract(
+    this.pair = new this.web3.eth.Contract(
       PairABI as AbiItem[],
       pairAddr
     ) as unknown as IUniswapV2Pair;
@@ -34,7 +34,7 @@ export class PairUniswapV2 extends PairXYeqK {
     const [tokenA, tokenB, swappaPairAddress] = await Promise.all([
       this.pair.methods.token0().call(),
       this.pair.methods.token1().call(),
-      selectAddress(this.kit, { mainnet: pairUniswapV2Address }),
+      selectAddress(this.web3, { mainnet: pairUniswapV2Address }),
     ]);
     return {
       pairKey: this.pairAddr,
