@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+import * as dotenv from "dotenv";
 import { program } from "commander";
 import fs from "fs";
 import path from "path";
-import { ContractKit, newKit } from "@celo/contractkit";
+import Web3 from "web3";
 
 import SwappaRouterV1Json from "../build/contracts/SwappaRouterV1.json";
 import PairUniswapV2 from "../build/contracts/PairUniswapV2.json";
@@ -11,6 +12,8 @@ import PairAToken from "../build/contracts/PairAToken.json";
 import PairStableSwap from "../build/contracts/PairStableSwap.json";
 import PairSavingsCELO from "../build/contracts/PairSavingsCELO.json";
 import PairATokenV2 from "../build/contracts/PairATokenV2.json";
+
+dotenv.config();
 
 process.on("unhandledRejection", (reason, _promise) => {
   // @ts-ignore
@@ -24,15 +27,16 @@ program
     "Network to deploy to. Options: ganache, alfajores, baklava, mainnet",
     "ganache"
   )
-  .option("--from <address>", "Deployer address")
   .parse();
 
 const networks: { [key: string]: string } = {
-  // "ganache": "http://127.0.0.1:7545",
-  // "alfajores": "https://alfajores-forno.celo-testnet.org",
+  ganache: "http://127.0.0.1:7545",
+  alfajores: "https://alfajores-forno.celo-testnet.org",
   baklava: "http://127.0.0.1:8546",
   mainnet: "http://127.0.0.1:8545",
 };
+
+let from: string;
 
 // Relative path to the deploy folder changes depending on if it is run directly or using ts-node.
 const contractsPath = path.join(__dirname, "deployed");
@@ -61,7 +65,7 @@ function storeContractAddress(
 }
 
 async function readAddressOrDeployContract(
-  kit: ContractKit,
+  web3: Web3,
   network: string,
   contractName: string,
   contractData: string
@@ -69,9 +73,14 @@ async function readAddressOrDeployContract(
   let address = contractAddress(network, contractName);
   if (!address) {
     console.info("DEPLOYING:", contractName, "...");
-    const receipt = await (
-      await kit.sendTransaction({ data: contractData })
-    ).waitReceipt();
+    const gasPrice = await web3.eth.getGasPrice();
+    const params = {
+      data: contractData,
+      gasPrice,
+      from,
+    };
+    const gas = await web3.eth.estimateGas(params);
+    const receipt = await web3.eth.sendTransaction({ ...params, gas });
     address = receipt.contractAddress;
     if (!address) {
       throw new Error("Contract address not found?");
@@ -88,48 +97,52 @@ async function main() {
   if (!networkURL) {
     throw new Error(`Unsupported network: ${opts.network}`);
   }
+  if (!process.env.PRIVATE_KEY) {
+    throw new Error("User has not specified a PRIVATE_KEY in .env");
+  }
 
-  const kit = newKit(networkURL);
-  kit.defaultAccount = opts.from;
+  const web3 = new Web3(networkURL);
+  const { address } = web3.eth.accounts.wallet.add(process.env.PRIVATE_KEY);
+  from = address;
 
   await readAddressOrDeployContract(
-    kit,
+    web3,
     opts.network,
     "SwappaRouterV1",
     SwappaRouterV1Json.bytecode
   );
   await readAddressOrDeployContract(
-    kit,
+    web3,
     opts.network,
     "PairUniswapV2",
     PairUniswapV2.bytecode
   );
   await readAddressOrDeployContract(
-    kit,
+    web3,
     opts.network,
     "PairMento",
     PairMento.bytecode
   );
   await readAddressOrDeployContract(
-    kit,
+    web3,
     opts.network,
     "PairAToken",
     PairAToken.bytecode
   );
   await readAddressOrDeployContract(
-    kit,
+    web3,
     opts.network,
     "PairStableSwap",
     PairStableSwap.bytecode
   );
   await readAddressOrDeployContract(
-    kit,
+    web3,
     opts.network,
     "PairSavingsCELO",
     PairSavingsCELO.bytecode
   );
   await readAddressOrDeployContract(
-    kit,
+    web3,
     opts.network,
     "PairATokenV2",
     PairATokenV2.bytecode

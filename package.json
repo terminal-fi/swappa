@@ -10,6 +10,7 @@
     "@terminal-fi/savingscelo": "^3.4.0",
     "@ubeswap/default-token-list": "^4.0.11",
     "bignumber.js": "^9.0.1",
+    "dotenv": "^10.0.0",
     "web3": "^1.3.4",
     "web3-utils": "^1.6.1"
   },
@@ -36,7 +37,7 @@
     "clean": "rm -rf ./build ./dist ./types",
     "prepublishOnly": "yarn clean && yarn build",
     "devchain": "rm -f ./src/deploy/ganache.*.json && yarn celo-devchain --port 7545",
-    "deploy": "yarn ts-node ./src/deploy/deployer.ts",
+    "deploy": "yarn ts-node ./tools/deployer.ts",
     "prepare": "husky install"
   },
   "author": "Zviad Metreveli",
