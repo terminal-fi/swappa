@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js";
 
 export type Address = string
 
-export interface Snapshot {}
+export abstract class Snapshot {}
 export type BigNumberString = string
 
 export interface SwapData {
