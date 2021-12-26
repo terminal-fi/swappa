@@ -3,7 +3,7 @@ import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
 
 export class RegistryStatic extends Registry{
-	constructor(private pairsAll: Pair[], name: string) {
+	constructor(name: string, private pairsAll: Pair[]) {
 		super(name)
 	}
 

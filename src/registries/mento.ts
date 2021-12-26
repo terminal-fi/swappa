@@ -8,7 +8,7 @@ import { initPairsAndFilterByWhitelist } from "../utils"
 
 export class RegistryMento extends Registry{
 	constructor(private kit: ContractKit) {
-		super("Mento")
+		super("mento")
 	}
 
 	findPairs = async (tokenWhitelist: Address[]) => {

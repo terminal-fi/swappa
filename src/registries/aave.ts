@@ -10,8 +10,8 @@ import { initPairsAndFilterByWhitelist } from "../utils"
 export class RegistryAave extends Registry {
 	private lendingPoolAddrProvider: ILendingPoolAddressesProvider
 
-	constructor(private kit: ContractKit, lendingPoolAddrProviderAddr: string, name?: string) {
-		super(name || lendingPoolAddrProviderAddr)
+	constructor(name: string, private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
+		super(name)
 		this.lendingPoolAddrProvider = new kit.web3.eth.Contract(
 			LendingPoolAddressProviderABI, lendingPoolAddrProviderAddr) as unknown as ILendingPoolAddressesProvider
 	}

@@ -12,9 +12,9 @@ export class RegistryUniswapV2 extends Registry {
 	private factory: IUniswapV2Factory
 
 	constructor(
+		name: string,
 		private kit: ContractKit,
 		factoryAddr: Address,
-		name: string,
 		private opts?: {
 			fixedFee?: BigNumber,
 			fetchUsingAllPairs?: boolean,

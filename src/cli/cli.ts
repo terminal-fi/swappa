@@ -36,14 +36,14 @@ process.on('unhandledRejection', (reason: any, _promise: any) => {
 })
 
 const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
-	"mento": (kit: ContractKit) =>	new RegistryMento(kit),
-	"ubeswap":	mainnetRegistryUbeswap,
+	"mento":		(kit: ContractKit) =>	new RegistryMento(kit),
+	"ubeswap":		mainnetRegistryUbeswap,
 	"sushiswap":	mainnetRegistrySushiswap,
-	"mobius":	mainnetRegistryMobius,
-	"moola":	mainnetRegistryMoola,
-	"moola-v2":	mainnetRegistryMoolaV2,
+	"mobius":		mainnetRegistryMobius,
+	"moola":		mainnetRegistryMoola,
+	"moola-v2":		mainnetRegistryMoolaV2,
 	"savingscelo":	mainnetRegistrySavingsCELO,
-	"celodex":	mainnetRegistryCeloDex,
+	"celodex":		mainnetRegistryCeloDex,
 }
 
 function tokenByAddrOrSymbol(addressOrSymbol: string) {

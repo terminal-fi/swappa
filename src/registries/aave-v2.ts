@@ -11,8 +11,8 @@ import { Registry } from "../registry"
 export class RegistryAaveV2 extends Registry {
 	private provider: ILendingPoolAddressesProviderV2
 
-	constructor(private kit: ContractKit, lendingPoolAddrProviderAddr: string, name?: string) {
-		super(name || lendingPoolAddrProviderAddr)
+	constructor(name: string, private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
+		super(name)
 		this.provider = new kit.web3.eth.Contract(ILendingPoolAddressesProviderV2ABI, lendingPoolAddrProviderAddr)
 	}
 
