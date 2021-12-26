@@ -3,7 +3,7 @@ import { ContractKit } from "@celo/contractkit"
 
 import { ILendingPoolV2, ABI as ILendingPoolV2ABI } from "../../types/web3-v1-contracts/ILendingPoolV2"
 
-import { Address, Pair } from "../pair"
+import { Address, Pair, Snapshot } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairATokenV2Address } from "../../tools/deployed/mainnet.PairATokenV2.addr.json"
 
@@ -43,5 +43,13 @@ export class PairATokenV2 extends Pair {
 			throw new Error(`unsupported input: ${inputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
 		}
 		return inputAmount
+	}
+
+	public snapshot(): Snapshot {
+		return {}
+	}
+
+	public restore(snapshot: Snapshot): void {
+		// do nothing
 	}
 }

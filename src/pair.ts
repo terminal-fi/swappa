@@ -43,12 +43,8 @@ export abstract class Pair {
 	protected abstract swapExtraData(inputToken: Address): string;
 	public abstract outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber;
 
-	public snapshot(): Snapshot {
-		return {}
-	}
-	public restore(snapshot: Snapshot): void {
-		return
-	}
+	public abstract snapshot(): Snapshot;
+	public abstract restore(snapshot: Snapshot): void;
 }
 
 interface PairXYeqKSnapshot extends Snapshot {
