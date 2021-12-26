@@ -1,6 +1,6 @@
-import { ContractKit } from "@celo/contractkit"
+import Web3 from "web3"
 import BigNumber from "bignumber.js"
-import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contracts/IUniswapV2Factory"
+
 import { IUniswapV2Pair, ABI as PairABI } from "../../types/web3-v1-contracts/IUniswapV2Pair"
 import { Address, PairXYeqK } from "../pair"
 import { address as pairUniswapV2Address } from "../../tools/deployed/mainnet.PairUniswapV2.addr.json"
@@ -13,15 +13,15 @@ export class PairUniswapV2 extends PairXYeqK {
 	private feeKData: string
 
 	constructor(
-		private kit: ContractKit,
+		private web3: Web3,
 		private pairAddr: Address,
 		private fixedFee: BigNumber = new BigNumber(0.997),
 	) {
 		super()
-		this.pair = new this.kit.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
+		this.pair = new this.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 		const feeKInv = new BigNumber(1000).minus(this.fixedFee.multipliedBy(1000))
 		if (!feeKInv.isInteger() || !feeKInv.gt(0) || !feeKInv.lt(100)) {
-			throw new Error(`Invalida fixedFee: ${this.fixedFee}!`)
+			throw new Error(`Invalid fixedFee: ${this.fixedFee}!`)
 		}
 		this.feeKData = feeKInv.toString(16).padStart(2, "0")
 	}
@@ -30,7 +30,7 @@ export class PairUniswapV2 extends PairXYeqK {
 		const [tokenA, tokenB, swappaPairAddress] = await Promise.all([
 			this.pair.methods.token0().call(),
 			this.pair.methods.token1().call(),
-			selectAddress(this.kit, {mainnet: pairUniswapV2Address}),
+			selectAddress(this.web3, {mainnet: pairUniswapV2Address}),
 		])
 		return {
 			pairKey: this.pairAddr,

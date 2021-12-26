@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js"
+import Web3 from "web3"
 import { ContractKit } from "@celo/contractkit"
 
 import { Address, Pair } from "../pair"
@@ -27,7 +28,7 @@ export class PairSavingsCELO extends Pair {
 		return {
 			pairKey: null,
 			tokenA, tokenB,
-			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairSavingsCELOAddress})
+			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairSavingsCELOAddress})
 		}
 	}
 	public async refresh(): Promise<void> {

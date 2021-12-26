@@ -1,4 +1,4 @@
-import { ContractKit } from "@celo/contractkit"
+import Web3 from "web3"
 import { concurrentMap } from '@celo/utils/lib/async'
 
 import { Address, Pair } from "./pair"
@@ -17,8 +17,8 @@ interface AddressesByNetwork {
 	alfajores?: Address,
 }
 
-export const selectAddress = async (kit: ContractKit, addresses: AddressesByNetwork) => {
-	const chainId = await kit.web3.eth.getChainId()
+export const selectAddress = async (web3: Web3, addresses: AddressesByNetwork) => {
+	const chainId = await web3.eth.getChainId()
 	return selectAddressUsingChainId(chainId, addresses)
 }
 
@@ -26,17 +26,17 @@ export const selectAddressUsingChainId = (chainId: number, addresses: AddressesB
 	switch (chainId) {
 	case 42220:
 		if (!addresses.mainnet) {
-			throw new Error(`no address provided for Mainnet (42220)!`)
+			throw new Error(`no address provided for Mainnet (${chainId})!`)
 		}
 		return addresses.mainnet
 	case 62320:
 		if (!addresses.baklava) {
-			throw new Error(`no address provided for Baklava (62320)!`)
+			throw new Error(`no address provided for Baklava (${chainId})!`)
 		}
 		return addresses.baklava
 	case 44787:
 		if (!addresses.alfajores) {
-			throw new Error(`no address provided for Alfajores (44787)!`)
+			throw new Error(`no address provided for Alfajores (${chainId})!`)
 		}
 		return addresses.alfajores
 	default:
