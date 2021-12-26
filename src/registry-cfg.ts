@@ -1,4 +1,5 @@
 import BigNumber from "bignumber.js"
+import Web3 from "web3"
 import { ContractKit } from "@celo/contractkit"
 import { SavingsCELOAddressMainnet } from "@terminal-fi/savingscelo"
 import { PairSavingsCELO } from "./pairs/savingscelo"
