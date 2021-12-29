@@ -1,10 +1,10 @@
-import { ContractKit } from "@celo/contractkit";
+import { ContractKit } from "@celo/contractkit"
 import { concurrentMap } from '@celo/utils/lib/async'
 
-import { IbRegistry, ABI as IbRegistryABI } from "../../types/web3-v1-contracts/IBRegistry";
-import { Address, Pair } from "../pair";
-import { PairBPool } from "../pairs/bpool";
-import { initPairsAndFilterByWhitelist } from "../utils";
+import { IbRegistry, ABI as IbRegistryABI } from "../../types/web3-v1-contracts/IBRegistry"
+import { Address, Pair } from "../pair"
+import { PairBPool } from "../pairs/bpool"
+import { initPairsAndFilterByWhitelist } from "../utils"
 
 export class RegistryBalancer {
 	private registry: IbRegistry
@@ -35,15 +35,18 @@ export class RegistryBalancer {
 
                 for (const poolAddr of pools) {
                     const pool = new PairBPool(this.kit, poolAddr, toFetch.tokenA, toFetch.tokenB)
-                    if (pool.pairKey == null) {
-                        throw new Error(`Invalid pairKey: ${poolAddr}!`)
+                    // bpool can be used for each input & output combination
+                    let key
+                    if (toFetch.tokenA.toLowerCase().localeCompare(toFetch.tokenB.toLowerCase()) > 0) {
+                        key = `${poolAddr}-${toFetch.tokenA}:${toFetch.tokenB}`
+                    } else {
+                        key = `${poolAddr}-${toFetch.tokenB}:${toFetch.tokenA}`
                     }
-                    const pairKey = pool.pairKey
-                    if (poolPairs.has(pairKey)) {
+                    if (poolPairs.has(key)) {
                         // already seen this pool and token combination
                         continue
                     }
-                    poolPairs.set(pairKey, pool)
+                    poolPairs.set(key, pool)
                 }
             })
 		return initPairsAndFilterByWhitelist(Array.from(poolPairs.values()), tokenWhitelist)
