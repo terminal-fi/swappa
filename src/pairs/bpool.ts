@@ -26,6 +26,12 @@ export class PairBPool extends Pair {
 	) {
 		super()
 		this.bPool = new kit.web3.eth.Contract(BPoolABI, poolAddr) as unknown as IbPool
+		// bpool can be used for each input & output combination
+		if (this.tokenA.toLowerCase().localeCompare(this.tokenB.toLowerCase()) > 0) {
+			this.pairKey = `${this.poolAddr}-${this.tokenA}:${this.tokenB}`
+		} else {
+			this.pairKey = `${this.poolAddr}-${this.tokenB}:${this.tokenA}`
+		}
 	}
 
 	protected async _init() {
@@ -45,16 +51,8 @@ export class PairBPool extends Pair {
 		this.weightA = new BigNumber(weightA)
 		this.weightB = new BigNumber(weightB)
 
-		// bpool can be used for each input & output combination
-		let pairKey
-		if (this.tokenA.toLowerCase().localeCompare(this.tokenB.toLowerCase()) > 0) {
-			pairKey = `${this.poolAddr}-${this.tokenA}:${this.tokenB}`
-		} else {
-			pairKey = `${this.poolAddr}-${this.tokenB}:${this.tokenA}`
-		}
-
 		return {
-			pairKey: pairKey,
+			pairKey: this.pairKey,
 			tokenA: this.tokenA,
 			tokenB: this.tokenB,
 			swappaPairAddress
