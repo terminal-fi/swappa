@@ -12,7 +12,7 @@ import { SwappaManager } from '../swappa-manager';
 import {
 	mainnetRegistryMobius, mainnetRegistryMoola, mainnetRegistryMoolaV2,
 	mainnetRegistrySavingsCELO, mainnetRegistrySushiswap, mainnetRegistryUbeswap,
-	mainnetRegistryCeloDex,
+	mainnetRegistryCeloDex, mainnetRegistrySymmetric
 } from '../registry-cfg';
 import { RegistryMento } from '../registries/mento';
 import { Registry } from '../registry';
@@ -44,6 +44,7 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"moola-v2":	mainnetRegistryMoolaV2,
 	"savingscelo":	mainnetRegistrySavingsCELO,
 	"celodex":	mainnetRegistryCeloDex,
+	"symmetric": mainnetRegistrySymmetric
 }
 
 function tokenByAddrOrSymbol(addressOrSymbol: string) {

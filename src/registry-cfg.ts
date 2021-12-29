@@ -8,6 +8,7 @@ import { RegistryAaveV2 } from "./registries/aave-v2"
 import { RegistryMento } from "./registries/mento"
 import { RegistryStatic } from "./registries/static"
 import { RegistryUniswapV2 } from "./registries/uniswapv2"
+import { RegistryBalancer } from "./registries/balancer"
 
 export const mainnetRegistryMoola =
 	(kit: ContractKit) => new RegistryAave(kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA")
@@ -47,6 +48,8 @@ export const mainnetRegistryCeloDex =
 		fixedFee: new BigNumber(0.997), // TODO(zviadm): Figure out actual fee for CeloDex pairs.
 		fetchUsingAllPairs: true,
 	})
+export const mainnetRegistrySymmetric =
+	(kit: ContractKit) => new RegistryBalancer(kit, "0x3E30b138ecc85cD89210e1A19a8603544A917372")
 
 // mainnetRegistriesWhitelist contains list of more established protocols with
 // overall higher TVL.
@@ -57,6 +60,8 @@ export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	mainnetRegistrySushiswap(kit),
 	// Stableswap forks:
 	mainnetRegistryMobius(kit),
+	// Balancer forks:
+	mainnetRegistrySymmetric(kit),
 	// Direct conversion protocols:
 	mainnetRegistryMoola(kit),
 	mainnetRegistryMoolaV2(kit),

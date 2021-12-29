@@ -89,7 +89,8 @@ export class PairBPool extends Pair {
 		const weightRatio = new BigNumber(tokenWeightIn).div(tokenWeightOut)
 		const adjustedIn = inputAmount.multipliedBy(ONE.minus(this.swapFee))
 		const y = tokenBalanceIn.div(tokenBalanceIn.plus(adjustedIn))
-		const foo = y.pow(weightRatio)
+		// BigNumber.js does not support fractional exponentiation
+		const foo = Math.pow(y.toNumber(), weightRatio.toNumber())
 		const bar = ONE.minus(foo)
 		return tokenBalanceOut.multipliedBy(bar)
 	}
