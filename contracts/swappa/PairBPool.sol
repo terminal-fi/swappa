@@ -25,7 +25,7 @@ contract PairBPool is ISwappaPairV1 {
 			inputAmount,
 			output,
 			0, // minAmountOut
-			uint256(-1) // maxPrice
+			~uint256(0) // maxPrice
 		);
 		require(
 			ERC20(output).transfer(to, outputAmount),

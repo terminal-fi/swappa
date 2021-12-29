@@ -3,6 +3,7 @@ import BigNumber from "bignumber.js"
 
 import { IbPool, ABI as BPoolABI } from "../../types/web3-v1-contracts/IBPool"
 import { Address, Pair } from "../pair"
+import { address as pairBPoolAddress } from "../../tools/deployed/mainnet.PairBPool.addr.json"
 import { selectAddress } from "../utils"
 
 const ZERO = new BigNumber(0)
@@ -38,7 +39,7 @@ export class PairBPool extends Pair {
 			this.bPool.methods.getDenormalizedWeight(this.tokenA).call(),
 			this.bPool.methods.getDenormalizedWeight(this.tokenB).call(),
 			// TODO: change this after merge to the actual deployed PairBPool swap address
-			selectAddress(this.kit, {mainnet: ''})
+			selectAddress(this.kit, {mainnet: pairBPoolAddress})
 		])
 		this.swapFee = new BigNumber(swapFee).div(10**18)
 		this.weightA = new BigNumber(weightA)
