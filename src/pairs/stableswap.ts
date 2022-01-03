@@ -4,9 +4,17 @@ import BigNumber from "bignumber.js"
 import { ISwap, ABI as SwapABI } from "../../types/web3-v1-contracts/ISwap"
 import { Erc20, ABI as Erc20ABI } from '../../types/web3-v1-contracts/ERC20';
 
-import { Address, Pair } from "../pair"
+import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairStableSwapAddress } from "../../tools/deployed/mainnet.PairStableSwap.addr.json"
+
+interface PairStableSwapSnapshot extends Snapshot {
+	paused: boolean
+	tokenPrecisionMultipliers: BigNumberString[]
+	balancesWithAdjustedPrecision: BigNumberString[]
+	swapFee: BigNumberString
+	preciseA: BigNumberString
+}
 
 export class PairStableSwap extends Pair {
 	allowRepeats = false
@@ -158,5 +166,23 @@ export class PairStableSwap extends Pair {
 
 	protected swapExtraData() {
 		return this.swapPoolAddr
+	}
+
+	public snapshot(): PairStableSwapSnapshot {
+		return {
+			paused: this.paused,
+			tokenPrecisionMultipliers: this.tokenPrecisionMultipliers.map(n => n.toFixed()),
+			balancesWithAdjustedPrecision: this.balancesWithAdjustedPrecision.map(n => n.toFixed()),
+			swapFee: this.swapFee.toFixed(),
+			preciseA: this.preciseA.toFixed()
+		}
+	}
+
+	public restore(snapshot: PairStableSwapSnapshot): void {
+		this.paused = snapshot.paused
+		this.tokenPrecisionMultipliers = snapshot.tokenPrecisionMultipliers.map(r => new BigNumber(r))
+		this.balancesWithAdjustedPrecision = snapshot.balancesWithAdjustedPrecision.map(r => new BigNumber(r))
+		this.swapFee = new BigNumber(snapshot.swapFee)
+		this.preciseA = new BigNumber(snapshot.preciseA)
 	}
 }
