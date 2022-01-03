@@ -2,6 +2,9 @@ import BigNumber from "bignumber.js";
 
 export type Address = string
 
+export abstract class Snapshot {}
+export type BigNumberString = string
+
 export interface SwapData {
 	addr: string
 	extra: string
@@ -39,6 +42,15 @@ export abstract class Pair {
 	}
 	protected abstract swapExtraData(inputToken: Address): string;
 	public abstract outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber;
+
+	public abstract snapshot(): Snapshot;
+	public abstract restore(snapshot: Snapshot): void;
+}
+
+interface PairXYeqKSnapshot extends Snapshot {
+	fee: BigNumberString
+	bucketA: BigNumberString
+	bucketB: BigNumberString
 }
 
 export abstract class PairXYeqK extends Pair {
@@ -73,5 +85,19 @@ export abstract class PairXYeqK extends Pair {
 		}
 		return buckets[0].multipliedBy(outputAmount).div(
 			buckets[1].minus(outputAmount).multipliedBy(this.fee))
+	}
+
+	public snapshot(): PairXYeqKSnapshot {
+		return {
+			fee: this.fee.toFixed(),
+			bucketA: this.bucketA.toFixed(),
+			bucketB: this.bucketB.toFixed()
+		}
+	}
+
+	public restore(snapshot: PairXYeqKSnapshot): void {
+		this.fee = new BigNumber(snapshot.fee)
+		this.bucketA = new BigNumber(snapshot.bucketA)
+		this.bucketB = new BigNumber(snapshot.bucketB)
 	}
 }

@@ -1,9 +1,9 @@
 import BigNumber from "bignumber.js"
-import { ContractKit } from "@celo/contractkit"
+import Web3 from "web3"
 
 import { ILendingPoolV2, ABI as ILendingPoolV2ABI } from "../../types/web3-v1-contracts/ILendingPoolV2"
 
-import { Address, Pair } from "../pair"
+import { Address, Pair, Snapshot } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairATokenV2Address } from "../../tools/deployed/mainnet.PairATokenV2.addr.json"
 
@@ -13,12 +13,12 @@ export class PairATokenV2 extends Pair {
 	private pool: ILendingPoolV2
 
 	constructor(
-		private kit: ContractKit,
+		private web3: Web3,
 		private poolAddr: Address,
 		private reserve: Address,
 	) {
 		super()
-		this.pool = new this.kit.web3.eth.Contract(ILendingPoolV2ABI, this.poolAddr)
+		this.pool = new this.web3.eth.Contract(ILendingPoolV2ABI, this.poolAddr) as unknown as ILendingPoolV2
 	}
 
 	protected async _init() {
@@ -28,7 +28,7 @@ export class PairATokenV2 extends Pair {
 		return {
 			pairKey: null,
 			tokenA, tokenB,
-			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairATokenV2Address})
+			swappaPairAddress: await selectAddress(this.web3, {mainnet: pairATokenV2Address})
 		}
 	}
 	public async refresh(): Promise<void> {}
@@ -43,5 +43,13 @@ export class PairATokenV2 extends Pair {
 			throw new Error(`unsupported input: ${inputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
 		}
 		return inputAmount
+	}
+
+	public snapshot(): Snapshot {
+		return {}
+	}
+
+	public restore(snapshot: Snapshot): void {
+		// do nothing
 	}
 }

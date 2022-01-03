@@ -77,7 +77,8 @@ async function main() {
 			console.info(
 				`${registry.getName().padEnd(12)}` +
 				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
-				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}`)
+				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}` +
+				`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
 		}
 	}
 
