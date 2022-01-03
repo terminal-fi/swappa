@@ -1,4 +1,4 @@
-import { ContractKit } from "@celo/contractkit"
+import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
 import { ISwap, ABI as SwapABI } from "../../types/web3-v1-contracts/ISwap"
@@ -30,11 +30,11 @@ export class PairStableSwap extends Pair {
 	static readonly A_PRECISION = 100
 
 	constructor(
-		private kit: ContractKit,
+		private web3: Web3,
 		private swapPoolAddr: Address,
 	) {
 		super()
-		this.swapPool = new kit.web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
+		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
 	}
 
 	protected async _init() {
@@ -45,10 +45,10 @@ export class PairStableSwap extends Pair {
 		] = await Promise.all([
 			this.swapPool.methods.getToken(0).call(),
 			this.swapPool.methods.getToken(1).call(),
-			selectAddress(this.kit, {mainnet: pairStableSwapAddress}),
+			selectAddress(this.web3, {mainnet: pairStableSwapAddress}),
 		])
-		const erc20A = new this.kit.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
-		const erc20B = new this.kit.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
+		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
+		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
 		const [
 			decimalsA,
 			decimalsB,

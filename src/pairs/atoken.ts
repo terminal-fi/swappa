@@ -1,7 +1,8 @@
 import BigNumber from "bignumber.js"
+import Web3 from "web3"
 import { ContractKit } from "@celo/contractkit"
-import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contracts/ILendingPool";
-import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider";
+import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contracts/ILendingPool"
+import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider"
 
 import { Address, Pair, Snapshot } from "../pair"
 import { selectAddress } from "../utils"
@@ -34,7 +35,7 @@ export class PairAToken extends Pair {
 		return {
 			pairKey: null,
 			tokenA, tokenB,
-			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairATokenAddress})
+			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairATokenAddress})
 		}
 	}
 	public async refresh(): Promise<void> {}
