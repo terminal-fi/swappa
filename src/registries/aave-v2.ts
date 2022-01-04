@@ -6,11 +6,13 @@ import { ILendingPoolAddressesProviderV2, ABI as ILendingPoolAddressesProviderV2
 import { Address } from "../pair"
 import { initPairsAndFilterByWhitelist } from "../utils"
 import { PairATokenV2 } from "../pairs/atoken-v2"
+import { Registry } from "../registry"
 
-export class RegistryAaveV2 {
+export class RegistryAaveV2 extends Registry {
 	private provider: ILendingPoolAddressesProviderV2
 
-	constructor(private web3: Web3, lendingPoolAddrProviderAddr: string) {
+	constructor(name: string, private web3: Web3, lendingPoolAddrProviderAddr: string) {
+		super(name)
 		this.provider = new web3.eth.Contract(ILendingPoolAddressesProviderV2ABI, lendingPoolAddrProviderAddr) as unknown as ILendingPoolAddressesProviderV2
 	}
 

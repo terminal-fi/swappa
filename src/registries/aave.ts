@@ -4,12 +4,14 @@ import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contrac
 import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider"
 import { Address } from "../pair"
 import { PairAToken, ReserveCELO } from "../pairs/atoken"
+import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
 
-export class RegistryAave {
+export class RegistryAave extends Registry {
 	private lendingPoolAddrProvider: ILendingPoolAddressesProvider
 
-	constructor(private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
+	constructor(name: string, private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
+		super(name)
 		this.lendingPoolAddrProvider = new kit.web3.eth.Contract(
 			LendingPoolAddressProviderABI, lendingPoolAddrProviderAddr) as unknown as ILendingPoolAddressesProvider
 	}

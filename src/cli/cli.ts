@@ -36,14 +36,14 @@ process.on('unhandledRejection', (reason: any, _promise: any) => {
 })
 
 const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
-	"mento": (kit: ContractKit) =>	new RegistryMento(kit),
-	"ubeswap":	mainnetRegistryUbeswap,
-	"sushiswap":	mainnetRegistrySushiswap,
-	"mobius":	mainnetRegistryMobius,
-	"moola":	mainnetRegistryMoola,
-	"moola-v2":	mainnetRegistryMoolaV2,
-	"savingscelo":	mainnetRegistrySavingsCELO,
-	"celodex":	mainnetRegistryCeloDex,
+	"mento":       (kit: ContractKit) => new RegistryMento(kit),
+	"ubeswap":     mainnetRegistryUbeswap,
+	"sushiswap":   mainnetRegistrySushiswap,
+	"mobius":      mainnetRegistryMobius,
+	"moola":       mainnetRegistryMoola,
+	"moola-v2":    mainnetRegistryMoolaV2,
+	"savingscelo": mainnetRegistrySavingsCELO,
+	"celodex":     mainnetRegistryCeloDex,
 }
 
 function tokenByAddrOrSymbol(addressOrSymbol: string) {
@@ -72,11 +72,14 @@ async function main() {
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs (${pairs.length}):`)
-	for (const pair of pairs) {
-		console.info(
-			`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
-			`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol} ` +
-			`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
+	for (const registry of registries) {
+		for (const pair of manager.getPairsByRegistry(registry.getName())) {
+			console.info(
+				`${registry.getName().padEnd(12)}` +
+				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
+				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}` +
+				`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
+		}
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)

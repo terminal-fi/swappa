@@ -1,5 +1,15 @@
 import { Address, Pair } from "./pair";
 
-export interface Registry {
-	findPairs: (tokenWhitelist: Address[]) => Promise<Pair[]>
+export abstract class Registry {
+	private name: string
+
+	constructor(name: string) {
+		this.name = name
+	}
+
+	public getName(): string {
+		return this.name
+	}
+
+	public abstract findPairs(tokenWhitelist: Address[]): Promise<Pair[]>
 }

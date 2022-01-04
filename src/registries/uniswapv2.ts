@@ -5,12 +5,14 @@ import { concurrentMap } from '@celo/utils/lib/async'
 import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contracts/IUniswapV2Factory"
 import { Address, Pair } from "../pair"
 import { PairUniswapV2 } from "../pairs/uniswapv2"
+import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
 
-export class RegistryUniswapV2 {
+export class RegistryUniswapV2 extends Registry {
 	private factory: IUniswapV2Factory
 
 	constructor(
+		name: string,
 		private web3: Web3,
 		factoryAddr: Address,
 		private opts?: {
@@ -18,6 +20,7 @@ export class RegistryUniswapV2 {
 			fetchUsingAllPairs?: boolean,
 		},
 	) {
+		super(name)
 		this.factory = new web3.eth.Contract(FactoryABI, factoryAddr) as unknown as IUniswapV2Factory
 	}
 
