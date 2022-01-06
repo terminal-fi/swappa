@@ -1,4 +1,4 @@
-import { ContractKit } from "@celo/contractkit"
+import Web3 from 'web3'
 import { concurrentMap } from '@celo/utils/lib/async'
 
 import { IbRegistry, ABI as IbRegistryABI } from "../../types/web3-v1-contracts/IBRegistry"
@@ -46,7 +46,7 @@ export class RegistryBalancer extends Registry {
 						key = `${poolAddr}-${toFetch.tokenB}:${toFetch.tokenA}`
 					}
 					if (poolPairs.has(key)) {
-						// already seen this pool and token combination
+						// already has this pool and token combination
 						continue
 					}
 					poolPairs.set(key, pool)

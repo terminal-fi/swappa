@@ -8,6 +8,7 @@ import { selectAddress } from "../utils"
 
 const ZERO = new BigNumber(0)
 const ONE = new BigNumber(1)
+const BONE = new BigNumber(10 ** 18)
 
 interface PairBPoolSnapshot extends Snapshot {
 	swapFee: BigNumberString
@@ -49,7 +50,7 @@ export class PairBPool extends Pair {
 			// TODO: change this after merge to the actual deployed PairBPool swap address
 			selectAddress(this.web3, {mainnet: pairBPoolAddress})
 		])
-		this.swapFee = new BigNumber(swapFee).div(10**18)
+		this.swapFee = new BigNumber(swapFee).div(BONE)
 		this.weightA = new BigNumber(weightA)
 		this.weightB = new BigNumber(weightB)
 

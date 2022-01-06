@@ -53,7 +53,7 @@ export const mainnetRegistryCeloDex =
 		fetchUsingAllPairs: true,
 	})
 export const mainnetRegistrySymmetric =
-	(kit: ContractKit) => new RegistryBalancer(kit, "0x3E30b138ecc85cD89210e1A19a8603544A917372")
+	(kit: ContractKit) => new RegistryBalancer("symmetric", kit.web3 as unknown as Web3, "0x3E30b138ecc85cD89210e1A19a8603544A917372")
 
 // mainnetRegistriesWhitelist contains list of more established protocols with
 // overall higher TVL.
