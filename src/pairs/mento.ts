@@ -1,11 +1,13 @@
-import { ContractKit, StableToken } from "@celo/contractkit";
-import { ExchangeWrapper } from "@celo/contractkit/lib/wrappers/Exchange";
-import BigNumber from "bignumber.js";
-import { Address, PairXYeqK } from "../pair";
+import { ContractKit, StableToken } from "@celo/contractkit"
+import { ExchangeWrapper } from "@celo/contractkit/lib/wrappers/Exchange"
+import BigNumber from "bignumber.js"
+import Web3 from "web3"
+
+import { PairXYeqK } from "../pair"
 import { address as pairMentoAddress } from "../../tools/deployed/mainnet.PairMento.addr.json"
-import { ReserveWrapper } from "@celo/contractkit/lib/wrappers/Reserve";
-import { SortedOraclesWrapper } from "@celo/contractkit/lib/wrappers/SortedOracles";
-import { selectAddress } from "../utils";
+import { ReserveWrapper } from "@celo/contractkit/lib/wrappers/Reserve"
+import { SortedOraclesWrapper } from "@celo/contractkit/lib/wrappers/SortedOracles"
+import { selectAddress } from "../utils"
 
 export class PairMento extends PairXYeqK {
 	allowRepeats = false
@@ -31,7 +33,7 @@ export class PairMento extends PairXYeqK {
 			pairKey: this.exchange.address,
 			tokenA: celo.address,
 			tokenB: cSTB.address,
-			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairMentoAddress})
+			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairMentoAddress})
 		}
 	}
 

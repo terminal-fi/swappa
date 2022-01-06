@@ -1,12 +1,20 @@
-import { ContractKit } from "@celo/contractkit"
+import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
 import { ISwap, ABI as SwapABI } from "../../types/web3-v1-contracts/ISwap"
 import { Erc20, ABI as Erc20ABI } from '../../types/web3-v1-contracts/ERC20';
 
-import { Address, Pair } from "../pair"
+import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairStableSwapAddress } from "../../tools/deployed/mainnet.PairStableSwap.addr.json"
+
+interface PairStableSwapSnapshot extends Snapshot {
+	paused: boolean
+	tokenPrecisionMultipliers: BigNumberString[]
+	balancesWithAdjustedPrecision: BigNumberString[]
+	swapFee: BigNumberString
+	preciseA: BigNumberString
+}
 
 export class PairStableSwap extends Pair {
 	allowRepeats = false
@@ -22,11 +30,11 @@ export class PairStableSwap extends Pair {
 	static readonly A_PRECISION = 100
 
 	constructor(
-		private kit: ContractKit,
+		private web3: Web3,
 		private swapPoolAddr: Address,
 	) {
 		super()
-		this.swapPool = new kit.web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
+		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
 	}
 
 	protected async _init() {
@@ -37,10 +45,10 @@ export class PairStableSwap extends Pair {
 		] = await Promise.all([
 			this.swapPool.methods.getToken(0).call(),
 			this.swapPool.methods.getToken(1).call(),
-			selectAddress(this.kit, {mainnet: pairStableSwapAddress}),
+			selectAddress(this.web3, {mainnet: pairStableSwapAddress}),
 		])
-		const erc20A = new this.kit.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
-		const erc20B = new this.kit.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
+		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
+		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
 		const [
 			decimalsA,
 			decimalsB,
@@ -158,5 +166,23 @@ export class PairStableSwap extends Pair {
 
 	protected swapExtraData() {
 		return this.swapPoolAddr
+	}
+
+	public snapshot(): PairStableSwapSnapshot {
+		return {
+			paused: this.paused,
+			tokenPrecisionMultipliers: this.tokenPrecisionMultipliers.map(n => n.toFixed()),
+			balancesWithAdjustedPrecision: this.balancesWithAdjustedPrecision.map(n => n.toFixed()),
+			swapFee: this.swapFee.toFixed(),
+			preciseA: this.preciseA.toFixed()
+		}
+	}
+
+	public restore(snapshot: PairStableSwapSnapshot): void {
+		this.paused = snapshot.paused
+		this.tokenPrecisionMultipliers = snapshot.tokenPrecisionMultipliers.map(r => new BigNumber(r))
+		this.balancesWithAdjustedPrecision = snapshot.balancesWithAdjustedPrecision.map(r => new BigNumber(r))
+		this.swapFee = new BigNumber(snapshot.swapFee)
+		this.preciseA = new BigNumber(snapshot.preciseA)
 	}
 }

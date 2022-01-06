@@ -1,13 +1,21 @@
-import { ContractKit } from "@celo/contractkit"
 import BigNumber from "bignumber.js"
+import Web3 from "web3"
 
 import { IbPool, ABI as BPoolABI } from "../../types/web3-v1-contracts/IBPool"
-import { Address, Pair } from "../pair"
+import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { address as pairBPoolAddress } from "../../tools/deployed/mainnet.PairBPool.addr.json"
 import { selectAddress } from "../utils"
 
 const ZERO = new BigNumber(0)
 const ONE = new BigNumber(1)
+
+interface PairBPoolSnapshot extends Snapshot {
+	swapFee: BigNumberString
+	weightA: BigNumberString
+	weightB: BigNumberString
+	balanceA: BigNumberString
+	balanceB: BigNumberString
+}
 
 export class PairBPool extends Pair {
 	allowRepeats = false
@@ -19,13 +27,13 @@ export class PairBPool extends Pair {
 	private balanceB: BigNumber = ZERO
 
 	constructor(
-		private kit: ContractKit,
+		private web3: Web3,
 		private poolAddr: Address,
 		public tokenA: Address,
 		public tokenB: Address
 	) {
 		super()
-		this.bPool = new kit.web3.eth.Contract(BPoolABI, poolAddr) as unknown as IbPool
+		this.bPool = new web3.eth.Contract(BPoolABI, poolAddr) as unknown as IbPool
 	}
 
 	protected async _init() {
@@ -39,7 +47,7 @@ export class PairBPool extends Pair {
 			this.bPool.methods.getDenormalizedWeight(this.tokenA).call(),
 			this.bPool.methods.getDenormalizedWeight(this.tokenB).call(),
 			// TODO: change this after merge to the actual deployed PairBPool swap address
-			selectAddress(this.kit, {mainnet: pairBPoolAddress})
+			selectAddress(this.web3, {mainnet: pairBPoolAddress})
 		])
 		this.swapFee = new BigNumber(swapFee).div(10**18)
 		this.weightA = new BigNumber(weightA)
@@ -84,12 +92,28 @@ export class PairBPool extends Pair {
 		const adjustedIn = inputAmount.multipliedBy(ONE.minus(this.swapFee))
 		const y = tokenBalanceIn.div(tokenBalanceIn.plus(adjustedIn))
 		// BigNumber.js does not support fractional exponentiation
-		const foo = Math.pow(y.toNumber(), weightRatio.toNumber())
-		const bar = ONE.minus(foo)
-		return tokenBalanceOut.multipliedBy(bar)
+		const multiplier = ONE.minus(Math.pow(y.toNumber(), weightRatio.toNumber()))
+		return tokenBalanceOut.multipliedBy(multiplier)
 	}
 
 	protected swapExtraData() {
 		return this.poolAddr
+	}
+
+	public snapshot(): PairBPoolSnapshot {
+		return {
+			swapFee: this.swapFee.toFixed(),
+			weightA: this.weightA.toFixed(),
+			weightB: this.weightB.toFixed(),
+			balanceA: this.balanceA.toFixed(),
+			balanceB: this.balanceB.toFixed()
+		}
+	}
+	public restore(snapshot: PairBPoolSnapshot): void {
+		this.swapFee = new BigNumber(snapshot.swapFee)
+		this.weightA = new BigNumber(snapshot.weightA)
+		this.weightB = new BigNumber(snapshot.weightB)
+		this.balanceA = new BigNumber(snapshot.balanceA)
+		this.balanceB = new BigNumber(snapshot.balanceB)
 	}
 }

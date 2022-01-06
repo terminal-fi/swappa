@@ -1,10 +1,16 @@
 import BigNumber from "bignumber.js"
+import Web3 from "web3"
 import { ContractKit } from "@celo/contractkit"
 
-import { Address, Pair } from "../pair"
+import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairSavingsCELOAddress } from "../../tools/deployed/mainnet.PairSavingsCELO.addr.json"
 import { celoToSavings, SavingsKit } from "@terminal-fi/savingscelo";
+
+interface PairSavingsCELOSnapshot extends Snapshot {
+	celoTotal: BigNumberString
+	savingsTotal: BigNumberString
+}
 
 export class PairSavingsCELO extends Pair {
 	allowRepeats = true
@@ -27,7 +33,7 @@ export class PairSavingsCELO extends Pair {
 		return {
 			pairKey: null,
 			tokenA, tokenB,
-			swappaPairAddress: await selectAddress(this.kit, {mainnet: pairSavingsCELOAddress})
+			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairSavingsCELOAddress})
 		}
 	}
 	public async refresh(): Promise<void> {
@@ -45,6 +51,20 @@ export class PairSavingsCELO extends Pair {
 			return new BigNumber(0)
 		} else {
 			throw new Error(`unsupported input: ${inputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
+		}
+	}
+
+	public snapshot(): PairSavingsCELOSnapshot {
+		return {
+			celoTotal: this.totalSupplies?.celoTotal.toFixed() || '',
+			savingsTotal: this.totalSupplies?.savingsTotal.toFixed() || ''
+		}
+	}
+
+	public restore(snapshot: PairSavingsCELOSnapshot): void {
+		this.totalSupplies = {
+			celoTotal: new BigNumber(snapshot.celoTotal),
+			savingsTotal: new BigNumber(snapshot.savingsTotal)
 		}
 	}
 }
