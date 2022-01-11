@@ -44,7 +44,7 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"moola-v2":    mainnetRegistryMoolaV2,
 	"savingscelo": mainnetRegistrySavingsCELO,
 	"celodex":     mainnetRegistryCeloDex,
-	"symmetric":   mainnetRegistrySymmetric
+	"symmetric":   mainnetRegistrySymmetric,
 }
 
 function tokenByAddrOrSymbol(addressOrSymbol: string) {
