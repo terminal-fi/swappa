@@ -26,6 +26,10 @@ export class PairBPool extends Pair {
 	private weightB: BigNumber = ZERO
 	private balanceA: BigNumber = ZERO
 	private balanceB: BigNumber = ZERO
+
+	// Balancer pools with more than 2 tokens are repeated as the pair-wise combinations.
+	// siblings is used to keep track of all of the PairBPool that represent the same poolAddr.
+	// The same array instance is set by the RegistryBalancer on all of the pair-wise PairBPools.
 	private siblings: PairBPool[] = []
 
 	constructor(
