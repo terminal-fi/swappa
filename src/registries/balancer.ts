@@ -27,13 +27,14 @@ export class RegistryBalancer extends Registry {
 			}
 		}
 		const poolPairs = new Map<string, PairBPool>()
+		const poolSiblings = new Map<string, PairBPool[]>()
 		await concurrentMap(
 			10,
 			pairsToFetch,
 			async (toFetch) => {
 				const pools = await this.registry.methods.getBestPools(toFetch.tokenA, toFetch.tokenB).call()
 				if (pools.length == 0) {
-					return null
+					return
 				}
 
 				for (const poolAddr of pools) {
@@ -50,6 +51,16 @@ export class RegistryBalancer extends Registry {
 						continue
 					}
 					poolPairs.set(key, pool)
+
+					// keep track of which pair bpools are actually the same pool, but different entry and exit tokens
+					if (!poolSiblings.has(poolAddr)) {
+						poolSiblings.set(poolAddr, [])
+					}
+
+					// set the siblings on the pool, the siblings array is a shared array
+					const siblings = poolSiblings.get(poolAddr) || []
+					siblings.push(pool)
+					pool.setSiblings(siblings)
 				}
 			})
 		return initPairsAndFilterByWhitelist(Array.from(poolPairs.values()), tokenWhitelist)

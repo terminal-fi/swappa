@@ -26,6 +26,7 @@ export class PairBPool extends Pair {
 	private weightB: BigNumber = ZERO
 	private balanceA: BigNumber = ZERO
 	private balanceB: BigNumber = ZERO
+	private siblings: PairBPool[] = []
 
 	constructor(
 		private web3: Web3,
@@ -47,7 +48,6 @@ export class PairBPool extends Pair {
 			this.bPool.methods.getSwapFee().call(),
 			this.bPool.methods.getDenormalizedWeight(this.tokenA).call(),
 			this.bPool.methods.getDenormalizedWeight(this.tokenB).call(),
-			// TODO: change this after merge to the actual deployed PairBPool swap address
 			selectAddress(this.web3, {mainnet: pairBPoolAddress})
 		])
 		this.swapFee = new BigNumber(swapFee).div(BONE)
@@ -110,11 +110,20 @@ export class PairBPool extends Pair {
 			balanceB: this.balanceB.toFixed()
 		}
 	}
+
 	public restore(snapshot: PairBPoolSnapshot): void {
 		this.swapFee = new BigNumber(snapshot.swapFee)
 		this.weightA = new BigNumber(snapshot.weightA)
 		this.weightB = new BigNumber(snapshot.weightB)
 		this.balanceA = new BigNumber(snapshot.balanceA)
 		this.balanceB = new BigNumber(snapshot.balanceB)
+	}
+
+	public setSiblings(siblings: PairBPool[]): void {
+		this.siblings = siblings
+	}
+
+	public getSiblings(): PairBPool[] {
+		return this.siblings
 	}
 }
