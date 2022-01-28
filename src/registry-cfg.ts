@@ -4,6 +4,7 @@ import { ContractKit } from "@celo/contractkit"
 import { SavingsCELOAddressMainnet } from "@terminal-fi/savingscelo"
 import { PairSavingsCELO } from "./pairs/savingscelo"
 import { PairStableSwap } from "./pairs/stableswap"
+import { PairOpenSumSwap } from "./pairs/opensumswap"
 import { RegistryAave } from "./registries/aave"
 import { RegistryAaveV2 } from "./registries/aave-v2"
 import { RegistryMento } from "./registries/mento"
@@ -39,6 +40,10 @@ export const mainnetRegistryMobius =
 			new PairStableSwap(web3, "0x74ef28D635c6C5800DD3Cd62d4c4f8752DaACB09"), // cETH <-> WETHv2
 			new PairStableSwap(web3, "0xaEFc4e8cF655a182E8346B24c8AbcE45616eE0d2"), // cBTC <-> WBTCv2
 			new PairStableSwap(web3, "0xcCe0d62Ce14FB3e4363Eb92Db37Ff3630836c252"), // cUSD <-> pUSDCv2
+			// Optics V1 <-> V2
+			new PairOpenSumSwap(web3, "0xb1a0BDe36341065cA916c9f5619aCA82A43659A3"), // wETH <-> wETHv2
+			new PairOpenSumSwap(web3, "0xd5ab1BA8b2Ec70752068d1d728e728eAd0E19CBA"), // wBTC <-> wBTCv2
+			new PairOpenSumSwap(web3, "0x70bfA1C8Ab4e42B9BE74f65941EFb6e5308148c7"), // USDC <-> USDCv2
 		])
 	}
 export const mainnetRegistrySavingsCELO =
