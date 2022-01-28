@@ -11,6 +11,8 @@ interface PairOpenSumSwapSnapshot extends Snapshot {
 	balances: BigNumberString[]
 }
 
+const ZERO = new BigNumber(0)
+
 export class PairOpenSumSwap extends Pair {
 	allowRepeats = false
 	private swapPool: IOpenSumSwap
@@ -58,16 +60,16 @@ export class PairOpenSumSwap extends Pair {
 
 	public outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber {
 		if (this.paused) {
-			return new BigNumber(0)
+			return ZERO
 		}
-        if (inputToken === this.tokenA && inputAmount.gt(this.balances[1])) {
-            // not enough for conversion
-            return new BigNumber(0)
-        } else if (inputToken === this.tokenB && inputAmount.gt(this.balances[0])) {
-            // not enough for conversion
-            return new BigNumber(0)
-        }
-        return inputAmount
+		if (inputToken === this.tokenA && inputAmount.gt(this.balances[1])) {
+			// not enough for conversion
+			return ZERO
+		} else if (inputToken === this.tokenB && inputAmount.gt(this.balances[0])) {
+			// not enough for conversion
+			return ZERO
+		}
+		return inputAmount
 	}
 
 	protected swapExtraData() {
@@ -77,12 +79,12 @@ export class PairOpenSumSwap extends Pair {
 	public snapshot(): PairOpenSumSwapSnapshot {
 		return {
 			paused: this.paused,
-            balances: this.balances.map(b => b.toFixed())
+			balances: this.balances.map(b => b.toFixed())
 		}
 	}
 
 	public restore(snapshot: PairOpenSumSwapSnapshot): void {
 		this.paused = snapshot.paused
-        this.balances = snapshot.balances.map(b => new BigNumber(b))
+		this.balances = snapshot.balances.map(b => new BigNumber(b))
 	}
 }
