@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js"
 import { IOpenSumSwap, ABI as SwapABI } from "../../types/web3-v1-contracts/IOpenSumSwap"
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
-import { address as pairOpenSumSwapAddress } from "../../tools/deployed/mainnet.PairStableSwap.addr.json"
+import { address as pairOpenSumSwapAddress } from "../../tools/deployed/mainnet.PairOpenSumSwap.addr.json"
 
 interface PairOpenSumSwapSnapshot extends Snapshot {
 	paused: boolean
@@ -60,10 +60,10 @@ export class PairOpenSumSwap extends Pair {
 		if (this.paused) {
 			return new BigNumber(0)
 		}
-        if (inputToken == this.tokenA && inputAmount.gt(this.balances[1])) {
+        if (inputToken === this.tokenA && inputAmount.gt(this.balances[1])) {
             // not enough for conversion
             return new BigNumber(0)
-        } else if (inputToken == this.tokenB && inputAmount.gt(this.balances[0])) {
+        } else if (inputToken === this.tokenB && inputAmount.gt(this.balances[0])) {
             // not enough for conversion
             return new BigNumber(0)
         }
