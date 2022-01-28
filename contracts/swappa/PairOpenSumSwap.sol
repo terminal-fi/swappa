@@ -21,11 +21,11 @@ contract PairOpenSumSwap is ISwappaPairV1 {
 			ERC20(input).approve(swapPoolAddr, inputAmount),
 			"PairOpenSumSwap: approve failed!");
 		uint outputAmount = IOpenSumSwap(swapPoolAddr).swap(
-            input,
-            output,
-            inputAmount,
-            inputAmount,
-            block.timestamp);
+			input,
+			output,
+			inputAmount,
+			inputAmount,
+			block.timestamp);
 		require(
 			ERC20(output).transfer(to, outputAmount),
 			"PairOpenSumSwap: transfer failed!");
@@ -33,9 +33,9 @@ contract PairOpenSumSwap is ISwappaPairV1 {
 
 	function parseData(bytes memory data) private pure returns (address swapPoolAddr) {
 		require(data.length == 20, "PairOpenSumSwap: invalid data!");
-    assembly {
-      swapPoolAddr := mload(add(data, 20))
-    }
+	assembly {
+	  swapPoolAddr := mload(add(data, 20))
+	}
 	}
 
 	function getOutputAmount(
@@ -44,7 +44,7 @@ contract PairOpenSumSwap is ISwappaPairV1 {
 		uint amountIn,
 		bytes calldata data
 	) external view override returns (uint amountOut) {
-        // no fees are taken
+		// no fees are taken
 		return amountIn;
-    }
+	}
 }

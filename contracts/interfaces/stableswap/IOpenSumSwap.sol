@@ -7,9 +7,9 @@ interface IOpenSumSwap {
 	function getBalances() external view returns (uint256[] memory);
 	function swap(
 		address tokenFrom,
-        address tokenTo,
-        uint256 amountIn,
-        uint256 minAmountOut,
-        uint256 deadline
+		address tokenTo,
+		uint256 amountIn,
+		uint256 minAmountOut,
+		uint256 deadline
 	) external returns (uint256);
 }
