@@ -40,11 +40,7 @@ export const mainnetRegistryMobius =
 			new PairStableSwap(web3, "0x74ef28D635c6C5800DD3Cd62d4c4f8752DaACB09"), // cETH <-> WETHv2
 			new PairStableSwap(web3, "0xaEFc4e8cF655a182E8346B24c8AbcE45616eE0d2"), // cBTC <-> WBTCv2
 			new PairStableSwap(web3, "0xcCe0d62Ce14FB3e4363Eb92Db37Ff3630836c252"), // cUSD <-> pUSDCv2
-			new PairStableSwap(web3, "0xa2F0E57d4cEAcF025E81C76f28b9Ad6E9Fbe8735"), // cUSD <-> pUSDv2
-			new PairStableSwap(web3, "0xFc9e2C63370D8deb3521922a7B2b60f4Cff7e75a"), // CELO <-> pCELOv2
-			new PairStableSwap(web3, "0x23C95678862a229fAC088bd9705622d78130bC3e"), // cEUR <-> pEURv2
-			new PairStableSwap(web3, "0x9F4AdBD0af281C69a582eB2E6fa2A594D4204CAe"), // cUSD <-> atUST
-			// Optics V1 <-> V2
+			// Optics V1 <-> V2 migration
 			new PairOpenSumSwap(web3, "0xb1a0BDe36341065cA916c9f5619aCA82A43659A3"), // wETH <-> wETHv2
 			new PairOpenSumSwap(web3, "0xd5ab1BA8b2Ec70752068d1d728e728eAd0E19CBA"), // wBTC <-> wBTCv2
 			new PairOpenSumSwap(web3, "0x70bfA1C8Ab4e42B9BE74f65941EFb6e5308148c7"), // USDC <-> USDCv2
