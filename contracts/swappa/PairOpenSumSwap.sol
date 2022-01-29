@@ -33,9 +33,9 @@ contract PairOpenSumSwap is ISwappaPairV1 {
 
 	function parseData(bytes memory data) private pure returns (address swapPoolAddr) {
 		require(data.length == 20, "PairOpenSumSwap: invalid data!");
-	assembly {
-	  swapPoolAddr := mload(add(data, 20))
-	}
+		assembly {
+			swapPoolAddr := mload(add(data, 20))
+		}
 	}
 
 	function getOutputAmount(
