@@ -78,5 +78,4 @@ export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	// Direct conversion protocols:
 	mainnetRegistryMoola(kit),
 	mainnetRegistryMoolaV2(kit),
-	mainnetRegistrySavingsCELO(kit),
 ])

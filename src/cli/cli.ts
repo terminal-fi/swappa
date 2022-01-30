@@ -11,7 +11,7 @@ import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.Sw
 import { SwappaManager } from '../swappa-manager';
 import {
 	mainnetRegistryMobius, mainnetRegistryMoola, mainnetRegistryMoolaV2,
-	mainnetRegistrySavingsCELO, mainnetRegistrySushiswap, mainnetRegistryUbeswap,
+	mainnetRegistrySushiswap, mainnetRegistryUbeswap,
 	mainnetRegistryCeloDex, mainnetRegistrySymmetric
 } from '../registry-cfg';
 import { RegistryMento } from '../registries/mento';
@@ -42,7 +42,6 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"mobius":      mainnetRegistryMobius,
 	"moola":       mainnetRegistryMoola,
 	"moola-v2":    mainnetRegistryMoolaV2,
-	"savingscelo": mainnetRegistrySavingsCELO,
 	"celodex":     mainnetRegistryCeloDex,
 	"symmetric":   mainnetRegistrySymmetric,
 }
