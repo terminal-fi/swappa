@@ -11,9 +11,6 @@ const ONE = new BigNumber(1)
 const BONE = new BigNumber(10 ** 18)
 
 interface PairBPoolSnapshot extends Snapshot {
-	swapFee: BigNumberString
-	weightA: BigNumberString
-	weightB: BigNumberString
 	balanceA: BigNumberString
 	balanceB: BigNumberString
 }
@@ -76,6 +73,10 @@ export class PairBPool extends Pair {
 	}
 
 	public outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber {
+		if (this.balanceA.lt(1) || this.balanceB.lt(1)) {
+			return ZERO
+		}
+
 		let tokenBalanceIn, tokenBalanceOut, tokenWeightIn, tokenWeightOut
 		if (inputToken === this.tokenA) {
 			[tokenBalanceIn, tokenWeightIn, tokenBalanceOut, tokenWeightOut] = [
@@ -103,17 +104,11 @@ export class PairBPool extends Pair {
 
 	public snapshot(): PairBPoolSnapshot {
 		return {
-			swapFee: this.swapFee.toFixed(),
-			weightA: this.weightA.toFixed(),
-			weightB: this.weightB.toFixed(),
 			balanceA: this.balanceA.toFixed(),
 			balanceB: this.balanceB.toFixed()
 		}
 	}
 	public restore(snapshot: PairBPoolSnapshot): void {
-		this.swapFee = new BigNumber(snapshot.swapFee)
-		this.weightA = new BigNumber(snapshot.weightA)
-		this.weightB = new BigNumber(snapshot.weightB)
 		this.balanceA = new BigNumber(snapshot.balanceA)
 		this.balanceB = new BigNumber(snapshot.balanceB)
 	}
