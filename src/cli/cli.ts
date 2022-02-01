@@ -27,6 +27,7 @@ const program = commander.program
 	.option("--from <from>", "If provided, will actally execute trade from given account.")
 	.option("--max-slippage <max-slippage>", "Maximum allowed slippage.", "0.9999")
 	.option("--no-precheck", "If provided, will skip expected output precheck.")
+	.option("--benchmark <iterations>", "If non-zero, benchmark the route finding for N iterations.", "0")
 	.parse(process.argv)
 
 process.on('unhandledRejection', (reason: any, _promise: any) => {
@@ -86,6 +87,25 @@ async function main() {
 	console.info(`--------------------------------------------------------------------------------`)
 	console.info(`Routes: ${inputAmount.shiftedBy(-inputToken.decimals)} ${inputToken.symbol} -> ${outputToken.symbol}...`)
 	const startT0 = Date.now()
+
+	if (opts.benchmark && parseInt(opts.benchmark) > 0) {
+		// run the benchmark
+		const benchIterations = parseInt(opts.benchmark)
+		console.info(`Benchmarking for ${benchIterations} iterations`)
+		for (let i = 0; i < benchIterations; i++) {
+			manager.findBestRoutesForFixedInputAmount(
+				inputToken.address,
+				outputToken.address,
+				inputAmount,
+				{
+					maxSwaps: opts.maxSwaps || undefined,
+				}
+			)
+		}
+		const elapsed = Date.now() - startT0
+		console.info(`Benchmark elapsed ${elapsed / 1000}s, ${elapsed / benchIterations}ms per iteration`)
+	}
+
 	const routes = manager.findBestRoutesForFixedInputAmount(
 		inputToken.address,
 		outputToken.address,
@@ -99,7 +119,7 @@ async function main() {
 	for (const route of routes.slice(0, 5)) {
 		const path = route.pairs.map((p, idx) => `${tokenByAddrOrSymbol(route.path[idx]).symbol}:${(p as any).constructor.name}`)
 		console.info(
-			`Output: ${route.outputAmount.shiftedBy(-(outputToken.decimals || 18)).toFixed(6)} -- ` +
+			`Output: ${route.outputAmount.shiftedBy(-(outputToken.decimals || 18)).toFixed(10)} -- ` +
 			`${path.join(":")}:${outputToken.symbol}`)
 	}
 
