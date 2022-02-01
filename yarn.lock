@@ -2675,10 +2675,10 @@
   resolved "https://registry.yarnpkg.com/@types/zen-observable/-/zen-observable-0.8.3.tgz#781d360c282436494b32fe7d9f7f8e64b3118aa3"
   integrity sha512-fbF6oTd4sGGy0xjHPKAt+eS2CrxJ3+6gQ3FGcBoIJR2TLAyCkCyI8JqZNy+FeON0AhVgNJoUumVoZQjBFUqHkw==
 
-"@ubeswap/default-token-list@^4.0.11":
-  version "4.0.29"
-  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.0.29.tgz#ae5659126da231a98712eaef85856cef08e18afc"
-  integrity sha512-0GgBptMAz5XxB6cHrnM/eNVA/w1FUfuZl1OVrAiw2KFmLHeRDy2KbJMoal/OTRnW402CCMETvYjWYLTWDwn3iQ==
+"@ubeswap/default-token-list@^4.1.42":
+  version "4.1.42"
+  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.1.42.tgz#9917bf221a96d033032acc2fa0e66607f7efbc3c"
+  integrity sha512-GnbAZ5Qb33NG1/yPw8yHRKNfRre3UOKhTrlM4pop8hflxMeIWLyIbGJujeGZqUG77nvkBcQfrO8nlp3DV6qXoA==
 
 "@wry/context@^0.6.0":
   version "0.6.1"
