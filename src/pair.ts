@@ -71,9 +71,6 @@ export abstract class PairXYeqK extends Pair {
 		if (buckets === null) {
 			throw new Error(`unsupported input: ${inputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
 		}
-		if (this.bucketA.lt(1) || this.bucketB.lt(1)) {
-			return new BigNumber(0)
-		}
 		const amountWithFee = inputAmount.multipliedBy(this.fee)
 		const outputAmount = buckets[1].multipliedBy(amountWithFee).dividedToIntegerBy(buckets[0].plus(amountWithFee))
 		return !outputAmount.isNaN() ? outputAmount : new BigNumber(0)
