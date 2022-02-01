@@ -99,7 +99,7 @@ async function main() {
 	for (const route of routes.slice(0, 5)) {
 		const path = route.pairs.map((p, idx) => `${tokenByAddrOrSymbol(route.path[idx]).symbol}:${(p as any).constructor.name}`)
 		console.info(
-			`Output: ${route.outputAmount.shiftedBy(-(outputToken.decimals || 18)).toFixed(10)} -- ` +
+			`Output: ${route.outputAmount.shiftedBy(-(outputToken.decimals || 18)).toFixed(6)} -- ` +
 			`${path.join(":")}:${outputToken.symbol}`)
 	}
 
