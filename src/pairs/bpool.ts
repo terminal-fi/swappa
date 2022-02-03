@@ -95,7 +95,7 @@ export class PairBPool extends Pair {
 		const y = tokenBalanceIn.div(tokenBalanceIn.plus(adjustedIn))
 		// BigNumber.js does not support fractional exponentiation
 		const multiplier = ONE.minus(Math.pow(y.toNumber(), weightRatio.toNumber()))
-		return tokenBalanceOut.multipliedBy(multiplier)
+		return tokenBalanceOut.multipliedBy(multiplier).integerValue(BigNumber.ROUND_DOWN)
 	}
 
 	protected swapExtraData() {
