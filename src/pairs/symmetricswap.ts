@@ -33,7 +33,7 @@ export class PairSymmetricSwap extends Pair {
 		return {
 			pairKey: this.swapPoolAddr,
 			tokenA: this.tokenA,
-            tokenB: this.tokenA,
+            tokenB: this.tokenB,
             swappaPairAddress
         }
 	}
