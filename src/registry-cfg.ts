@@ -5,6 +5,7 @@ import { SavingsCELOAddressMainnet } from "@terminal-fi/savingscelo"
 import { PairSavingsCELO } from "./pairs/savingscelo"
 import { PairStableSwap } from "./pairs/stableswap"
 import { PairOpenSumSwap } from "./pairs/opensumswap"
+import { PairSymmetricSwap } from "./pairs/symmetricswap"
 import { RegistryAave } from "./registries/aave"
 import { RegistryAaveV2 } from "./registries/aave-v2"
 import { RegistryMento } from "./registries/mento"
@@ -48,6 +49,8 @@ export const mainnetRegistryMobius =
 			new PairOpenSumSwap(web3, "0xb1a0BDe36341065cA916c9f5619aCA82A43659A3"), // wETH <-> wETHv2
 			new PairOpenSumSwap(web3, "0xd5ab1BA8b2Ec70752068d1d728e728eAd0E19CBA"), // wBTC <-> wBTCv2
 			new PairOpenSumSwap(web3, "0x70bfA1C8Ab4e42B9BE74f65941EFb6e5308148c7"), // USDC <-> USDCv2
+			// Symmetric V1 <-> V2 migration
+			new PairSymmetricSwap(web3, "0xF21150EC57c360dA61cE7900dbaFdE9884198026", "0x7c64aD5F9804458B8c9F93f7300c15D55956Ac2a", "0x8427bD503dd3169cCC9aFF7326c15258Bc305478")
 		])
 	}
 export const mainnetRegistrySavingsCELO =
