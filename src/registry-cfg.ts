@@ -45,6 +45,12 @@ export const mainnetRegistryMobius =
 			new PairStableSwap(web3, "0xFc9e2C63370D8deb3521922a7B2b60f4Cff7e75a"), // CELO <-> pCELOv2
 			new PairStableSwap(web3, "0x23C95678862a229fAC088bd9705622d78130bC3e"), // cEUR <-> pEURv2
 			new PairStableSwap(web3, "0x9F4AdBD0af281C69a582eB2E6fa2A594D4204CAe"), // cUSD <-> atUST
+		])
+	}
+export const mainnetRegistryMisc =
+	(kit: ContractKit) => {
+		const web3 = kit.web3 as unknown as Web3
+		return new RegistryStatic("misc", [
 			// Optics V1 <-> V2 migration
 			new PairOpenSumSwap(web3, "0xb1a0BDe36341065cA916c9f5619aCA82A43659A3"), // wETH <-> wETHv2
 			new PairOpenSumSwap(web3, "0xd5ab1BA8b2Ec70752068d1d728e728eAd0E19CBA"), // wBTC <-> wBTCv2
@@ -81,4 +87,5 @@ export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	// Direct conversion protocols:
 	mainnetRegistryMoola(kit),
 	mainnetRegistryMoolaV2(kit),
+	mainnetRegistryMisc(kit),
 ])
