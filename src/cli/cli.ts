@@ -4,7 +4,7 @@ import { ContractKit, newKit } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 import { toTransactionObject } from '@celo/connect';
 
-import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap.token-list.json'
+import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap-experimental.token-list.json'
 import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
 import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 
