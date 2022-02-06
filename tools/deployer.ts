@@ -13,6 +13,7 @@ import PairSavingsCELO from "../build/contracts/PairSavingsCELO.json"
 import PairATokenV2 from "../build/contracts/PairATokenV2.json"
 import PairBPool from "../build/contracts/PairBPool.json"
 import PairOpenSumSwap from "../build/contracts/PairOpenSumSwap.json"
+import PairSymmetricSwap from "../build/contracts/PairSymmetricSwap.json"
 
 process.on('unhandledRejection', (reason, _promise) => {
 	// @ts-ignore
@@ -105,6 +106,8 @@ async function main() {
 		kit, opts.network, "PairBPool", PairBPool.bytecode)
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairOpenSumSwap", PairOpenSumSwap.bytecode)
+	await readAddressOrDeployContract(
+		kit, opts.network, "PairSymmetricSwap", PairSymmetricSwap.bytecode)
 }
 
 main()
