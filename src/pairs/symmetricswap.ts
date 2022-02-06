@@ -28,23 +28,26 @@ export class PairSymmetricSwap extends Pair {
 	constructor(
 		private web3: Web3,
 		private swapPoolAddr: Address,
-        public tokenA: Address,
-        public tokenB: Address
+		public tokenA: Address,
+		public tokenB: Address
 	) {
 		super()
+		// Unfortunately SymmetricSwap contract doesn't expose token addresses that it stores,
+		// thus they have to be hardcoded in the constructor and can't be fetched from swapPool
+		// directly.
 		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISymmetricSwap
 		this.ercA = new web3.eth.Contract(Ierc20ABI, tokenA) as unknown as Ierc20
 		this.ercB = new web3.eth.Contract(Ierc20ABI, tokenB) as unknown as Ierc20
 	}
 
 	protected async _init() {
-        const swappaPairAddress = await selectAddress(this.web3, {mainnet: pairSymmetricSwapAddress})
+		const swappaPairAddress = await selectAddress(this.web3, {mainnet: pairSymmetricSwapAddress})
 		return {
 			pairKey: this.swapPoolAddr,
 			tokenA: this.tokenA,
-            tokenB: this.tokenB,
-            swappaPairAddress
-        }
+			tokenB: this.tokenB,
+			swappaPairAddress
+		}
 	}
 
 	public async refresh() {
