@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import commander from 'commander';
-import { ContractKit, newKit } from '@celo/contractkit';
+import Web3 from 'web3';
+import { ContractKit, newKitFromWeb3 } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 import { toTransactionObject } from '@celo/connect';
 
@@ -28,6 +29,7 @@ const program = commander.program
 	.option("--max-slippage <max-slippage>", "Maximum allowed slippage.", "0.9999")
 	.option("--no-precheck", "If provided, will skip expected output precheck.")
 	.option("--benchmark <iterations>", "If non-zero, benchmark the route finding for N iterations.", "0")
+	.option("-v, --verbose", "Verbose output.")
 	.parse(process.argv)
 
 process.on('unhandledRejection', (reason: any, _promise: any) => {
@@ -59,7 +61,7 @@ function tokenByAddrOrSymbol(addressOrSymbol: string) {
 
 async function main() {
 	const opts = program.opts()
-	const kit = await newKit(opts.network)
+	const kit = newKitFromWeb3(new Web3(opts.network) as any)
 	const chainId = await kit.web3.eth.getChainId()
 
 	const tokenWhitelist = ubeswapTokens.tokens.filter((v) => v.chainId === chainId).map((v) => v.address)
@@ -80,8 +82,10 @@ async function main() {
 			console.info(
 				`${registry.getName().padEnd(12)}` +
 				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
-				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}` +
-				`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
+				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}`)
+			if (opts.verbose) {
+				console.info(`  snapshot: ${JSON.stringify(pair.snapshot())}`)
+			}
 		}
 	}
 
@@ -122,6 +126,14 @@ async function main() {
 		console.info(
 			`Output: ${route.outputAmount.shiftedBy(-(outputToken.decimals || 18)).toFixed(10)} -- ` +
 			`${path.join(":")}:${outputToken.symbol}`)
+		if (opts.verbose) {
+			const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
+			console.info('TX Data:\n' + JSON.stringify({
+				path: route.path,
+				pairs: routeData.map((d) => d.addr),
+				extras: routeData.map((d) => d.extra)
+			}, null, 2))
+		}
 	}
 
 	const from = opts.from
@@ -146,6 +158,7 @@ async function main() {
 		const receipt = await tx.sendAndWaitForReceipt({from: from})
 		console.info(`TX Done: ${receipt.transactionHash}`)
 	}
+	process.exit(0)
 }
 
 main()
