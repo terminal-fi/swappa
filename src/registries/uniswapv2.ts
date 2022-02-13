@@ -26,7 +26,7 @@ export class RegistryUniswapV2 extends Registry {
 
 	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
 		let pairsFetched
-		if (!this.opts?.fetchUsingAllPairs) {
+		if (this.opts?.fetchUsingAllPairs === false) {
 			const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
 			for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
 				for (let j = i + 1; j < tokenWhitelist.length; j += 1) {
