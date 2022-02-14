@@ -21,45 +21,27 @@ contract RegistryHelperUniswapV2 {
 
     function findPairs(
         IUniswapV2Factory factory,
-        address[] calldata tokenWhitelist,
         uint offset,
         uint limit
     ) external view returns (PairInfo[] memory result) {
         uint allPairsUpTo = factory.allPairsLength();
 
         if (allPairsUpTo > offset + limit) {
+            // limit the number of pairs returned
             allPairsUpTo = offset + limit;
+        } else if (allPairsUpTo < offset) {
+            // there are no more pairs
+            return result;
         }
 
         // allocate a buffer array with the upper bound of the number of pairs returned
-        PairInfo[] memory buffer = new PairInfo[](limit);
-        uint found = 0;
+        result = new PairInfo[](allPairsUpTo - offset);
         for (uint i = offset; i < allPairsUpTo; i++) {
             IUniswapV2Pair uniPair = IUniswapV2Pair(factory.allPairs(i));
             address token0 = uniPair.token0();
             address token1 = uniPair.token1();
-
-            // allow all pairs if the whitelist is empty
-            bool isOnWhitelist = tokenWhitelist.length == 0;
-            for (uint j = 0; j < tokenWhitelist.length; j++) {
-                address w = tokenWhitelist[i];
-                if (token0 == w || token1 == w) {
-                    isOnWhitelist = true;
-                    break;
-                }
-            }
-
-            if (isOnWhitelist) {
-                (uint reserve0, uint reserve1, ) = uniPair.getReserves();
-                // only add to the buffer if the pair is on the whitelist
-                buffer[found++] = PairInfo(uniPair, token0, token1, PairState(reserve0, reserve1));
-            }
-        }
-
-        // copy the valid pairs from the buffer into the result
-        result = new PairInfo[](found);
-        for (uint i = 0; i < found; i++) {
-            result[i] = buffer[i];
+            (uint reserve0, uint reserve1, ) = uniPair.getReserves();
+            result[i - offset] = PairInfo(uniPair, token0, token1, PairState(reserve0, reserve1));
         }
     }
 
