@@ -19,10 +19,11 @@ export class PairSavingsCELO extends Pair {
 	private totalSupplies?: {celoTotal: BigNumber, savingsTotal: BigNumber}
 
 	constructor(
+		chainId: number,
 		private kit: ContractKit,
 		savingsCELOAddr: Address,
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairSavingsCELOAddress}))
 		this.savingsKit = new SavingsKit(kit, savingsCELOAddr)
 	}
 
@@ -33,7 +34,6 @@ export class PairSavingsCELO extends Pair {
 		return {
 			pairKey: null,
 			tokenA, tokenB,
-			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairSavingsCELOAddress})
 		}
 	}
 	public async refresh(): Promise<void> {

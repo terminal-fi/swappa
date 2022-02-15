@@ -21,10 +21,11 @@ export class PairOpenSumSwap extends Pair {
 	private balances: BigNumber[] = []
 
 	constructor(
-		private web3: Web3,
+		chainId: number,
+		web3: Web3,
 		private swapPoolAddr: Address,
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairOpenSumSwapAddress}))
 		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as IOpenSumSwap
 	}
 
@@ -32,15 +33,14 @@ export class PairOpenSumSwap extends Pair {
 		const [
 			tokenA,
 			tokenB,
-			swappaPairAddress,
 		] = await Promise.all([
 			this.swapPool.methods.getToken(0).call(),
 			this.swapPool.methods.getToken(1).call(),
-			selectAddress(this.web3, {mainnet: pairOpenSumSwapAddress}),
 		])
 		return {
 			pairKey: this.swapPoolAddr,
-			tokenA,  tokenB, swappaPairAddress}
+			tokenA, tokenB,
+		}
 	}
 
 	public async refresh() {

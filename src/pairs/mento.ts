@@ -17,10 +17,11 @@ export class PairMento extends PairXYeqK {
 	private sortedOracles?: SortedOraclesWrapper
 
 	constructor(
+		chainId: number,
 		private kit: ContractKit,
 		private stableToken: StableToken,
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairMentoAddress}))
 	}
 
 	protected async _init() {
@@ -33,7 +34,6 @@ export class PairMento extends PairXYeqK {
 			pairKey: this.exchange.address,
 			tokenA: celo.address,
 			tokenB: cSTB.address,
-			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairMentoAddress})
 		}
 	}
 

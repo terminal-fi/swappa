@@ -17,12 +17,7 @@ interface AddressesByNetwork {
 	alfajores?: Address,
 }
 
-export const selectAddress = async (web3: Web3, addresses: AddressesByNetwork) => {
-	const chainId = await web3.eth.getChainId()
-	return selectAddressUsingChainId(chainId, addresses)
-}
-
-export const selectAddressUsingChainId = (chainId: number, addresses: AddressesByNetwork) => {
+export const selectAddress = (chainId: number, addresses: AddressesByNetwork) => {
 	switch (chainId) {
 	case 42220:
 		if (!addresses.mainnet) {

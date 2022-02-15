@@ -16,11 +16,12 @@ export class PairAToken extends Pair {
 	private provider: ILendingPoolAddressesProvider
 
 	constructor(
+		chainId: number,
 		private kit: ContractKit,
 		private providerAddr: Address,
 		private reserve: Address,
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairATokenAddress}))
 		this.provider = new kit.web3.eth.Contract(
 			LendingPoolAddressProviderABI, providerAddr) as unknown as ILendingPoolAddressesProvider
 	}
@@ -35,7 +36,6 @@ export class PairAToken extends Pair {
 		return {
 			pairKey: null,
 			tokenA, tokenB,
-			swappaPairAddress: await selectAddress(this.kit.web3 as unknown as Web3, {mainnet: pairATokenAddress})
 		}
 	}
 	public async refresh(): Promise<void> {}

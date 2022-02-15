@@ -13,11 +13,12 @@ export class PairUniswapV2 extends PairXYeqK {
 	private feeKData: string
 
 	constructor(
+		chainId: number,
 		private web3: Web3,
 		private pairAddr: Address,
 		private fixedFee: BigNumber = new BigNumber(0.997),
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairUniswapV2Address}))
 		this.pair = new this.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 		const feeKInv = new BigNumber(1000).minus(this.fixedFee.multipliedBy(1000))
 		if (!feeKInv.isInteger() || !feeKInv.gt(0) || !feeKInv.lt(100)) {
@@ -27,14 +28,13 @@ export class PairUniswapV2 extends PairXYeqK {
 	}
 
 	protected async _init() {
-		const [tokenA, tokenB, swappaPairAddress] = await Promise.all([
+		const [tokenA, tokenB] = await Promise.all([
 			this.pair.methods.token0().call(),
 			this.pair.methods.token1().call(),
-			selectAddress(this.web3, {mainnet: pairUniswapV2Address}),
 		])
 		return {
 			pairKey: this.pairAddr,
-			tokenA, tokenB, swappaPairAddress,
+			tokenA, tokenB,
 		}
 	}
 
