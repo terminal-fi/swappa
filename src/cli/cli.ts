@@ -49,8 +49,10 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"misc":        mainnetRegistryMisc,
 }
 
+let chainId: number
+
 function tokenByAddrOrSymbol(addressOrSymbol: string) {
-	const t = ubeswapTokens.tokens.find((t) => t.address === addressOrSymbol || t.symbol === addressOrSymbol)
+	const t = ubeswapTokens.tokens.find((t) => t.chainId === chainId && (t.address === addressOrSymbol || t.symbol === addressOrSymbol))
 	if (!t) {
 		throw new Error(`Unrecognized token: ${addressOrSymbol}!`)
 	}
@@ -60,12 +62,12 @@ function tokenByAddrOrSymbol(addressOrSymbol: string) {
 async function main() {
 	const opts = program.opts()
 	const kit = await newKit(opts.network)
-	const chainId = await kit.web3.eth.getChainId()
+	chainId = await kit.web3.eth.getChainId()
 
-	const tokenWhitelist = ubeswapTokens.tokens.filter((v) => v.chainId === chainId).map((v) => v.address)
 	const inputToken = tokenByAddrOrSymbol(opts.input)
 	const outputToken = tokenByAddrOrSymbol(opts.output)
 	const inputAmount = new BigNumber(opts.amount).shiftedBy(inputToken.decimals)
+	const tokenWhitelist = ubeswapTokens.tokens.filter((v) => v.chainId === chainId).map((v) => v.address)
 
 	const registryFs = opts.registries === "all" ?
 		Object.values(registriesByName) :
@@ -86,7 +88,7 @@ async function main() {
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)
-	console.info(`Routes: ${inputAmount.shiftedBy(-inputToken.decimals)} ${inputToken.symbol} -> ${outputToken.symbol}...`)
+	console.info(`Routes: ${inputAmount.shiftedBy(-inputToken.decimals)} ${inputToken.symbol} ${inputToken.address} -> ${outputToken.symbol} ${outputToken.address}...`)
 	const startT0 = Date.now()
 
 	if (opts.benchmark && parseInt(opts.benchmark) > 0) {
