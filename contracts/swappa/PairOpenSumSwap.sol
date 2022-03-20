@@ -44,7 +44,9 @@ contract PairOpenSumSwap is ISwappaPairV1 {
 		uint amountIn,
 		bytes calldata data
 	) external view override returns (uint amountOut) {
-		// no fees are taken
-		return amountIn;
+		// no fees are taken if there's enough output token
+		if (ERC20(output).balanceOf(parseData(data)) >= amountIn) {
+			amountOut = amountIn;
+		}
 	}
 }
