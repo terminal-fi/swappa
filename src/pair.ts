@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import BigNumber from "bignumber.js"
 
 export type Address = string
 
@@ -17,21 +17,23 @@ export abstract class Pair {
 	public pairKey: string | null = null;
 	public tokenA: Address = "";
 	public tokenB: Address = "";
-	protected swappaPairAddress: Address = "";
+	private swappaPairAddress: Address = "";
+
+	constructor(swappaPairAddress: Address) {
+		this.swappaPairAddress = swappaPairAddress
+	}
 
 	public async init(): Promise<void> {
 		const r = await this._init()
 		this.pairKey = r.pairKey
 		this.tokenA = r.tokenA
 		this.tokenB = r.tokenB
-		this.swappaPairAddress = r.swappaPairAddress
 		return this.refresh()
 	}
 	protected abstract _init(): Promise<{
 		pairKey: string | null,
 		tokenA: Address,
 		tokenB: Address,
-		swappaPairAddress: Address,
 	}>;
 	public abstract refresh(): Promise<void>;
 	public swapData(inputToken: Address): SwapData {
@@ -94,7 +96,7 @@ export abstract class PairXYeqK extends Pair {
 		return {
 			fee: this.fee.toFixed(),
 			bucketA: this.bucketA.toFixed(),
-			bucketB: this.bucketB.toFixed()
+			bucketB: this.bucketB.toFixed(),
 		}
 	}
 

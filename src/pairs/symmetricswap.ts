@@ -26,12 +26,13 @@ export class PairSymmetricSwap extends Pair {
 	private balanceB: BigNumber = ZERO
 
 	constructor(
-		private web3: Web3,
+		chainId: number,
+		web3: Web3,
 		private swapPoolAddr: Address,
 		public tokenA: Address,
-		public tokenB: Address
+		public tokenB: Address,
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairSymmetricSwapAddress}))
 		// Unfortunately SymmetricSwap contract doesn't expose token addresses that it stores,
 		// thus they have to be hardcoded in the constructor and can't be fetched from swapPool
 		// directly.
@@ -41,12 +42,10 @@ export class PairSymmetricSwap extends Pair {
 	}
 
 	protected async _init() {
-		const swappaPairAddress = await selectAddress(this.web3, {mainnet: pairSymmetricSwapAddress})
 		return {
 			pairKey: this.swapPoolAddr,
 			tokenA: this.tokenA,
 			tokenB: this.tokenB,
-			swappaPairAddress
 		}
 	}
 

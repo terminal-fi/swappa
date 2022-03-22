@@ -3,11 +3,11 @@ import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
 
 export class RegistryStatic extends Registry{
-	constructor(name: string, private pairsAll: Pair[]) {
+	constructor(name: string, private pairsAll: Promise<Pair[]>) {
 		super(name)
 	}
 
 	findPairs = async (tokenWhitelist: Address[]) => {
-		return initPairsAndFilterByWhitelist(this.pairsAll, tokenWhitelist)
+		return initPairsAndFilterByWhitelist(await this.pairsAll, tokenWhitelist)
 	}
 }

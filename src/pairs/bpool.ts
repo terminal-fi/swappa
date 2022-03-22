@@ -25,12 +25,13 @@ export class PairBPool extends Pair {
 	private balanceB: BigNumber = ZERO
 
 	constructor(
-		private web3: Web3,
+		chainId: number,
+		web3: Web3,
 		private poolAddr: Address,
 		public tokenA: Address,
-		public tokenB: Address
+		public tokenB: Address,
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairBPoolAddress}))
 		this.bPool = new web3.eth.Contract(BPoolABI, poolAddr) as unknown as IbPool
 	}
 
@@ -38,14 +39,11 @@ export class PairBPool extends Pair {
 		const [
 			swapFee,
 			weightA,
-			weightB,
-			swappaPairAddress
+			weightB
 		] = await Promise.all([
 			this.bPool.methods.getSwapFee().call(),
 			this.bPool.methods.getDenormalizedWeight(this.tokenA).call(),
 			this.bPool.methods.getDenormalizedWeight(this.tokenB).call(),
-			// TODO: change this after merge to the actual deployed PairBPool swap address
-			selectAddress(this.web3, {mainnet: pairBPoolAddress})
 		])
 		this.swapFee = new BigNumber(swapFee).div(BONE)
 		this.weightA = new BigNumber(weightA)
@@ -55,7 +53,6 @@ export class PairBPool extends Pair {
 			pairKey: this.poolAddr,
 			tokenA: this.tokenA,
 			tokenB: this.tokenB,
-			swappaPairAddress
 		}
 	}
 

@@ -20,6 +20,7 @@ export class RegistryBalancer extends Registry {
 	}
 
 	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
+		const chainId = await this.web3.eth.getChainId()
 		const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
 		for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
 			for (let j = i + 1; j < tokenWhitelist.length; j += 1) {
@@ -37,7 +38,7 @@ export class RegistryBalancer extends Registry {
 				}
 
 				for (const poolAddr of pools) {
-					const pool = new PairBPool(this.web3, poolAddr, toFetch.tokenA, toFetch.tokenB)
+					const pool = new PairBPool(chainId, this.web3, poolAddr, toFetch.tokenA, toFetch.tokenB)
 					// bpool can be used for each input & output combination
 					let key
 					if (toFetch.tokenA.toLowerCase().localeCompare(toFetch.tokenB.toLowerCase()) > 0) {
