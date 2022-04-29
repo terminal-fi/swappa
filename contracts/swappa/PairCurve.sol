@@ -66,19 +66,26 @@ contract PairCurve is ISwappaPairV1 {
 		return swapPool.get_dy(fromIdx, toIdx, amountIn);
 	}
 
-	function getInputOutputIdx(
-		ICurve swapPool,
-		address input,
-		address output
-	) private view returns (int128 fromIdx, int128 toIdx) {
-		uint8 idx;
-		// curve pool contain at most 4 coins
-		for (idx = 0; idx < 4; idx++) {
-			if (swapPool.coins(idx) == input) {
-				fromIdx = idx;
-			} else if (swapPool.coins(idx) == output) {
-				toIdx = idx;
-			}
-		}
-	}
+    function getInputOutputIdx(
+        ICurve swapPool,
+        address input,
+        address output
+    ) private view returns (int128 fromIdx, int128 toIdx) {
+        uint8 idx;
+        fromIdx = toIdx = -1;
+        // curve pool contain at most 4 coins
+        for (idx = 0; idx < 4; idx++) {
+            if (fromIdx != -1 && toIdx != -1) {
+                // found coin indices
+                break;
+            }
+            address coin = swapPool.coins(idx);
+            if (coin == input) {
+                fromIdx = idx;
+            }
+            if (coin == output) {
+                toIdx = idx;
+            }
+        }
+    }
 }
