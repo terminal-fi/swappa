@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.0 <0.8.0;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/uniswap/IUniswapV3Pool.sol";
 import "../interfaces/uniswap/Quoter.sol";
 import "../interfaces/uniswap/SafeCast.sol";
+import "../interfaces/uniswap/TickLens.sol";
 import "../interfaces/uniswap/TickMath.sol";
 import "./ISwappaPairV1.sol";
 
@@ -89,5 +91,28 @@ contract PairUniswapV3 is ISwappaPairV1 {
                 : TickMath.MAX_SQRT_RATIO - 1
         );
         return uint256(zeroForOne ? amount0 : amount1);
+    }
+
+    function getSpotTicks(IUniswapV3Pool pool)
+        public
+        view
+        returns (
+            uint160 sqrtPriceX96,
+            int24 tick,
+            int16 tickBitmapIndex,
+            TickLens.PopulatedTick[] memory populatedTicksAbove,
+            TickLens.PopulatedTick[] memory populatedTicksSpot,
+            TickLens.PopulatedTick[] memory populatedTicksBelow
+        )
+    {
+        return TickLens.getSpotTicks(pool);
+    }
+
+    function getPopulatedTicksInWord(IUniswapV3Pool pool, int16 tickBitmapIndex)
+        public
+        view
+        returns (TickLens.PopulatedTick[] memory populatedTicks)
+    {
+        return TickLens.getPopulatedTicksInWord(pool, tickBitmapIndex);
     }
 }
