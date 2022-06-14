@@ -15,13 +15,6 @@ library Quoter {
     using SafeCast for uint256;
     using SafeCast for int256;
 
-    struct SwapCache {
-        // the protocol fee for the input token
-        uint8 feeProtocol;
-        // liquidity at the beginning of the swap
-        uint128 liquidityStart;
-    }
-
     // the top level state of the swap, the results of which are recorded in storage at the end
     struct SwapState {
         // the amount remaining to be swapped in/out of the input/output asset
@@ -32,8 +25,6 @@ library Quoter {
         uint160 sqrtPriceX96;
         // the tick associated with the current price
         int24 tick;
-        // amount of input token paid as protocol fee
-        uint128 protocolFee;
         // the current liquidity in range
         uint128 liquidity;
     }
@@ -60,9 +51,6 @@ library Quoter {
         uint160 sqrtPriceX96;
         // the current tick
         int24 tick;
-        // the current protocol fee as a percentage of the swap fee taken on withdrawal
-        // represented as an integer denominator (1/x)%
-        uint8 feeProtocol;
     }
 
     function quote(
@@ -78,7 +66,7 @@ library Quoter {
             , // uint16 observationIndex
             , // uint16 observationCardinality
             , // uint16 observationCardinalityNext
-            slot0Start.feeProtocol,
+            , // slot0Start.feeProtocol
             // bool unlocked
 
         ) = pool.slot0();
@@ -92,13 +80,6 @@ library Quoter {
             "SPL"
         );
 
-        SwapCache memory cache = SwapCache({
-            liquidityStart: pool.liquidity(),
-            feeProtocol: zeroForOne
-                ? (slot0Start.feeProtocol % 16)
-                : (slot0Start.feeProtocol >> 4)
-        });
-
         bool exactInput = amountSpecified > 0;
         int24 poolTickSpacing = pool.tickSpacing();
         uint24 poolFee = pool.fee();
@@ -108,8 +89,7 @@ library Quoter {
             amountCalculated: 0,
             sqrtPriceX96: slot0Start.sqrtPriceX96,
             tick: slot0Start.tick,
-            protocolFee: 0,
-            liquidity: cache.liquidityStart
+            liquidity: pool.liquidity()
         });
 
         // continue swapping as long as we haven't used the entire input/output and haven't reached the price limit
@@ -170,13 +150,6 @@ library Quoter {
                 state.amountCalculated = state.amountCalculated.add(
                     (step.amountIn + step.feeAmount).toInt256()
                 );
-            }
-
-            // if the protocol fee is on, calculate how much is owed, decrement feeAmount, and increment protocolFee
-            if (cache.feeProtocol > 0) {
-                uint256 delta = step.feeAmount / cache.feeProtocol;
-                step.feeAmount -= delta;
-                state.protocolFee += uint128(delta);
             }
 
             // shift tick if we reached the next price
