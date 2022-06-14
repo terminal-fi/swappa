@@ -18,7 +18,6 @@ library TickLens {
         returns (
             uint160 sqrtPriceX96,
             int24 tick,
-            int16 tickBitmapIndex,
             PopulatedTick[] memory populatedTicksAbove,
             PopulatedTick[] memory populatedTicksSpot,
             PopulatedTick[] memory populatedTicksBelow
@@ -40,7 +39,7 @@ library TickLens {
         if (tick < 0 && tick % tickSpacing != 0) compressed--; // round towards negative infinity
 
         // current word position within bitmap
-        tickBitmapIndex = int16(compressed >> 8);
+        int16 tickBitmapIndex = int16(compressed >> 8);
 
         // get the populated ticks at, above, and below the current word
         populatedTicksSpot = getPopulatedTicksInWord(pool, tickBitmapIndex);

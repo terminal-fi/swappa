@@ -5,13 +5,14 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/uniswap/IUniswapV3Pool.sol";
+import "../interfaces/uniswap/IUniswapV3SwapCallback.sol";
 import "../interfaces/uniswap/Quoter.sol";
 import "../interfaces/uniswap/SafeCast.sol";
 import "../interfaces/uniswap/TickLens.sol";
 import "../interfaces/uniswap/TickMath.sol";
 import "./ISwappaPairV1.sol";
 
-contract PairUniswapV3 is ISwappaPairV1 {
+contract PairUniswapV3 is ISwappaPairV1, IUniswapV3SwapCallback {
     using SafeMath for uint256;
     using SafeCast for uint256;
 
@@ -23,12 +24,9 @@ contract PairUniswapV3 is ISwappaPairV1 {
     ) external override {
         address pairAddr = parseData(data);
         uint256 inputAmount = ERC20(input).balanceOf(address(this));
-        require(
-            ERC20(input).transfer(pairAddr, inputAmount),
-            "PairUniswapV3: transfer failed!"
-        );
         IUniswapV3Pool pair = IUniswapV3Pool(pairAddr);
         bool zeroForOne = pair.token0() == input;
+        // calling swap will trigger the uniswapV3SwapCallback
         pair.swap(
             to,
             zeroForOne,
@@ -37,6 +35,26 @@ contract PairUniswapV3 is ISwappaPairV1 {
                 ? TickMath.MIN_SQRT_RATIO + 1
                 : TickMath.MAX_SQRT_RATIO - 1,
             new bytes(0)
+        );
+    }
+
+    function uniswapV3SwapCallback(
+        int256 amount0Delta,
+        int256 amount1Delta,
+        bytes calldata data
+    ) external override {
+        ERC20 token;
+        uint256 amount;
+        if (amount0Delta > 0) {
+            amount = uint256(amount0Delta);
+            token = ERC20(IUniswapV3Pool(msg.sender).token0());
+        } else if (amount1Delta > 0) {
+            amount = uint256(amount1Delta);
+            token = ERC20(IUniswapV3Pool(msg.sender).token1());
+        }
+        require(
+            token.transfer(msg.sender, amount),
+            "PairUniswapV3: transfer failed!"
         );
     }
 
@@ -99,7 +117,6 @@ contract PairUniswapV3 is ISwappaPairV1 {
         returns (
             uint160 sqrtPriceX96,
             int24 tick,
-            int16 tickBitmapIndex,
             TickLens.PopulatedTick[] memory populatedTicksAbove,
             TickLens.PopulatedTick[] memory populatedTicksSpot,
             TickLens.PopulatedTick[] memory populatedTicksBelow
@@ -114,5 +131,9 @@ contract PairUniswapV3 is ISwappaPairV1 {
         returns (TickLens.PopulatedTick[] memory populatedTicks)
     {
         return TickLens.getPopulatedTicksInWord(pool, tickBitmapIndex);
+    }
+
+    function recoverERC20(ERC20 token) public {
+        token.transfer(msg.sender, token.balanceOf(address(this)));
     }
 }
