@@ -18,10 +18,11 @@ export class PairUniswapV2 extends PairXYeqK {
 		private pairAddr: Address,
 		private fixedFee: BigNumber = new BigNumber(0.997),
 	) {
-		super(selectAddress(chainId, {mainnet: pairUniswapV2Address}))
+		super(selectAddress(chainId, { mainnet: pairUniswapV2Address }))
 		this.pair = new this.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
-		const feeKInv = new BigNumber(1000).minus(this.fixedFee.multipliedBy(1000))
-		if (!feeKInv.isInteger() || !feeKInv.gt(0) || !feeKInv.lt(100)) {
+		const feeKInv = new BigNumber(10000).minus(this.fixedFee.multipliedBy(10000))
+		if (!feeKInv.isInteger() || !feeKInv.gt(0) || !feeKInv.lt(256)) {
+			// feeKInv must fit into uint8
 			throw new Error(`Invalid fixedFee: ${this.fixedFee}!`)
 		}
 		this.feeKData = feeKInv.toString(16).padStart(2, "0")
