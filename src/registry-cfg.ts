@@ -45,6 +45,7 @@ export const mainnetRegistryMobius =
 			new PairStableSwap(chainId, web3, "0xFc9e2C63370D8deb3521922a7B2b60f4Cff7e75a"), // CELO <-> pCELOv2
 			new PairStableSwap(chainId, web3, "0x23C95678862a229fAC088bd9705622d78130bC3e"), // cEUR <-> pEURv2
 			new PairStableSwap(chainId, web3, "0x9F4AdBD0af281C69a582eB2E6fa2A594D4204CAe"), // cUSD <-> atUST
+			new PairStableSwap(chainId, web3, "0xC0BA93D4aaf90d39924402162EE4a213300d1d60"), // cUSD <-> wUSDC
 		]))
 	}
 export const mainnetRegistryMisc =
