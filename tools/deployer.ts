@@ -5,6 +5,8 @@ import path from "path"
 import { ContractKit, newKit } from "@celo/contractkit"
 
 import SwappaRouterV1Json from "../build/contracts/SwappaRouterV1.json"
+import RegistryHelperUniswapV2 from "../build/contracts/RegistryHelperUniswapV2.json"
+
 import PairUniswapV2 from "../build/contracts/PairUniswapV2.json"
 import PairMento from "../build/contracts/PairMento.json"
 import PairAToken from "../build/contracts/PairAToken.json"
@@ -89,8 +91,15 @@ async function main() {
 	const kit = newKit(networkURL)
 	kit.defaultAccount = opts.from
 
+	// Main Router
 	await readAddressOrDeployContract(
 		kit, opts.network, "SwappaRouterV1", SwappaRouterV1Json.bytecode)
+
+	// Helper contracts
+	await readAddressOrDeployContract(
+		kit, opts.network, "RegistryHelperUniswapV2", RegistryHelperUniswapV2.bytecode)
+
+	// Pairs
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairUniswapV2", PairUniswapV2.bytecode)
 	await readAddressOrDeployContract(
