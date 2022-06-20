@@ -33,10 +33,11 @@ contract PairUniswapV2 is ISwappaPairV1 {
 
 	function parseData(bytes memory data) private pure returns (address pairAddr, uint fee) {
 		require(data.length == 21, "PairUniswapV2: invalid data!");
-		fee = uint(1000).sub(uint8(data[20]));
-    assembly {
-      pairAddr := mload(add(data, 20))
-    }
+		// fee in bips
+		fee = uint(10000).sub(uint8(data[20]));
+		assembly {
+		pairAddr := mload(add(data, 20))
+		}
 	}
 
 	function getOutputAmount(
@@ -55,7 +56,7 @@ contract PairUniswapV2 is ISwappaPairV1 {
 	function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut, uint feeK) internal pure returns (uint amountOut) {
 		uint amountInWithFee = amountIn.mul(feeK);
 		uint numerator = amountInWithFee.mul(reserveOut);
-		uint denominator = reserveIn.mul(1000).add(amountInWithFee);
+		uint denominator = reserveIn.mul(10000).add(amountInWithFee);
 		amountOut = numerator / denominator;
   	}
 
