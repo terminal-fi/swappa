@@ -47,8 +47,7 @@ export class RegistryUniswapV2 extends Registry {
 					pairsFetched.push(new PairUniswapV2(chainId, this.web3, pairInfo.pair, this.opts?.fixedFee))
 				}
 			}
-		}
-		else if (this.opts?.fetchUsingTokenList) {
+		} else if (this.opts?.fetchUsingTokenList) {
 			const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
 			for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
 				for (let j = i + 1; j < tokenWhitelist.length; j += 1) {
