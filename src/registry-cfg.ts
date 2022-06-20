@@ -70,7 +70,6 @@ export const mainnetRegistryMoolaV2 =
 export const mainnetRegistryCeloDex =
 	(kit: ContractKit) => new RegistryUniswapV2("celodex", kit.web3 as unknown as Web3, "0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6", {
 		fixedFee: new BigNumber(0.997), // TODO(zviadm): Figure out actual fee for CeloDex pairs.
-		fetchUsingAllPairs: true,
 	})
 export const mainnetRegistrySymmetric =
 	(kit: ContractKit) => new RegistryBalancer("symmetric", kit.web3 as unknown as Web3, "0x3E30b138ecc85cD89210e1A19a8603544A917372")

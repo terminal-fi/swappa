@@ -17,7 +17,7 @@ export class RegistryUniswapV2 extends Registry {
 		factoryAddr: Address,
 		private opts?: {
 			fixedFee?: BigNumber,
-			fetchUsingAllPairs?: boolean,
+			fetchUsingTokenList?: boolean,
 		},
 	) {
 		super(name)
@@ -27,7 +27,7 @@ export class RegistryUniswapV2 extends Registry {
 	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
 		const chainId = await this.web3.eth.getChainId()
 		let pairsFetched
-		if (!this.opts?.fetchUsingAllPairs) {
+		if (this.opts?.fetchUsingTokenList) {
 			const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
 			for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
 				for (let j = i + 1; j < tokenWhitelist.length; j += 1) {
