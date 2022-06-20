@@ -30,10 +30,11 @@ export class PairStableSwap extends Pair {
 	static readonly A_PRECISION = 100
 
 	constructor(
+		chainId: number,
 		private web3: Web3,
 		private swapPoolAddr: Address,
 	) {
-		super()
+		super(selectAddress(chainId, {mainnet: pairStableSwapAddress}))
 		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
 	}
 
@@ -41,11 +42,9 @@ export class PairStableSwap extends Pair {
 		const [
 			tokenA,
 			tokenB,
-			swappaPairAddress,
 		] = await Promise.all([
 			this.swapPool.methods.getToken(0).call(),
 			this.swapPool.methods.getToken(1).call(),
-			selectAddress(this.web3, {mainnet: pairStableSwapAddress}),
 		])
 		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
 		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
@@ -62,7 +61,8 @@ export class PairStableSwap extends Pair {
 		]
 		return {
 			pairKey: this.swapPoolAddr,
-			tokenA,  tokenB, swappaPairAddress}
+			tokenA, tokenB,
+		}
 	}
 
 	public async refresh() {

@@ -19,8 +19,8 @@ export class RegistryUniswapV2 extends Registry {
 		private factoryAddr: Address,
 		private opts?: {
 			fixedFee?: BigNumber,
-			fetchUsingAllPairs?: boolean,
 			registryHelperAddr?: Address
+			fetchUsingTokenList?: boolean,
 		},
 	) {
 		super(name)
@@ -31,6 +31,7 @@ export class RegistryUniswapV2 extends Registry {
 	}
 
 	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
+		const chainId = await this.web3.eth.getChainId()
 		let pairsFetched
 		if (this.helper) {
 			// registry helper contract is available for fast discovery of pairs
@@ -43,10 +44,11 @@ export class RegistryUniswapV2 extends Registry {
 					if (tokenWhitelist.indexOf(pairInfo.token0) === -1 && tokenWhitelist.indexOf(pairInfo.token1) === -1) {
 						continue
 					}
-					pairsFetched.push(new PairUniswapV2(this.web3, pairInfo.pair, this.opts?.fixedFee))
+					pairsFetched.push(new PairUniswapV2(chainId, this.web3, pairInfo.pair, this.opts?.fixedFee))
 				}
 			}
-		} else if (!this.opts?.fetchUsingAllPairs) {
+		}
+		else if (this.opts?.fetchUsingTokenList) {
 			const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
 			for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
 				for (let j = i + 1; j < tokenWhitelist.length; j += 1) {
@@ -61,7 +63,7 @@ export class RegistryUniswapV2 extends Registry {
 					if (pairAddr === "0x0000000000000000000000000000000000000000") {
 						return null
 					}
-					return new PairUniswapV2(this.web3, pairAddr, this.opts?.fixedFee)
+					return new PairUniswapV2(chainId, this.web3, pairAddr, this.opts?.fixedFee)
 				})
 		} else {
 			const nPairs = Number.parseInt(await this.factory.methods.allPairsLength().call())
@@ -70,7 +72,7 @@ export class RegistryUniswapV2 extends Registry {
 				[...Array(nPairs).keys()],
 				async (idx) => {
 					const pairAddr = await this.factory.methods.allPairs(idx).call()
-					return new PairUniswapV2(this.web3, pairAddr, this.opts?.fixedFee)
+					return new PairUniswapV2(chainId, this.web3, pairAddr, this.opts?.fixedFee)
 				})
 		}
 		const pairs = pairsFetched.filter((p) => p !== null) as Pair[]

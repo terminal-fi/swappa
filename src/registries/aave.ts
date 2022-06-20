@@ -17,6 +17,7 @@ export class RegistryAave extends Registry {
 	}
 
 	findPairs = async (tokenWhitelist: Address[]) => {
+		const chainId = await this.kit.web3.eth.getChainId()
 		const lendingPoolAddr = await this.lendingPoolAddrProvider.methods.getLendingPool().call()
 		const lendingPool = new this.kit.web3.eth.Contract(LendingPoolABI, lendingPoolAddr) as unknown as ILendingPool
 		const reserves = await lendingPool.methods.getReserves().call()
@@ -25,7 +26,7 @@ export class RegistryAave extends Registry {
 			...reserves.filter((r) => tokenWhitelist.indexOf(r) >= 0),
 		]
 		const pairs = reservesMatched.map((r) => (
-			new PairAToken(this.kit, this.lendingPoolAddrProvider.options.address, r)))
+			new PairAToken(chainId, this.kit, this.lendingPoolAddrProvider.options.address, r)))
 		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
 	}
 }

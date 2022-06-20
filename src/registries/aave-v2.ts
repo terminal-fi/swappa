@@ -17,11 +17,12 @@ export class RegistryAaveV2 extends Registry {
 	}
 
 	findPairs = async (tokenWhitelist: Address[]) => {
+		const chainId = await this.web3.eth.getChainId()
 		const poolAddr: string = await this.provider.methods.getLendingPool().call()
 		const lendingPool: ILendingPoolV2 = new this.web3.eth.Contract(ILendingPoolV2ABI, poolAddr) as unknown as ILendingPoolV2
 		const reserves: Address[] = await lendingPool.methods.getReservesList().call()
 		const reservesMatched = reserves.filter((r) => tokenWhitelist.indexOf(r) >= 0)
-		const pairs = reservesMatched.map((r) => (new PairATokenV2(this.web3, poolAddr, r)))
+		const pairs = reservesMatched.map((r) => (new PairATokenV2(chainId, this.web3, poolAddr, r)))
 		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
 	}
 }
