@@ -12,13 +12,21 @@ import { RegistryMento } from "./registries/mento"
 import { RegistryStatic } from "./registries/static"
 import { RegistryUniswapV2 } from "./registries/uniswapv2"
 import { RegistryBalancer } from "./registries/balancer"
+import { address as registryHelperUniswapV2 } from "../tools/deployed/mainnet.RegistryHelperUniswapV2.addr.json"
 
 export const mainnetRegistryMoola =
 	(kit: ContractKit) => new RegistryAave("moola", kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA")
 export const mainnetRegistryUbeswap =
-	(kit: ContractKit) => new RegistryUniswapV2("ubeswap", kit.web3 as unknown as Web3, "0x62d5b84bE28a183aBB507E125B384122D2C25fAE")
+	(kit: ContractKit) => new RegistryUniswapV2(
+		"ubeswap", kit.web3 as unknown as Web3,
+		"0x62d5b84bE28a183aBB507E125B384122D2C25fAE",
+		{ registryHelperAddr: registryHelperUniswapV2 })
 export const mainnetRegistrySushiswap =
-	(kit: ContractKit) => new RegistryUniswapV2("sushiswap", kit.web3 as unknown as Web3, "0xc35DADB65012eC5796536bD9864eD8773aBc74C4")
+	(kit: ContractKit) => new RegistryUniswapV2(
+		"sushiswap",
+		kit.web3 as unknown as Web3,
+		"0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
+		{ registryHelperAddr: registryHelperUniswapV2 })
 export const mainnetRegistryMobius =
 	(kit: ContractKit) => {
 		const web3 = kit.web3 as unknown as Web3
@@ -62,15 +70,17 @@ export const mainnetRegistryMisc =
 		]))
 	}
 export const mainnetRegistrySavingsCELO =
-	(kit: ContractKit) => new RegistryStatic("savingscelo", web3.eth.getChainId().then(chainId => [
+	(kit: ContractKit) => new RegistryStatic("savingscelo", kit.web3.eth.getChainId().then(chainId => [
 		new PairSavingsCELO(chainId, kit, SavingsCELOAddressMainnet),
 	]))
 export const mainnetRegistryMoolaV2 =
 	(kit: ContractKit) => new RegistryAaveV2("moola-v2", kit.web3 as unknown as Web3, "0xD1088091A174d33412a968Fa34Cb67131188B332")
 export const mainnetRegistryCeloDex =
-	(kit: ContractKit) => new RegistryUniswapV2("celodex", kit.web3 as unknown as Web3, "0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6", {
-		fixedFee: new BigNumber(0.997), // TODO(zviadm): Figure out actual fee for CeloDex pairs.
-	})
+	(kit: ContractKit) => new RegistryUniswapV2(
+		"celodex",
+		kit.web3 as unknown as Web3,
+		"0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6",
+		{ registryHelperAddr: registryHelperUniswapV2 })
 export const mainnetRegistrySymmetric =
 	(kit: ContractKit) => new RegistryBalancer("symmetric", kit.web3 as unknown as Web3, "0x3E30b138ecc85cD89210e1A19a8603544A917372")
 
