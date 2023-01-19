@@ -88,8 +88,10 @@ export const mainnetRegistryCurve =
 		const web3 = kit.web3 as unknown as Web3
 		const pairs = web3.eth.getChainId().then(chainId =>
 			Promise.all([
-				createCurvePairs(chainId, web3, "0xf4cab10dc19695aace14b7a16d7705b600ad5f73", 2), // cUSD <-> USDC
-				createCurvePairs(chainId, web3, "0x32fd7e563c6521ab4d59ce3277bcfbe3317cfd63", 3), // tripool: cUSD, USDT, USDC
+				createCurvePairs(chainId, web3, "0xf4cab10dC19695AaCe14b7A16d7705b600ad5F73", 2), // cUSD <-> USDC
+				createCurvePairs(chainId, web3, "0x32fD7e563c6521Ab4D59CE3277bcfBe3317CFd63", 3), // tripool: cUSD, USDT, USDC
+				createCurvePairs(chainId, web3, "0xAF7Ee5Ba02dC9879D24cb16597cd854e13f3aDa8", 2), // agEUR <-> cEUR
+				createCurvePairs(chainId, web3, "0x9Be5da31c7A42d7e045189ac1822D1fA5838e635", 2), // axlUSDC <-> cUSD
 			]).then(r => r.flat()))
 		return new RegistryStatic("curve", pairs)
 	}
