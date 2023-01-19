@@ -47,29 +47,21 @@ export class PairCurve extends Pair {
 	}
 
 	protected async _init() {
-		const [
-			tokenA,
-			tokenB,
-		] = await Promise.all([
-			this.curvePool.methods.coins(this.token0Idx).call(),
-			this.curvePool.methods.coins(this.token1Idx).call(),
-		])
-		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
-		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
-		const [
-			decimalsA,
-			decimalsB,
-		] = await Promise.all([
-			erc20A.methods.decimals().call(),
-			erc20B.methods.decimals().call(),
-		])
-		this.tokenPrecisionMultipliers = [
-			new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsA)),
-			new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsB)),
-		]
+		const coins: string[] = []
+		this.tokenPrecisionMultipliers = []
+		for (let i = 0; i < this.nCoins; i += 1) {
+			const coin = await this.curvePool.methods.coins(i).call()
+			coins.push(coin)
+			const erc20 = new this.web3.eth.Contract(Erc20ABI, coin) as unknown as Erc20
+			const decimals = await erc20.methods.decimals().call()
+			this.tokenPrecisionMultipliers.push(
+				new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimals)),
+			)
+		}
 		return {
 			pairKey: this.poolAddr,
-			tokenA, tokenB,
+			tokenA: coins[this.token0Idx],
+			tokenB: coins[this.token1Idx],
 		}
 	}
 

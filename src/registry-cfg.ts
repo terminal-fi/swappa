@@ -89,6 +89,7 @@ export const mainnetRegistryCurve =
 		const pairs = web3.eth.getChainId().then(chainId =>
 			Promise.all([
 				createCurvePairs(chainId, web3, "0xf4cab10dc19695aace14b7a16d7705b600ad5f73", 2), // cUSD <-> USDC
+				createCurvePairs(chainId, web3, "0x32fd7e563c6521ab4d59ce3277bcfbe3317cfd63", 3), // tripool: cUSD, USDT, USDC
 			]).then(r => r.flat()))
 		return new RegistryStatic("curve", pairs)
 	}

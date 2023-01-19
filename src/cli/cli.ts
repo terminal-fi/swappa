@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import commander from 'commander';
+import axios from 'axios';
 import { ContractKit, newKit } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 import { toTransactionObject } from '@celo/connect';
@@ -50,10 +51,17 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"curve":       mainnetRegistryCurve,
 }
 
+interface Token {
+	chainId: number,
+	address: string,
+	symbol: string,
+	decimals: number,
+}
 let chainId: number
+let ALL_TOKENS: Token[]
 
 function tokenByAddrOrSymbol(addressOrSymbol: string) {
-	const t = ubeswapTokens.tokens.find((t) => t.chainId === chainId && (t.address === addressOrSymbol || t.symbol === addressOrSymbol))
+	const t = ALL_TOKENS.find((t) => t.chainId === chainId && (t.address === addressOrSymbol || t.symbol === addressOrSymbol))
 	if (!t) {
 		throw new Error(`Unrecognized token: ${addressOrSymbol}!`)
 	}
@@ -65,10 +73,23 @@ async function main() {
 	const kit = await newKit(opts.network)
 	chainId = await kit.web3.eth.getChainId()
 
+	const celoTokenListURI = "https://celo-org.github.io/celo-token-list/celo.tokenlist.json"
+	const celoTokenList = (await axios.get<{tokens: Token[]}>(celoTokenListURI)).data
+	ALL_TOKENS = [
+		...ubeswapTokens.tokens,
+		...celoTokenList.tokens,
+		{
+			chainId: 42220,
+			address: "0x617f3112bf5397D0467D315cC709EF968D9ba546",
+			symbol: "USDTxWormhole",
+			decimals: 6,
+		}
+	]
+
 	const inputToken = tokenByAddrOrSymbol(opts.input)
 	const outputToken = tokenByAddrOrSymbol(opts.output)
 	const inputAmount = new BigNumber(opts.amount).shiftedBy(inputToken.decimals)
-	const tokenWhitelist = ubeswapTokens.tokens.filter((v) => v.chainId === chainId).map((v) => v.address)
+	const tokenWhitelist = ALL_TOKENS.filter((v) => v.chainId === chainId).map((v) => v.address)
 
 	const registryFs = opts.registries === "all" ?
 		Object.values(registriesByName) :
