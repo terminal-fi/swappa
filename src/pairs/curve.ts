@@ -1,14 +1,14 @@
 import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
-import { ISwap, ABI as SwapABI } from "../../types/web3-v1-contracts/ISwap"
+import { ICurve, ABI as CurveABI } from "../../types/web3-v1-contracts/ICurve"
 import { Erc20, ABI as Erc20ABI } from '../../types/web3-v1-contracts/ERC20';
 
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
-import { address as pairStableSwapAddress } from "../../tools/deployed/mainnet.PairStableSwap.addr.json"
+import { address as pairCurveAddress } from "../../tools/deployed/mainnet.PairCurve.addr.json"
 
-interface PairStableSwapSnapshot extends Snapshot {
+interface PairCurveSnapshot extends Snapshot {
 	paused: boolean
 	tokenPrecisionMultipliers: BigNumberString[]
 	balancesWithAdjustedPrecision: BigNumberString[]
@@ -16,9 +16,9 @@ interface PairStableSwapSnapshot extends Snapshot {
 	preciseA: BigNumberString
 }
 
-export class PairStableSwap extends Pair {
+export class PairCurve extends Pair {
 	allowRepeats = false
-	private swapPool: ISwap
+	private curvePool: ICurve
 
 	private paused: boolean = false
 	private tokenPrecisionMultipliers: BigNumber[] = []
@@ -28,6 +28,7 @@ export class PairStableSwap extends Pair {
 
 	private token0Idx: number
 	private token1Idx: number
+	private nCoins: number
 
 	static readonly POOL_PRECISION_DECIMALS = 18
 	static readonly A_PRECISION = 100
@@ -35,13 +36,14 @@ export class PairStableSwap extends Pair {
 	constructor(
 		chainId: number,
 		private web3: Web3,
-		private swapPoolAddr: Address,
-		tokenIdxs?: [number, number],
+		private poolAddr: Address,
+		opts?: {nCoins: number, token0Idx: number, token1Idx: number},
 	) {
-		super(selectAddress(chainId, {mainnet: pairStableSwapAddress}))
-		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
-		this.token0Idx = tokenIdxs ? tokenIdxs[0] : 0
-		this.token1Idx = tokenIdxs ? tokenIdxs[1] : 1
+		super(selectAddress(chainId, {mainnet: pairCurveAddress}))
+		this.curvePool = new web3.eth.Contract(CurveABI, poolAddr) as unknown as ICurve
+		this.nCoins = opts ? opts.nCoins : 2
+		this.token0Idx = opts ? opts.token0Idx : 0
+		this.token1Idx = opts ? opts.token1Idx : 1
 	}
 
 	protected async _init() {
@@ -49,8 +51,8 @@ export class PairStableSwap extends Pair {
 			tokenA,
 			tokenB,
 		] = await Promise.all([
-			this.swapPool.methods.getToken(this.token0Idx).call(),
-			this.swapPool.methods.getToken(this.token1Idx).call(),
+			this.curvePool.methods.coins(this.token0Idx).call(),
+			this.curvePool.methods.coins(this.token1Idx).call(),
 		])
 		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
 		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
@@ -62,11 +64,11 @@ export class PairStableSwap extends Pair {
 			erc20B.methods.decimals().call(),
 		])
 		this.tokenPrecisionMultipliers = [
-			new BigNumber(10).pow(PairStableSwap.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsA)),
-			new BigNumber(10).pow(PairStableSwap.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsB)),
+			new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsA)),
+			new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsB)),
 		]
 		return {
-			pairKey: this.swapPoolAddr,
+			pairKey: this.poolAddr,
 			tokenA, tokenB,
 		}
 	}
@@ -78,10 +80,10 @@ export class PairStableSwap extends Pair {
 			swapFee,
 			preciseA,
 		 ] = await Promise.all([
-			this.swapPool.methods.paused().call(),
-			this.swapPool.methods.getBalances().call(),
-			this.swapPool.methods.getSwapFee().call(),
-			this.swapPool.methods.getAPrecise().call(),
+			false,
+			Promise.all([...Array(this.nCoins).keys()].map((i) => this.curvePool.methods.balances(i).call())),
+			this.curvePool.methods.fee().call(),
+			this.curvePool.methods.A_precise().call(),
 		])
 		this.paused = paused
 		this.balancesWithAdjustedPrecision = balances.map((b, idx) => this.tokenPrecisionMultipliers[idx].multipliedBy(b))
@@ -120,9 +122,9 @@ export class PairStableSwap extends Pair {
 		const c = d
 			.multipliedBy(d).div(x.multipliedBy(nTokens))
 			.integerValue()
-			.multipliedBy(d).multipliedBy(PairStableSwap.A_PRECISION).div(nA.multipliedBy(nTokens))
+			.multipliedBy(d).multipliedBy(PairCurve.A_PRECISION).div(nA.multipliedBy(nTokens))
 			.integerValue()
-		const b = s.plus(d.multipliedBy(PairStableSwap.A_PRECISION).div(nA)).integerValue()
+		const b = s.plus(d.multipliedBy(PairCurve.A_PRECISION).div(nA)).integerValue()
 
 		let yPrev
 		let y = d
@@ -156,8 +158,8 @@ export class PairStableSwap extends Pair {
 				dP = dP.multipliedBy(d).div(x.multipliedBy(nTokens)).integerValue()
 			})
 			prevD = d
-			d = nA.multipliedBy(s).div(PairStableSwap.A_PRECISION).plus(dP.multipliedBy(nTokens)).multipliedBy(d).div(
-				nA.minus(PairStableSwap.A_PRECISION).multipliedBy(d).div(PairStableSwap.A_PRECISION).plus(
+			d = nA.multipliedBy(s).div(PairCurve.A_PRECISION).plus(dP.multipliedBy(nTokens)).multipliedBy(d).div(
+				nA.minus(PairCurve.A_PRECISION).multipliedBy(d).div(PairCurve.A_PRECISION).plus(
 					new BigNumber(nTokens).plus(1).multipliedBy(dP)
 				)
 			).integerValue()
@@ -169,10 +171,10 @@ export class PairStableSwap extends Pair {
 	}
 
 	protected swapExtraData() {
-		return this.swapPoolAddr
+		return this.poolAddr
 	}
 
-	public snapshot(): PairStableSwapSnapshot {
+	public snapshot(): PairCurveSnapshot {
 		return {
 			paused: this.paused,
 			tokenPrecisionMultipliers: this.tokenPrecisionMultipliers.map(n => n.toFixed()),
@@ -182,7 +184,7 @@ export class PairStableSwap extends Pair {
 		}
 	}
 
-	public restore(snapshot: PairStableSwapSnapshot): void {
+	public restore(snapshot: PairCurveSnapshot): void {
 		this.paused = snapshot.paused
 		this.tokenPrecisionMultipliers = snapshot.tokenPrecisionMultipliers.map(r => new BigNumber(r))
 		this.balancesWithAdjustedPrecision = snapshot.balancesWithAdjustedPrecision.map(r => new BigNumber(r))
@@ -191,18 +193,17 @@ export class PairStableSwap extends Pair {
 	}
 }
 
-export async function createStableSwapPairs(
+export async function createCurvePairs(
 	chainId: number,
 	web3: Web3,
-	swapPoolAddr: Address,
+	poolAddr: Address,
+	nCoins: number,
 ): Promise<Pair[]> {
-	const swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
-	const balances = await swapPool.methods.getBalances().call()
-	const nTokens = balances.length
+	const swapPool = new web3.eth.Contract(CurveABI, poolAddr) as unknown as ICurve
 	const r: Pair[] = []
-	for (let i = 0; i < nTokens - 1; i++) {
-		for (let j = i+1; j < nTokens; j++) {
-			r.push(new PairStableSwap(chainId, web3, swapPoolAddr, [i, j]))
+	for (let token0Idx = 0; token0Idx < nCoins - 1; token0Idx++) {
+		for (let token1Idx = token0Idx+1; token1Idx < nCoins; token1Idx++) {
+			r.push(new PairCurve(chainId, web3, poolAddr, {nCoins, token0Idx, token1Idx}))
 		}
 	}
 	return r
