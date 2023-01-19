@@ -103,6 +103,8 @@ export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	// Uniswap forks:
 	mainnetRegistryUbeswap(kit),
 	mainnetRegistrySushiswap(kit),
+	// Curve forks:
+	mainnetRegistryCurve(kit),
 	// Stableswap forks:
 	mainnetRegistryMobius(kit),
 	// Balancer forks:
