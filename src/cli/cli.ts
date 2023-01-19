@@ -12,7 +12,7 @@ import { SwappaManager } from '../swappa-manager';
 import {
 	mainnetRegistryMobius, mainnetRegistryMoola, mainnetRegistryMoolaV2,
 	mainnetRegistrySavingsCELO, mainnetRegistrySushiswap, mainnetRegistryUbeswap,
-	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc,
+	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc, mainnetRegistryCurve,
 } from '../registry-cfg';
 import { RegistryMento } from '../registries/mento';
 import { Registry } from '../registry';
@@ -47,6 +47,7 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"celodex":     mainnetRegistryCeloDex,
 	"symmetric":   mainnetRegistrySymmetric,
 	"misc":        mainnetRegistryMisc,
+	"curve":       mainnetRegistryCurve,
 }
 
 let chainId: number

@@ -13,6 +13,7 @@ import { RegistryStatic } from "./registries/static"
 import { RegistryUniswapV2 } from "./registries/uniswapv2"
 import { RegistryBalancer } from "./registries/balancer"
 import { address as registryHelperUniswapV2 } from "../tools/deployed/mainnet.RegistryHelperUniswapV2.addr.json"
+import { createCurvePairs } from "./pairs/curve"
 
 export const mainnetRegistryMoola =
 	(kit: ContractKit) => new RegistryAave("moola", kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA")
@@ -82,6 +83,15 @@ export const mainnetRegistryCeloDex =
 		{ registryHelperAddr: registryHelperUniswapV2 })
 export const mainnetRegistrySymmetric =
 	(kit: ContractKit) => new RegistryBalancer("symmetric", kit.web3 as unknown as Web3, "0x3E30b138ecc85cD89210e1A19a8603544A917372")
+export const mainnetRegistryCurve =
+	(kit: ContractKit) => {
+		const web3 = kit.web3 as unknown as Web3
+		const pairs = web3.eth.getChainId().then(chainId =>
+			Promise.all([
+				createCurvePairs(chainId, web3, "0xf4cab10dc19695aace14b7a16d7705b600ad5f73", 2), // cUSD <-> USDC
+			]).then(r => r.flat()))
+		return new RegistryStatic("curve", pairs)
+	}
 
 // mainnetRegistriesWhitelist contains list of more established protocols with
 // overall higher TVL.
