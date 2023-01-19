@@ -47,29 +47,21 @@ export class PairCurve extends Pair {
 	}
 
 	protected async _init() {
-		const [
-			tokenA,
-			tokenB,
-		] = await Promise.all([
-			this.curvePool.methods.coins(this.token0Idx).call(),
-			this.curvePool.methods.coins(this.token1Idx).call(),
-		])
-		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
-		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
-		const [
-			decimalsA,
-			decimalsB,
-		] = await Promise.all([
-			erc20A.methods.decimals().call(),
-			erc20B.methods.decimals().call(),
-		])
-		this.tokenPrecisionMultipliers = [
-			new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsA)),
-			new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimalsB)),
-		]
+		const coins: string[] = []
+		this.tokenPrecisionMultipliers = []
+		for (let i = 0; i < this.nCoins; i += 1) {
+			const coin = await this.curvePool.methods.coins(i).call()
+			coins.push(coin)
+			const erc20 = new this.web3.eth.Contract(Erc20ABI, coin) as unknown as Erc20
+			const decimals = await erc20.methods.decimals().call()
+			this.tokenPrecisionMultipliers.push(
+				new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimals)),
+			)
+		}
 		return {
 			pairKey: this.poolAddr,
-			tokenA, tokenB,
+			tokenA: coins[this.token0Idx],
+			tokenB: coins[this.token1Idx],
 		}
 	}
 
@@ -103,28 +95,41 @@ export class PairCurve extends Pair {
 			.multipliedBy(this.tokenPrecisionMultipliers[tokenIndexFrom])
 			.plus(this.balancesWithAdjustedPrecision[tokenIndexFrom])
 		const y = this.getY(
+			tokenIndexFrom,
+			tokenIndexTo,
 			x,
 			this.balancesWithAdjustedPrecision,
 			this.preciseA)
 		const outputAmountWithFee = this.balancesWithAdjustedPrecision[tokenIndexTo].minus(y).minus(1)
 		const fee = outputAmountWithFee.multipliedBy(this.swapFee)
-  	const outputAmount = outputAmountWithFee.minus(fee).div(this.tokenPrecisionMultipliers[tokenIndexTo]).integerValue()
+		const outputAmount = outputAmountWithFee.minus(fee).div(this.tokenPrecisionMultipliers[tokenIndexTo]).integerValue(BigNumber.ROUND_DOWN)
 		return outputAmount
 	}
 
-	private getY = (x: BigNumber, xp: BigNumber[], a: BigNumber) => {
+	private getY = (fromIdx: number, toIdx: number, x: BigNumber, xp: BigNumber[], a: BigNumber) => {
 		// See: https://github.com/mobiusAMM/mobiusV1/blob/master/contracts/SwapUtils.sol#L531
 		const d = this.getD(xp, a)
 		const nTokens = xp.length
 		const nA = a.multipliedBy(nTokens)
 
-		const s = x
-		const c = d
-			.multipliedBy(d).div(x.multipliedBy(nTokens))
-			.integerValue()
+		let s = new BigNumber(0)
+		let c = d
+		for (let idx = 0; idx < xp.length; idx += 1) {
+			let _x
+			if (idx === fromIdx) {
+				_x = x
+			} else if (idx !== toIdx) {
+				_x = xp[idx]
+			} else {
+				continue
+			}
+			s = s.plus(_x)
+			c = c.multipliedBy(d).div(_x.multipliedBy(nTokens)).integerValue(BigNumber.ROUND_DOWN)
+		}
+		c = c
 			.multipliedBy(d).multipliedBy(PairCurve.A_PRECISION).div(nA.multipliedBy(nTokens))
-			.integerValue()
-		const b = s.plus(d.multipliedBy(PairCurve.A_PRECISION).div(nA)).integerValue()
+			.integerValue(BigNumber.ROUND_DOWN)
+		const b = s.plus(d.multipliedBy(PairCurve.A_PRECISION).div(nA)).integerValue(BigNumber.ROUND_DOWN)
 
 		let yPrev
 		let y = d
@@ -132,7 +137,7 @@ export class PairCurve extends Pair {
 			yPrev = y
 			y = y.multipliedBy(y).plus(c).div(
 				y.multipliedBy(2).plus(b).minus(d))
-				.integerValue()
+				.integerValue(BigNumber.ROUND_DOWN)
 			if (y.minus(yPrev).abs().lte(1)) {
 				return y
 			}
@@ -155,14 +160,14 @@ export class PairCurve extends Pair {
 		for (let i = 0; i < 256; i++) {
 			let dP = d
 			xp.forEach((x) => {
-				dP = dP.multipliedBy(d).div(x.multipliedBy(nTokens)).integerValue()
+				dP = dP.multipliedBy(d).div(x.multipliedBy(nTokens)).integerValue(BigNumber.ROUND_DOWN)
 			})
 			prevD = d
 			d = nA.multipliedBy(s).div(PairCurve.A_PRECISION).plus(dP.multipliedBy(nTokens)).multipliedBy(d).div(
 				nA.minus(PairCurve.A_PRECISION).multipliedBy(d).div(PairCurve.A_PRECISION).plus(
 					new BigNumber(nTokens).plus(1).multipliedBy(dP)
 				)
-			).integerValue()
+			).integerValue(BigNumber.ROUND_DOWN)
 			if (d.minus(prevD).abs().lte(1)) {
 				return d
 			}
