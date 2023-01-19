@@ -26,9 +26,6 @@ export class PairStableSwap extends Pair {
 	private swapFee: BigNumber = new BigNumber(0)
 	private preciseA: BigNumber = new BigNumber(0)
 
-	private token0Idx: number
-	private token1Idx: number
-
 	static readonly POOL_PRECISION_DECIMALS = 18
 	static readonly A_PRECISION = 100
 
@@ -36,12 +33,9 @@ export class PairStableSwap extends Pair {
 		chainId: number,
 		private web3: Web3,
 		private swapPoolAddr: Address,
-		tokenIdxs?: [number, number],
 	) {
 		super(selectAddress(chainId, {mainnet: pairStableSwapAddress}))
 		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
-		this.token0Idx = tokenIdxs ? tokenIdxs[0] : 0
-		this.token1Idx = tokenIdxs ? tokenIdxs[1] : 1
 	}
 
 	protected async _init() {
@@ -49,8 +43,8 @@ export class PairStableSwap extends Pair {
 			tokenA,
 			tokenB,
 		] = await Promise.all([
-			this.swapPool.methods.getToken(this.token0Idx).call(),
-			this.swapPool.methods.getToken(this.token1Idx).call(),
+			this.swapPool.methods.getToken(0).call(),
+			this.swapPool.methods.getToken(1).call(),
 		])
 		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
 		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
@@ -83,6 +77,9 @@ export class PairStableSwap extends Pair {
 			this.swapPool.methods.getSwapFee().call(),
 			this.swapPool.methods.getAPrecise().call(),
 		])
+		if (balances.length !== 2) {
+			throw new Error("pool must have only 2 tokens!")
+		}
 		this.paused = paused
 		this.balancesWithAdjustedPrecision = balances.map((b, idx) => this.tokenPrecisionMultipliers[idx].multipliedBy(b))
 		this.swapFee = new BigNumber(swapFee).div(new BigNumber(10).pow(10))
@@ -95,8 +92,7 @@ export class PairStableSwap extends Pair {
 		}
 
 		// See: https://github.com/mobiusAMM/mobiusV1/blob/master/contracts/SwapUtils.sol#L617
-		const [tokenIndexFrom, tokenIndexTo] = inputToken === this.tokenA ?
-			[this.token0Idx, this.token1Idx] : [this.token1Idx, this.token0Idx]
+		const [tokenIndexFrom, tokenIndexTo] = inputToken === this.tokenA ? [0, 1] : [1, 0]
 		const x = inputAmount
 			.multipliedBy(this.tokenPrecisionMultipliers[tokenIndexFrom])
 			.plus(this.balancesWithAdjustedPrecision[tokenIndexFrom])
@@ -189,21 +185,4 @@ export class PairStableSwap extends Pair {
 		this.swapFee = new BigNumber(snapshot.swapFee)
 		this.preciseA = new BigNumber(snapshot.preciseA)
 	}
-}
-
-export async function createStableSwapPairs(
-	chainId: number,
-	web3: Web3,
-	swapPoolAddr: Address,
-): Promise<Pair[]> {
-	const swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
-	const balances = await swapPool.methods.getBalances().call()
-	const nTokens = balances.length
-	const r: Pair[] = []
-	for (let i = 0; i < nTokens - 1; i++) {
-		for (let j = i+1; j < nTokens; j++) {
-			r.push(new PairStableSwap(chainId, web3, swapPoolAddr, [i, j]))
-		}
-	}
-	return r
 }
