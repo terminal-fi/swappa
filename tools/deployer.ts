@@ -17,6 +17,7 @@ import PairBPool from "../build/contracts/PairBPool.json"
 import PairOpenSumSwap from "../build/contracts/PairOpenSumSwap.json"
 import PairSymmetricSwap from "../build/contracts/PairSymmetricSwap.json"
 import PairCurve from "../build/contracts/PairCurve.json"
+import PairMentoV2 from "../build/contracts/PairMentoV2.json"
 
 process.on('unhandledRejection', (reason, _promise) => {
 	// @ts-ignore
@@ -120,6 +121,9 @@ async function main() {
 		kit, opts.network, "PairSymmetricSwap", PairSymmetricSwap.bytecode)
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairCurve", PairCurve.bytecode)
+	await readAddressOrDeployContract(
+		kit, opts.network, "PairMentoV2", PairMentoV2.bytecode
+	)
 }
 
 main()
