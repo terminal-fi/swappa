@@ -30,7 +30,11 @@ contract PairMentoV2 is ISwappaPairV1 {
         address to,
         bytes calldata data
     ) external override {
-        (address _broker, address exchangeProvider, bytes32 exchangeId) = parseData(data);
+        (
+            address _broker,
+            address exchangeProvider,
+            bytes32 exchangeId
+        ) = parseData(data);
         uint inputAmount = ERC20(input).balanceOf(address(this));
         require(
             ERC20(input).approve(_broker, inputAmount),
@@ -52,11 +56,16 @@ contract PairMentoV2 is ISwappaPairV1 {
 
     function parseData(
         bytes memory data
-    ) private pure returns (address broker, address exchangeProvider, bytes32 exchangeId ) {
-        require(data.length == 40, "PairMentoV2: invalid data!");
+    )
+        public
+        pure
+        returns (address broker, address exchangeProvider, bytes32 exchangeId)
+    {
+        require(data.length == 72, "PairMentoV2: invalid data!");
         assembly {
             broker := mload(add(data, 20))
-            exchangeProvider := mload(add(data, 20))
+            exchangeProvider := mload(add(data, 40))
+            exchangeId := mload(add(data, 72))
         }
     }
 
@@ -66,7 +75,11 @@ contract PairMentoV2 is ISwappaPairV1 {
         uint256 amountIn,
         bytes calldata data
     ) external view override returns (uint amountOut) {
-        (address _broker, address exchangeProvider, bytes32 exchangeId) = parseData(data);
+        (
+            address _broker,
+            address exchangeProvider,
+            bytes32 exchangeId
+        ) = parseData(data);
         IBroker broker = IBroker(_broker);
         return
             broker.getAmountOut(
