@@ -114,7 +114,7 @@ async function main() {
 				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
 				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}` +
 				// ${JSON.stringify(pair.snapshot()) was removed here
-				`\n  snapshot: }`)
+				`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
 		}
 	}
 

@@ -2,6 +2,8 @@ import { Mento, Exchange } from "@mento-protocol/mento-sdk";
 import {
   IBiPoolManager__factory,
   IBiPoolManager,
+  ISortedOracles__factory,
+  ISortedOracles
 } from "@mento-protocol/mento-core-ts";
 import { BigNumber } from "bignumber.js";
 import { FixedNumber } from "@ethersproject/bignumber";
@@ -113,6 +115,10 @@ export class PairMentoV2 extends Pair {
       const [bucket0, bucket1] = [new BigNumber(this.poolExchange!.bucket0._hex), new BigNumber(this.poolExchange!.bucket1._hex)]
       buckets = {bucket0, bucket1}
     }
+    
+  }
+
+  private mentoBucketsAfterUpdate = async () => {
     /*
     Just like in mento.ts but use the PoolExchange in order to read:
     lastBucketUpdate, updateFrequency and spread
@@ -129,16 +135,23 @@ export class PairMentoV2 extends Pair {
       bucket1 = exchangeRateDenominator.mul(bucket0).div(exchangeRateNumerator);
     }
     */
-  }
-
-  // this needs to be worked on 
-  private mentoBucketsAfterUpdate = async () => {
-    this.poolExchange = await this.getPoolExchange()
-    const [bucket0, bucket1] = [new BigNumber(this.poolExchange!.bucket0._hex), new BigNumber(this.poolExchange!.bucket1._hex)]
+    const bucket0 = new BigNumber(this.poolExchange.config.stablePoolResetSize._hex)
+    const [exchangeRateNumerator, exchangeRateDenominator] = await this.getOracleExchangeRate(this.poolExchange.config.referenceRateFeedID)
+    const bucket1 = exchangeRateDenominator.multipliedBy(new BigNumber(bucket0)).dividedBy(exchangeRateNumerator)
     return {bucket0, bucket1}
   } 
 
-  protected swapExtraData(): string {
+  protected getOracleExchangeRate = async (rateFeedID: Address): Promise<[BigNumber, BigNumber]> => {
+    const sortedOracles = ISortedOracles__factory.connect(
+      this.exchange.providerAddr,
+      this.provider
+    );
+    const [rateNumerator, rateDenominator] = await sortedOracles.medianRate(rateFeedID)
+    if (rateDenominator.lt(0)) throw new Error("exchange rate denominator must be greater than 0")
+    return [new BigNumber(rateNumerator._hex), new BigNumber(rateDenominator._hex)]
+  }
+
+  public swapExtraData(): string {
     const broker = this.mento.getBroker();
     return `${broker.address}${this.exchange.providerAddr}${this.exchange.id}`;
   }
@@ -148,10 +161,10 @@ export class PairMentoV2 extends Pair {
       "0x7586680Dd2e4F977C33cDbd597fa2490e342CbA2",
       "0x1D74cFaa39049698DbA4550ca487b8FAf09f3c81",
     ];
-    const pricingModulesMainnet: string[] = [
-      "0x0c07126d0CB30E66eF7553Cc7C37143B4f06DddB",
-      "0x366DB2cd12f6bbF4333C407A462aD25e3c383F34",
-    ];
+    // const pricingModulesMainnet: string[] = [
+    //   "0x0c07126d0CB30E66eF7553Cc7C37143B4f06DddB",
+    //   "0x366DB2cd12f6bbF4333C407A462aD25e3c383F34",
+    // ];
       
     let pricingFunctionType: PricingFunctionType;
     if (this.poolExchange.pricingModule == pricingModulesBaklava[0]) {
@@ -168,7 +181,6 @@ export class PairMentoV2 extends Pair {
     const getAmountOut = GET_AMOUNT_OUT[pricingFunctionType];
 
     const spread = new BigNumber(this.poolExchange.config.spread.value._hex);
-    console.log("spread", spread)
     let bucketOut;
     let bucketIn;
 
