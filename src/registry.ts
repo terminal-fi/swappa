@@ -11,5 +11,6 @@ export abstract class Registry {
 		return this.name
 	}
 
+	// import exchanges type
 	public abstract findPairs(tokenWhitelist: Address[]): Promise<Pair[]>
 }

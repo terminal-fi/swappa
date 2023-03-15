@@ -38,6 +38,7 @@ export class PairMento extends PairXYeqK {
 	}
 
 	public async refresh(): Promise<void> {
+		// console.log(this.exchange)
 		const [
 			lastUpdateSecs,
 			updateFrequencySecs,

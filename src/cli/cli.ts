@@ -16,6 +16,7 @@ import {
 	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc, mainnetRegistryCurve,
 } from '../registry-cfg';
 import { RegistryMento } from '../registries/mento';
+import { RegistryMentoV2 } from '../registries/mento-v2';
 import { Registry } from '../registry';
 
 const program = commander.program
@@ -38,17 +39,18 @@ process.on('unhandledRejection', (reason: any, _promise: any) => {
 })
 
 const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
-	"mento":       (kit: ContractKit) => new RegistryMento(kit),
-	"ubeswap":     mainnetRegistryUbeswap,
-	"sushiswap":   mainnetRegistrySushiswap,
-	"mobius":      mainnetRegistryMobius,
-	"moola":       mainnetRegistryMoola,
-	"moola-v2":    mainnetRegistryMoolaV2,
-	"savingscelo": mainnetRegistrySavingsCELO,
-	"celodex":     mainnetRegistryCeloDex,
-	"symmetric":   mainnetRegistrySymmetric,
-	"misc":        mainnetRegistryMisc,
-	"curve":       mainnetRegistryCurve,
+	// "mento":       (kit: ContractKit) => new RegistryMento(kit),
+	"mentov2":	   (kit: ContractKit) => new RegistryMentoV2(kit),
+	// "ubeswap":     mainnetRegistryUbeswap,
+	// "sushiswap":   mainnetRegistrySushiswap,
+	// "mobius":      mainnetRegistryMobius,
+	// "moola":       mainnetRegistryMoola,
+	// "moola-v2":    mainnetRegistryMoolaV2,
+	// "savingscelo": mainnetRegistrySavingsCELO,
+	// "celodex":     mainnetRegistryCeloDex,
+	// "symmetric":   mainnetRegistrySymmetric,
+	// "misc":        mainnetRegistryMisc,
+	// "curve":       mainnetRegistryCurve,
 }
 
 interface Token {
@@ -105,7 +107,8 @@ async function main() {
 				`${registry.getName().padEnd(12)}` +
 				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
 				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}` +
-				`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
+				// ${JSON.stringify(pair.snapshot()) was removed here
+				`\n  snapshot: }`)
 		}
 	}
 
