@@ -18,11 +18,7 @@ enum PricingFunctionType {
   ConstantSum,
 }
 
-const FIXED1 = new BigNumber("1000000000000000000"); // 10^18
-
-function newFixed(x: BigNumber): BigNumber {
-  return x.times(FIXED1);
-}
+const FIXED1 = new BigNumber(1000000000000000000000000); // 10^24
 
 type TGetAmountOut = (
   bucketIn: BigNumber,
@@ -30,12 +26,6 @@ type TGetAmountOut = (
   spread: BigNumber,
   inputAmount: BigNumber
 ) => BigNumber;
-// type TGetAmountIn = (
-//   bucketIn: BigNumber,
-//   bucketOut: BigNumber,
-//   spread: BigNumber,
-//   outputAmount: BigNumber
-// ) => BigNumber;
 
 const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
   [PricingFunctionType.ConstantProduct]: (
@@ -44,19 +34,13 @@ const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
     spread,
     inputAmount
   ) => {
-    console.log("Called :)")
-    if (inputAmount.isZero()) return new BigNumber(0);
-
-    // look into this again, as I'm not sure
-    // const spreadFraction =
-
-    const netAmountIn = FIXED1.minus(spread).multipliedBy(
-      newFixed(inputAmount)
-    );
-
-    const numerator = netAmountIn.multipliedBy(newFixed(bucketB));
-    const denominator = newFixed(bucketA).plus(netAmountIn);
-    return numerator.div(denominator);
+  if (inputAmount.isZero()) return new BigNumber(0);
+    spread = new BigNumber(FIXED1).minus(spread)
+    const numerator = bucketB.multipliedBy(spread).multipliedBy(inputAmount)
+    const denominator = bucketA.plus(inputAmount).multipliedBy(spread)
+    const outputAmount = numerator.div(denominator);
+    if(bucketB.lt(outputAmount)) throw new Error("Output amount can't be greater than bucket out") 
+    return outputAmount
   },
   [PricingFunctionType.ConstantSum]: (
     bucketA,
@@ -64,58 +48,13 @@ const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
     spread,
     inputAmount
   ) => {
-    // Implement constant sum like getAmountOut in ConstantSumPricingModule
     if (inputAmount.isZero()) return new BigNumber(0);
-
-    // const spreadFraction = FIXED1.minus(spread)
-    let amountOut = FIXED1.minus(spread)
-      .multipliedBy(newFixed(inputAmount))
-      .div(FIXED1);
-    if (amountOut.isGreaterThan(bucketB))
-      throw new Error("amountOut cant be greater than the tokenOutPool size");
-    return amountOut;
+    spread = new BigNumber(FIXED1).minus(spread)
+    const outputAmount = spread.multipliedBy(inputAmount).div(new BigNumber(FIXED1));
+    if (bucketB.lt(outputAmount)) throw new Error("Output amount can't be greater than bucket out") 
+    return outputAmount
   },
 };
-
-// const GET_AMOUNT_IN: Record<PricingFunctionType, TGetAmountIn> = {
-//   [PricingFunctionType.ConstantProduct]: (
-//     bucketA,
-//     bucketB,
-//     spread,
-//     outputAmount
-//   ) => {
-//     // Implement constant product like getAmountIn in ConstantProductPricingModule
-//     if (outputAmount.isZero()) return new BigNumber(0);
-
-//     //   const spreadFraction
-//     const numerator = newFixed(outputAmount.multipliedBy(bucketA));
-//     const denominator = newFixed(bucketB.minus(outputAmount)).multipliedBy(
-//       FIXED1.minus(spread)
-//     );
-
-//     return numerator.dividedBy(denominator);
-//   },
-//   [PricingFunctionType.ConstantSum]: (
-//     bucketA,
-//     bucketB,
-//     spread,
-//     outputAmount
-//   ) => {
-//     // Implement constant sum like getAmountIn in ConstantSumPricingModule
-//     if (outputAmount > bucketB) {
-//       throw new Error(
-//         "outputAmount cant be greater then the tokenOutPool size"
-//       );
-//     }
-//     if (outputAmount.isEqualTo(0)) return new BigNumber(0);
-
-//     const denominator = FIXED1.minus(spread);
-//     const numerator = newFixed(outputAmount);
-
-//     return numerator.dividedBy(denominator);
-//   },
-// };
-
 interface PairMentoV2Snapshot extends Snapshot {
   pricingFunction: PricingFunctionType | null;
   bucketA: BigNumberString;
@@ -205,10 +144,6 @@ export class PairMentoV2 extends Pair {
   }
 
   public outputAmount(inputToken: Address, inputAmount: BigNumber) {
-    // Determine if it's constant sum or constant product by looking at the pricingModule in the PoolExchange struct
-    // and use a hardcoded list of addresses.
-    // 0x7586680Dd2e4F977C33cDbd597fa2490e342CbA2 constant product on baklava
-    // 0x1D74cFaa39049698DbA4550ca487b8FAf09f3c81 constant sum on baklava
     const pricingModulesBaklava: string[] = [
       "0x7586680Dd2e4F977C33cDbd597fa2490e342CbA2",
       "0x1D74cFaa39049698DbA4550ca487b8FAf09f3c81",
@@ -217,8 +152,6 @@ export class PairMentoV2 extends Pair {
       "0x0c07126d0CB30E66eF7553Cc7C37143B4f06DddB",
       "0x366DB2cd12f6bbF4333C407A462aD25e3c383F34",
     ];
-    // this.poolExchange = await this.getPoolExchange();
-    // console.log(this.poolExchange);
       
     let pricingFunctionType: PricingFunctionType;
     if (this.poolExchange.pricingModule == pricingModulesBaklava[0]) {
@@ -232,17 +165,8 @@ export class PairMentoV2 extends Pair {
       throw new Error("Pricing module doesn't exist")
     }
 
-    console.log("pricingFunctionType", pricingFunctionType)
-
     const getAmountOut = GET_AMOUNT_OUT[pricingFunctionType];
 
-    // cUSD/CELO pool
-    // asset0 == address(cUSD) bucket0 = 10000
-    // asset1 == address(CELO) bucket1 = 5000
-
-    // outputAmount(cUSD, 20) -> getAmountOut(bucket0, bucket1, spread, 20)
-
-    // outputAmount(CELO, 20) -> getAmountOut(bucket1, bucket0, spread, 20)
     const spread = new BigNumber(this.poolExchange.config.spread.value._hex);
     console.log("spread", spread)
     let bucketOut;
@@ -253,23 +177,17 @@ export class PairMentoV2 extends Pair {
     if (inputToken == this.poolExchange.asset0) {
       bucketIn = this.poolExchange.bucket0;
       bucketOut = this.poolExchange.bucket1;
-      console.log("inputToken is asset0")
     } else {
-      console.log("inputToken is asset1")
-      console.log(this.poolExchange.asset1)
-      console.log(this.poolExchange.asset0)
       bucketIn = this.poolExchange.bucket1;
       bucketOut = this.poolExchange.bucket0;
     }
-    
-    const amountOut = getAmountOut(
+  
+    return getAmountOut(
       new BigNumber(bucketIn._hex),
       new BigNumber(bucketOut._hex),
       spread,
       inputAmount
-    ).integerValue(BigNumber.ROUND_DOWN);
-    console.log(amountOut)
-    return amountOut
+    )
   }
 
   // PairMentoV2Snapshot return type

@@ -85,7 +85,13 @@ async function main() {
 			address: "0x617f3112bf5397D0467D315cC709EF968D9ba546",
 			symbol: "USDTxWormhole",
 			decimals: 6,
-		}
+		},
+		{
+			chainId: 62320,
+			address: "0x4c6B046750F9aBF6F0f3B511217438451bc6Aa02",
+			symbol: "mockBridgedUSDC",
+			decimals: 18,
+		},
 	]
 
 	const inputToken = tokenByAddrOrSymbol(opts.input)

@@ -21,12 +21,8 @@ export class RegistryMento extends Registry{
 					wrapper: wrapper,
 				}))
 			})
-			console.log(cSTBs, "cSTBs")
 		const chainId = await this.kit.web3.eth.getChainId()
 		const pairs = cSTBs.map((cSTB) => (new PairMento(chainId, this.kit, cSTB.name)))
-		// console.log(pairs, "pairs")
-		// console.log(tokenWhitelist, "tokenWhiteList")
-		// console.log(chainId, pairs)
 		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
 	}
 }
