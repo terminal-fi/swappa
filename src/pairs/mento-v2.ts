@@ -37,7 +37,7 @@ const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
     inputAmount
   ) => {
   if (inputAmount.isZero()) return new BigNumber(0);
-    spread = new BigNumber(FIXED1).minus(spread)
+    spread = new BigNumber(new BigNumber(FIXED1).minus(spread))
     const numerator = bucketB.multipliedBy(spread).multipliedBy(inputAmount)
     const denominator = bucketA.plus(inputAmount).multipliedBy(spread)
     const outputAmount = numerator.div(denominator);
@@ -51,13 +51,14 @@ const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
     inputAmount
   ) => {
     if (inputAmount.isZero()) return new BigNumber(0);
-    spread = new BigNumber(FIXED1).minus(spread)
+    spread = new BigNumber(FIXED1).minus(spread);
     const outputAmount = spread.multipliedBy(inputAmount).div(new BigNumber(FIXED1));
     if (bucketB.lt(outputAmount)) throw new Error("Output amount can't be greater than bucket out") 
     return outputAmount
   },
 };
 interface PairMentoV2Snapshot extends Snapshot {
+  swapFee: BigNumberString
   pricingFunction: PricingFunctionType | null;
   bucketA: BigNumberString;
   bucketB: BigNumberString;
@@ -65,10 +66,10 @@ interface PairMentoV2Snapshot extends Snapshot {
 
 export class PairMentoV2 extends Pair {
   public poolExchange!: IBiPoolManager.PoolExchangeStructOutput;
-  private swapFee: BigNumberString = "";
+  private swapFee: BigNumber = new BigNumber(0);
   private pricingFunction: PricingFunctionType | null = null;
-  private bucketA: BigNumberString = "";
-  private bucketB: BigNumberString = "";
+  private bucketA: Address = "";
+  private bucketB: Address = "";
 
   constructor(
     chainId: number,
@@ -107,6 +108,12 @@ export class PairMentoV2 extends Pair {
       this.poolExchange.config.referenceRateResetFrequency._hex,
       this.poolExchange.config.spread.value._hex,
     ];
+    // console.log(new BigNumber(this.poolExchange.config.spread.value._hex).toNumber())
+    console.log(parseInt(spread, 16))
+    console.log(spread)
+    this.swapFee = new BigNumber(FIXED1).minus(spread);
+    console.log("before to fixed",this.swapFee)
+    console.log("refresh: ", this.swapFee.toFixed())
     const tillUpdateSecs = new BigNumber(lastBucketUpdate).plus(new BigNumber(updateFrequency)).minus(Date.now() / 1000)
     let buckets: {bucket0: BigNumber, bucket1: BigNumber}
     if(tillUpdateSecs.gt(0) && tillUpdateSecs.lte(5)) {
@@ -115,7 +122,6 @@ export class PairMentoV2 extends Pair {
       const [bucket0, bucket1] = [new BigNumber(this.poolExchange!.bucket0._hex), new BigNumber(this.poolExchange!.bucket1._hex)]
       buckets = {bucket0, bucket1}
     }
-    
   }
 
   private mentoBucketsAfterUpdate = async () => {
@@ -155,22 +161,25 @@ export class PairMentoV2 extends Pair {
     const broker = this.mento.getBroker();
     return `${broker.address}${this.exchange.providerAddr}${this.exchange.id}`;
   }
-
-  public outputAmount(inputToken: Address, inputAmount: BigNumber) {
-    const pricingModulesBaklava: string[] = [
-      "0x7586680Dd2e4F977C33cDbd597fa2490e342CbA2",
-      "0x1D74cFaa39049698DbA4550ca487b8FAf09f3c81",
-    ];
-    // const pricingModulesMainnet: string[] = [
+   // const pricingModulesMainnet: string[] = [
     //   "0x0c07126d0CB30E66eF7553Cc7C37143B4f06DddB",
     //   "0x366DB2cd12f6bbF4333C407A462aD25e3c383F34",
     // ];
+    public pricingModulesBaklava: string[] = [
+      "0x7586680Dd2e4F977C33cDbd597fa2490e342CbA2",
+      "0x1D74cFaa39049698DbA4550ca487b8FAf09f3c81",
+    ];
+  public outputAmount(inputToken: Address, inputAmount: BigNumber) {
+    const spread = new BigNumber(this.poolExchange.config.spread.value._hex);
+    let bucketOut;
+    let bucketIn;
+ 
       
     let pricingFunctionType: PricingFunctionType;
-    if (this.poolExchange.pricingModule == pricingModulesBaklava[0]) {
+    if (this.poolExchange.pricingModule == this.pricingModulesBaklava[0]) {
       pricingFunctionType = PricingFunctionType.ConstantProduct;
       this.pricingFunction = pricingFunctionType
-    } else if(this.poolExchange.pricingModule == pricingModulesBaklava[1]) {
+    } else if(this.poolExchange.pricingModule == this.pricingModulesBaklava[1]) {
       pricingFunctionType = PricingFunctionType.ConstantSum;
       this.pricingFunction = pricingFunctionType
     } 
@@ -180,15 +189,13 @@ export class PairMentoV2 extends Pair {
 
     const getAmountOut = GET_AMOUNT_OUT[pricingFunctionType];
 
-    const spread = new BigNumber(this.poolExchange.config.spread.value._hex);
-    let bucketOut;
-    let bucketIn;
 
     // if inputToken == poolExchange.asset0 => bucketIn = bucket0, bucketOut = bucket1
     // else bucketIn = bucket1, bucketOut = bucket0
     if (inputToken == this.poolExchange.asset0) {
       bucketIn = this.poolExchange.bucket0;
       bucketOut = this.poolExchange.bucket1;
+   
     } else {
       bucketIn = this.poolExchange.bucket1;
       bucketOut = this.poolExchange.bucket0;
@@ -202,9 +209,10 @@ export class PairMentoV2 extends Pair {
     )
   }
 
-  // PairMentoV2Snapshot return type
   public snapshot(): PairMentoV2Snapshot {
+    // console.log(this.swapFee)
     return {
+      swapFee: this.swapFee.toFixed(),
       pricingFunction: this.pricingFunction,
       bucketA: this.bucketA,
       bucketB: this.bucketB,
@@ -212,6 +220,7 @@ export class PairMentoV2 extends Pair {
   }
 
   public async restore(snapshot: PairMentoV2Snapshot): Promise<void> {
+    this.swapFee = new BigNumber(snapshot.swapFee)
     this.pricingFunction = snapshot.pricingFunction;
     this.bucketA = snapshot.bucketA;
     this.bucketB = snapshot.bucketB;

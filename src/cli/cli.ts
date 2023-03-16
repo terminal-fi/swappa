@@ -113,7 +113,6 @@ async function main() {
 				`${registry.getName().padEnd(12)}` +
 				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
 				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}` +
-				// ${JSON.stringify(pair.snapshot()) was removed here
 				`\n  snapshot: ${JSON.stringify(pair.snapshot())}`)
 		}
 	}
