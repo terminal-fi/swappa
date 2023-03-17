@@ -1,4 +1,4 @@
-import { ContractKit } from "@celo/contractkit";
+import { ContractKit, CeloContract } from "@celo/contractkit";
 import { Mento } from "@mento-protocol/mento-sdk";
 import { ethers, providers } from "ethers";
 import { Address } from "../pair";
@@ -18,10 +18,11 @@ export class RegistryMentoV2 extends Registry {
 
   findPairs = async (tokenWhitelist: Address[]) => {
     const chainId = await this.kit.web3.eth.getChainId();
+    const sortedOracelsAddress = await this.kit.registry.addressFor(CeloContract.SortedOracles)
     const mento = await Mento.create(this.provider);
     const exchanges = await mento.getExchanges();
     const pairs: PairMentoV2[] = exchanges.map(
-      (exchange) => new PairMentoV2(chainId, this.provider, mento, exchange)
+      (exchange) => new PairMentoV2(chainId, this.provider, mento, exchange, sortedOracelsAddress)
     );
     return initPairsAndFilterByWhitelist(pairs, tokenWhitelist);
   };
