@@ -80,7 +80,6 @@ export class PairCurve extends Pair {
 		this.paused = paused
 		this.balancesWithAdjustedPrecision = balances.map((b, idx) => this.tokenPrecisionMultipliers[idx].multipliedBy(b))
 		this.swapFee = new BigNumber(swapFee).div(new BigNumber(10).pow(10))
-		console.log(swapFee)
 		this.preciseA = new BigNumber(preciseA)
 	}
 
@@ -181,8 +180,6 @@ export class PairCurve extends Pair {
 	}
 
 	public snapshot(): PairCurveSnapshot {
-		 console.log(this.swapFee, "swap fee before fixed")
-		 console.log(this.swapFee.toFixed(), "toFixed")
 		return {
 			paused: this.paused,
 			tokenPrecisionMultipliers: this.tokenPrecisionMultipliers.map(n => n.toFixed()),
