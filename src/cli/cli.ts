@@ -30,6 +30,7 @@ const program = commander.program
 	.option("--max-slippage <max-slippage>", "Maximum allowed slippage.", "0.9999")
 	.option("--no-precheck", "If provided, will skip expected output precheck.")
 	.option("--benchmark <iterations>", "If non-zero, benchmark the route finding for N iterations.", "0")
+	.option("--privateKey <private-key>", "Private key for the from", undefined)
 	.parse(process.argv)
 
 process.on('unhandledRejection', (reason: any, _promise: any) => {
@@ -74,6 +75,9 @@ async function main() {
 	const opts = program.opts()
 	const kit = await newKit(opts.network)
 	chainId = await kit.web3.eth.getChainId()
+	if (opts.privateKey) {
+		kit.connection.addAccount(opts.privateKey);
+	}
 
 	const celoTokenListURI = "https://celo-org.github.io/celo-token-list/celo.tokenlist.json"
 	const celoTokenList = (await axios.get<{tokens: Token[]}>(celoTokenListURI)).data
@@ -86,12 +90,13 @@ async function main() {
 			symbol: "USDTxWormhole",
 			decimals: 6,
 		},
-		{
+		{	// this is a Mock USDC on baklava created by the mento team 
 			chainId: 62320,
 			address: "0x4c6B046750F9aBF6F0f3B511217438451bc6Aa02",
 			symbol: "mockBridgedUSDC",
 			decimals: 18,
 		},
+		// add AxelarUSDC for mainnet that will be used
 	]
 
 	const inputToken = tokenByAddrOrSymbol(opts.input)

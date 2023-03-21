@@ -1,0 +1,9 @@
+[profile.default]
+src = 'contracts'
+out = 'out'
+test = 'test'
+libs = [
+    'lib',
+    'node_modules',
+]
+# See more config options https://github.com/gakonst/foundry/tree/master/config

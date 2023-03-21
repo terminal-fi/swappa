@@ -38,20 +38,22 @@ contract PairMentoV2 is ISwappaPairV1 {
         uint inputAmount = ERC20(input).balanceOf(address(this));
         require(
             ERC20(input).approve(_broker, inputAmount),
-            "PairMentoV2: approve failed!"
+            "PairMentoV2: failed!"
         );
         IBroker broker = IBroker(_broker);
-        require(
-            broker.swapIn(
+        uint256 amountOut = broker.swapIn(
                 exchangeProvider,
                 exchangeId,
                 input,
                 output,
                 inputAmount,
                 0
-            ) > 0,
-            "PairMentoV2: swap failed!"
+            );
+        require(
+            IERC20(output).transfer(to, amountOut),
+            "PairMentoV2: transfer failed!"
         );
+
     }
 
     function parseData(
