@@ -40,18 +40,18 @@ process.on('unhandledRejection', (reason: any, _promise: any) => {
 })
 
 const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
-	// "mento":       (kit: ContractKit) => new RegistryMento(kit),
+	"mento":       (kit: ContractKit) => new RegistryMento(kit),
 	"mentov2":	   (kit: ContractKit) => new RegistryMentoV2(kit),
-	// "ubeswap":     mainnetRegistryUbeswap,
-	// "sushiswap":   mainnetRegistrySushiswap,
-	// "mobius":      mainnetRegistryMobius,
-	// "moola":       mainnetRegistryMoola,
-	// "moola-v2":    mainnetRegistryMoolaV2,
-	// "savingscelo": mainnetRegistrySavingsCELO,
-	// "celodex":     mainnetRegistryCeloDex,
-	// "symmetric":   mainnetRegistrySymmetric,
-	// "misc":        mainnetRegistryMisc,
-	// "curve":       mainnetRegistryCurve,
+	"ubeswap":     mainnetRegistryUbeswap,
+	"sushiswap":   mainnetRegistrySushiswap,
+	"mobius":      mainnetRegistryMobius,
+	"moola":       mainnetRegistryMoola,
+	"moola-v2":    mainnetRegistryMoolaV2,
+	"savingscelo": mainnetRegistrySavingsCELO,
+	"celodex":     mainnetRegistryCeloDex,
+	"symmetric":   mainnetRegistrySymmetric,
+	"misc":        mainnetRegistryMisc,
+	"curve":       mainnetRegistryCurve,
 }
 
 interface Token {

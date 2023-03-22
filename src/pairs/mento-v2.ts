@@ -128,15 +128,6 @@ export class PairMentoV2 extends Pair {
     this.bucket1 = new BigNumber(snapshot.bucket1);
   }
 
-  private async getPoolExchange() {
-    // For this version we will expect that the provider is a BiPoolManager
-    const biPoolManager = IBiPoolManager__factory.connect(
-      this.exchange.providerAddr,
-      this.provider
-    );
-    return await biPoolManager.getPoolExchange(this.exchange.id);
-  }
-
   private mentoBucketsAfterUpdate = async () => {
     /*
     Just like in mento.ts but use the PoolExchange in order to read:
@@ -207,6 +198,15 @@ export class PairMentoV2 extends Pair {
       return [this.bucket1, this.bucket0];
     }
   }
+  
+  private async getPoolExchange() {
+    // For this version we will expect that the provider is a BiPoolManager
+    const biPoolManager = IBiPoolManager__factory.connect(
+      this.exchange.providerAddr,
+      this.provider
+    );
+    return await biPoolManager.getPoolExchange(this.exchange.id);
+  }
 }
 
 type TGetAmountOut = (
@@ -253,9 +253,3 @@ const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
     return outputAmount.decimalPlaces(0, 1);
   },
 };
-
-/*
-TODO:
-- add bridged USDC 
-
-*/
