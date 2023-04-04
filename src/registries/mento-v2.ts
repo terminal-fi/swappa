@@ -5,7 +5,6 @@ import { Address } from "../pair";
 import { Registry } from "../registry";
 import { PairMentoV2 } from "../pairs/mento-v2";
 import { initPairsAndFilterByWhitelist } from "../utils";
-import { BigNumber } from "bignumber.js";
 
 
 export class RegistryMentoV2 extends Registry {

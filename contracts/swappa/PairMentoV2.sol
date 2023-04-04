@@ -38,7 +38,7 @@ contract PairMentoV2 is ISwappaPairV1 {
         uint inputAmount = ERC20(input).balanceOf(address(this));
         require(
             ERC20(input).approve(_broker, inputAmount),
-            "PairMentoV2: failed!"
+            "PairMentoV2: approve failed!"
         );
         IBroker broker = IBroker(_broker);
         uint256 amountOut = broker.swapIn(
