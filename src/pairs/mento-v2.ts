@@ -90,10 +90,7 @@ export class PairMentoV2 extends Pair {
 
   public swapExtraData(): string {
     const broker = this.mento.getBroker();
-    return `${broker.address}${this.exchange.providerAddr.replace(
-      "0x",
-      ""
-    )}${this.exchange.id.replace("0x", "")}`;
+    return `${broker.address}${this.exchange.providerAddr.substring(2)}${this.exchange.id.substring(2)}`;
   }
 
   public outputAmount(inputToken: Address, inputAmount: BigNumber) {
