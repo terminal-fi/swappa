@@ -16,6 +16,8 @@ interface PairCurveSnapshot extends Snapshot {
 	preciseA: BigNumberString
 }
 
+const SWAP_FEE_DENOM = new BigNumber(10).pow(10)
+
 export class PairCurve extends Pair {
 	allowRepeats = false
 	private curvePool: ICurve
@@ -79,7 +81,7 @@ export class PairCurve extends Pair {
 		])
 		this.paused = paused
 		this.balancesWithAdjustedPrecision = balances.map((b, idx) => this.tokenPrecisionMultipliers[idx].multipliedBy(b))
-		this.swapFee = new BigNumber(swapFee).div(new BigNumber(10).pow(10))
+		this.swapFee = new BigNumber(swapFee)
 		this.preciseA = new BigNumber(preciseA)
 	}
 
@@ -101,8 +103,8 @@ export class PairCurve extends Pair {
 			this.balancesWithAdjustedPrecision,
 			this.preciseA)
 		const outputAmountWithFee = this.balancesWithAdjustedPrecision[tokenIndexTo].minus(y).minus(1)
-		const fee = outputAmountWithFee.multipliedBy(this.swapFee)
-		const outputAmount = outputAmountWithFee.minus(fee).div(this.tokenPrecisionMultipliers[tokenIndexTo]).integerValue(BigNumber.ROUND_DOWN)
+		const fee = outputAmountWithFee.multipliedBy(this.swapFee).idiv(SWAP_FEE_DENOM)
+		const outputAmount = outputAmountWithFee.minus(fee).idiv(this.tokenPrecisionMultipliers[tokenIndexTo])
 		return outputAmount
 	}
 
@@ -124,20 +126,17 @@ export class PairCurve extends Pair {
 				continue
 			}
 			s = s.plus(_x)
-			c = c.multipliedBy(d).div(_x.multipliedBy(nTokens)).integerValue(BigNumber.ROUND_DOWN)
+			c = c.multipliedBy(d).idiv(_x.multipliedBy(nTokens))
 		}
 		c = c
-			.multipliedBy(d).multipliedBy(PairCurve.A_PRECISION).div(nA.multipliedBy(nTokens))
-			.integerValue(BigNumber.ROUND_DOWN)
-		const b = s.plus(d.multipliedBy(PairCurve.A_PRECISION).div(nA)).integerValue(BigNumber.ROUND_DOWN)
+			.multipliedBy(d).multipliedBy(PairCurve.A_PRECISION).idiv(nA.multipliedBy(nTokens))
+		const b = s.plus(d.multipliedBy(PairCurve.A_PRECISION).idiv(nA))
 
 		let yPrev
 		let y = d
 		for (let i = 0; i < 256; i++) {
 			yPrev = y
-			y = y.multipliedBy(y).plus(c).div(
-				y.multipliedBy(2).plus(b).minus(d))
-				.integerValue(BigNumber.ROUND_DOWN)
+			y = y.multipliedBy(y).plus(c).idiv(y.multipliedBy(2).plus(b).minus(d))
 			if (y.minus(yPrev).abs().lte(1)) {
 				return y
 			}
@@ -160,14 +159,14 @@ export class PairCurve extends Pair {
 		for (let i = 0; i < 256; i++) {
 			let dP = d
 			xp.forEach((x) => {
-				dP = dP.multipliedBy(d).div(x.multipliedBy(nTokens)).integerValue(BigNumber.ROUND_DOWN)
+				dP = dP.multipliedBy(d).idiv(x.multipliedBy(nTokens))
 			})
 			prevD = d
-			d = nA.multipliedBy(s).div(PairCurve.A_PRECISION).plus(dP.multipliedBy(nTokens)).multipliedBy(d).div(
-				nA.minus(PairCurve.A_PRECISION).multipliedBy(d).div(PairCurve.A_PRECISION).plus(
+			d = nA.multipliedBy(s).idiv(PairCurve.A_PRECISION).plus(dP.multipliedBy(nTokens)).multipliedBy(d).idiv(
+				nA.minus(PairCurve.A_PRECISION).multipliedBy(d).idiv(PairCurve.A_PRECISION).plus(
 					new BigNumber(nTokens).plus(1).multipliedBy(dP)
 				)
-			).integerValue(BigNumber.ROUND_DOWN)
+			)
 			if (d.minus(prevD).abs().lte(1)) {
 				return d
 			}
