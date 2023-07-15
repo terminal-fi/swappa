@@ -107,6 +107,13 @@ export class RegistryUniswapV3 extends Registry {
             pool: v.returnValues.pool as string,
           })
         ))
+        if (toBlock < endBlock) {
+          const toCache: CachedData = {
+            blockN: toBlock,
+            pools: pools,
+          }
+          fs.writeFileSync(cachedDataFile, JSON.stringify(toCache))
+        }
         console.info(`UniV3Registry: Fetching events: ${fromBlock}...${toBlock}, Pools: ${pools.length}...`)
         fromBlock = toBlock + 1
       }
