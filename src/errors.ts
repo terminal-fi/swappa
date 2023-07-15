@@ -6,7 +6,6 @@ export const SwappaErrorType = {
 export type SwappaErrorTypeValue = typeof SwappaErrorType[keyof typeof SwappaErrorType];
 
 export class SwappaError<EType extends SwappaErrorTypeValue | unknown> extends Error {
-
     constructor(private readonly _type: EType, message: string) {
         super(`Swappa${_type}: ${message}`);
     }
@@ -28,15 +27,5 @@ export class SwappaMathError extends SwappaError<typeof SwappaErrorType.MathErro
 
     public static is(e: unknown): e is SwappaMathError {
         return SwappaError.is(e) && e.type === SwappaErrorType.MathError;
-    }
-}
-
-export class SwappaHydrationError extends SwappaError<typeof SwappaErrorType.HydrationError> {
-    constructor(message: string) {
-        super(SwappaErrorType.HydrationError, message);
-    }
-
-    public static is(e: unknown): e is SwappaHydrationError {
-        return SwappaError.is(e) && e.type === SwappaErrorType.HydrationError;
     }
 }
