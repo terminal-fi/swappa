@@ -22,7 +22,7 @@ contract PairRStCelo is ISwappaPairV1 {
 			// rstCelo -> stCelo
 			uint stCeloAmount = IRebasedStakedCelo(rebaseAddr).toStakedCelo(inputAmount);
 			IRebasedStakedCelo(rebaseAddr).withdraw(stCeloAmount);
-		} else if (inputType == 2) {
+		} else {
 			// stCelo -> rstCelo
 			require(ERC20(input).approve(rebaseAddr, inputAmount));
 			IRebasedStakedCelo(rebaseAddr).deposit(inputAmount);
@@ -43,9 +43,16 @@ contract PairRStCelo is ISwappaPairV1 {
 		address,
 		address,
 		uint amountIn,
-		bytes calldata
+		bytes calldata data
 	) external view override returns (uint amountOut) {
-		return amountIn;
+		(address rebaseAddr, uint8 inputType) = parseData(data);
+		if (inputType == 1) {
+			// rstCelo -> stCelo
+			return IRebasedStakedCelo(rebaseAddr).toStakedCelo(amountIn);
+		} else {
+			// stCelo -> rstCelo
+			return IRebasedStakedCelo(rebaseAddr).toRebasedStakedCelo(amountIn);
+		}
 	}
 
 	receive() external payable {}

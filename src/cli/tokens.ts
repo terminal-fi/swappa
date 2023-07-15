@@ -22,6 +22,11 @@ export async function initAllTokens(chainId: number) {
 			address: "0x617f3112bf5397D0467D315cC709EF968D9ba546",
 			symbol: "USDTxWormhole",
 			decimals: 6,
+		}, {
+			chainId: 42220,
+			address: "0xDc5762753043327d74e0a538199c1488FC1F44cf",
+			symbol: "rstCELO",
+			decimals: 18,
 		}
 	]
 	return _ALL_TOKENS
