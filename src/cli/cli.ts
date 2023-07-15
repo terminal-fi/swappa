@@ -13,7 +13,7 @@ import { SwappaManager } from '../swappa-manager';
 import {
 	mainnetRegistryMobius, mainnetRegistryMoola, mainnetRegistryMoolaV2,
 	mainnetRegistrySavingsCELO, mainnetRegistrySushiswap, mainnetRegistryUbeswap,
-	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc, mainnetRegistryCurve,
+	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc, mainnetRegistryCurve, mainnetRegistryUniswapV3,
 } from '../registry-cfg';
 import { RegistryMento } from '../registries/mento';
 import { Registry } from '../registry';
@@ -49,6 +49,7 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"symmetric":   mainnetRegistrySymmetric,
 	"misc":        mainnetRegistryMisc,
 	"curve":       mainnetRegistryCurve,
+	"uniswap-v3":  mainnetRegistryUniswapV3,
 }
 
 interface Token {

@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js"
 import Web3 from "web3"
 import { ContractKit } from "@celo/contractkit"
 import { SavingsCELOAddressMainnet } from "@terminal-fi/savingscelo"
@@ -14,6 +13,7 @@ import { RegistryUniswapV2 } from "./registries/uniswapv2"
 import { RegistryBalancer } from "./registries/balancer"
 import { address as registryHelperUniswapV2 } from "../tools/deployed/mainnet.RegistryHelperUniswapV2.addr.json"
 import { createCurvePairs } from "./pairs/curve"
+import { RegistryUniswapV3 } from "./registries/uniswapv3"
 
 export const mainnetRegistryMoola =
 	(kit: ContractKit) => new RegistryAave("moola", kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA")
@@ -95,6 +95,14 @@ export const mainnetRegistryCurve =
 			]).then(r => r.flat()))
 		return new RegistryStatic("curve", pairs)
 	}
+export const mainnetRegistryUniswapV3 = (kit: ContractKit) =>
+  new RegistryUniswapV3(
+    "uniswap-v3",
+    kit.web3 as unknown as Web3,
+    "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc",
+    {fetchUsingPoolEvents: true},
+  );
+
 
 // mainnetRegistriesWhitelist contains list of more established protocols with
 // overall higher TVL.
