@@ -61,7 +61,7 @@ abstract class PairStakedCelo extends Pair {
   }
 
   protected toCelo(stCeloAmount: bigint): bigint {
-    return (stCeloAmount * this.celoBalance) / this.celoBalance;
+    return (stCeloAmount * this.celoBalance) / this.stCeloSupply;
   }
 
   public snapshot(): PairStakedCeloSnapshot {

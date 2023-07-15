@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import commander from 'commander';
-import { ContractKit, newKit, setImplementationOnProxy } from '@celo/contractkit';
+import { newKit } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 
 import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';

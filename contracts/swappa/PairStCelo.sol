@@ -33,12 +33,17 @@ contract PairStCelo is ISwappaPairV1 {
 	}
 
 	function getOutputAmount(
-		address,
+		address input,
 		address,
 		uint amountIn,
-		bytes calldata
+		bytes calldata data
 	) external view override returns (uint amountOut) {
-		return amountIn;
+		if (input == CELO_ADDRESS) {
+			address payable managerAddr = parseData(data);
+			return IManager(managerAddr).toStakedCelo(amountIn);
+		} else {
+			return 0;
+		}
 	}
 
 	receive() external payable {}
