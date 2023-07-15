@@ -147,7 +147,7 @@ async function main() {
 		}
 	)
 
-	console.info(`Top 5 routes (elapsed: ${Date.now() - startT0}ms):`)
+	console.info(`Top route (and few randoms) (elapsed: ${Date.now() - startT0}ms):`)
 	for (const route of routes.slice(0, 5)) {
 		const path = route.pairs.map((p, idx) => `${tokenByAddrOrSymbol(route.path[idx]).symbol}:${(p as any).constructor.name}`)
 		console.info(
