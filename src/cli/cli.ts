@@ -13,14 +13,14 @@ import { SwappaManager } from '../swappa-manager';
 import {
 	mainnetRegistryMobius, mainnetRegistryMoola, mainnetRegistryMoolaV2,
 	mainnetRegistrySavingsCELO, mainnetRegistrySushiswap, mainnetRegistryUbeswap,
-	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc, mainnetRegistryCurve, mainnetRegistryUniswapV3,
+	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc, mainnetRegistryCurve, mainnetRegistryUniswapV3, mainnetRegistriesWhitelist, mainnetRegistryStCelo,
 } from '../registry-cfg';
 import { RegistryMento } from '../registries/mento';
 import { Registry } from '../registry';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
-	.option("--registries <registries>", "Registries to use for routing.", "all")
+	.option("--registries <registries>", "Registries to use for routing.", "default")
 	.option("--input <input>", "Input token address or symbol.", "CELO")
 	.option("--output <output>", "Output token address or symbol.", "cUSD")
 	.option("--amount <amount>", "Input amount.", "0.001")
@@ -50,6 +50,7 @@ const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	"misc":        mainnetRegistryMisc,
 	"curve":       mainnetRegistryCurve,
 	"uniswap-v3":  mainnetRegistryUniswapV3,
+	"stcelo":      mainnetRegistryStCelo,
 }
 
 interface Token {
@@ -92,10 +93,15 @@ async function main() {
 	const inputAmount = new BigNumber(opts.amount).shiftedBy(inputToken.decimals)
 	const tokenWhitelist = ALL_TOKENS.filter((v) => v.chainId === chainId).map((v) => v.address)
 
-	const registryFs = opts.registries === "all" ?
-		Object.values(registriesByName) :
-		(opts.registries as string).split(",").map((x) => registriesByName[x])
-	const registries = registryFs.map((f) => f(kit))
+	let registries
+	if (opts.registries === "default"){
+		registries = await mainnetRegistriesWhitelist(kit)
+	} else {
+		const registryFs =
+			opts.registries === "all" ? Object.values(registriesByName) :
+			(opts.registries as string).split(",").map((x) => registriesByName[x])
+		registries = registryFs.map((f) => f(kit))
+	}
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)

@@ -14,6 +14,7 @@ import { RegistryBalancer } from "./registries/balancer"
 import { address as registryHelperUniswapV2 } from "../tools/deployed/mainnet.RegistryHelperUniswapV2.addr.json"
 import { createCurvePairs } from "./pairs/curve"
 import { RegistryUniswapV3 } from "./registries/uniswapv3"
+import { PairRebasedStCelo, PairStCelo } from "./pairs/stCelo"
 
 export const mainnetRegistryMoola =
 	(kit: ContractKit) => new RegistryAave("moola", kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA")
@@ -102,6 +103,36 @@ export const mainnetRegistryUniswapV3 = (kit: ContractKit) =>
     "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc",
     {fetchUsingPoolEvents: true},
   );
+export const mainnetRegistryStCelo = (kit: ContractKit) => {
+	const CELO = "0x471EcE3750Da237f93B8E339c536989b8978a438";
+	const ACCOUNT_PROXY = "0x4aAD04D41FD7fd495503731C5a2579e19054C432";
+	const MANAGER_PROXY = "0x0239b96D10a434a56CC9E09383077A0490cF9398";
+	const REBASED_PROXY = "0xDc5762753043327d74e0a538199c1488FC1F44cf";
+	const STAKED_PROXY = "0xC668583dcbDc9ae6FA3CE46462758188adfdfC24";
+
+	const web3 = kit.web3 as unknown as Web3;
+	const pairs = web3.eth
+		.getChainId()
+		.then((chainId) => [
+			new PairStCelo(
+				chainId,
+				web3,
+				ACCOUNT_PROXY,
+				MANAGER_PROXY,
+				CELO,
+				STAKED_PROXY
+			),
+			new PairRebasedStCelo(
+				chainId,
+				web3,
+				ACCOUNT_PROXY,
+				REBASED_PROXY,
+				STAKED_PROXY
+			),
+		]);
+
+	return new RegistryStatic("stcelo", pairs);
+};
 
 
 // mainnetRegistriesWhitelist contains list of more established protocols with
