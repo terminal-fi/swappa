@@ -1522,9 +1522,9 @@
     "@types/node" "*"
 
 "@ubeswap/default-token-list@^4.0.11":
-  version "4.1.57"
-  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.1.57.tgz#fcd343ea6cbd629ab02043fb8959d2cf3bbc59d7"
-  integrity sha512-rPFsGh/8OpzlZ+td+5ohTcsXF+cyxTgl6OKspiWJL6C/HS3/ER2Eb6J2IZosz0oDj1XsXVlLNPE8Gfvzz/d80Q==
+  version "4.1.61"
+  resolved "https://registry.yarnpkg.com/@ubeswap/default-token-list/-/default-token-list-4.1.61.tgz#aca99c350e70ed28893c09197376c071356501fd"
+  integrity sha512-4weBq0nXMyEwtvecD0dnpZ/1prdqhQEQHBw7FxHEcmYW2TcTm9QTvAdwoLXfzEIbNghRtestJGEk0GCTItyaOQ==
 
 "@wry/equality@^0.1.2":
   version "0.1.11"
