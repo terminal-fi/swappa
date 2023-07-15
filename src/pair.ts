@@ -92,7 +92,7 @@ export abstract class PairXYeqK extends Pair {
 			return new BigNumber(0)
 		}
 		const amountWithFee = inputAmount.multipliedBy(this.fee)
-		const outputAmount = buckets[1].multipliedBy(amountWithFee).dividedToIntegerBy(buckets[0].plus(amountWithFee))
+		const outputAmount = buckets[1].multipliedBy(amountWithFee).idiv(buckets[0].plus(amountWithFee))
 		return !outputAmount.isNaN() ? outputAmount : new BigNumber(0)
 	}
 
@@ -103,7 +103,7 @@ export abstract class PairXYeqK extends Pair {
 		if (buckets === null) {
 			throw new Error(`unsupported output: ${outputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
 		}
-		return buckets[0].multipliedBy(outputAmount).div(
+		return buckets[0].multipliedBy(outputAmount).idiv(
 			buckets[1].minus(outputAmount).multipliedBy(this.fee))
 	}
 
