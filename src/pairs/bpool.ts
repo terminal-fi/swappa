@@ -5,6 +5,7 @@ import { IbPool, ABI as BPoolABI } from "../../types/web3-v1-contracts/IBPool"
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { address as pairBPoolAddress } from "../../tools/deployed/mainnet.PairBPool.addr.json"
 import { selectAddress } from "../utils"
+import { BlockchainParameters } from "@celo/contractkit/lib/generated/BlockchainParameters"
 
 const ZERO = new BigNumber(0)
 const ONE = new BigNumber(1)
@@ -45,7 +46,7 @@ export class PairBPool extends Pair {
 			this.bPool.methods.getDenormalizedWeight(this.tokenA).call(),
 			this.bPool.methods.getDenormalizedWeight(this.tokenB).call(),
 		])
-		this.swapFee = new BigNumber(swapFee).div(BONE)
+		this.swapFee = new BigNumber(swapFee)
 		this.weightA = new BigNumber(weightA)
 		this.weightB = new BigNumber(weightB)
 
@@ -87,12 +88,14 @@ export class PairBPool extends Pair {
 			]
 		}
 
-		const weightRatio = new BigNumber(tokenWeightIn).div(tokenWeightOut)
-		const adjustedIn = inputAmount.multipliedBy(ONE.minus(this.swapFee))
-		const y = tokenBalanceIn.div(tokenBalanceIn.plus(adjustedIn))
-		// BigNumber.js does not support fractional exponentiation
-		const multiplier = ONE.minus(Math.pow(y.toNumber(), weightRatio.toNumber()))
-		return tokenBalanceOut.multipliedBy(multiplier).integerValue(BigNumber.ROUND_DOWN)
+		// https://github.com/balancer/balancer-core/blob/f4ed5d65362a8d6cec21662fb6eae233b0babc1f/contracts/BMath.sol#L55
+		const weightRatio = bdiv(tokenWeightIn, tokenWeightOut)
+		const adjustedIn = bmul(inputAmount, BONE.minus(this.swapFee))
+		const y = bdiv(tokenBalanceIn, tokenBalanceIn.plus(adjustedIn))
+		// NOTE(zviadm): this `bpow` isn't exactly same as in smart contract, thus output isn't fully precise.
+		const negM = bpow(y, weightRatio)
+		const multiplier = BONE.minus(negM)
+		return bmul(tokenBalanceOut, multiplier)
 	}
 
 	protected swapExtraData() {
@@ -109,4 +112,32 @@ export class PairBPool extends Pair {
 		this.balanceA = new BigNumber(snapshot.balanceA)
 		this.balanceB = new BigNumber(snapshot.balanceB)
 	}
+}
+
+function bmul(a: BigNumber, b: BigNumber) {
+	return a.multipliedBy(b).plus(BONE.idiv(2)).idiv(BONE)
+}
+
+function bdiv(a: BigNumber, b: BigNumber) {
+	return a.multipliedBy(BONE).plus(b.idiv(2)).idiv(b)
+}
+
+// NOTE(zviadm): this `bpow` isn't exactly same as in the smart contract. Cloning exact `bpow` is possible but
+// would require quite a bit of work.
+function bpow(a: BigNumber, exp: BigNumber) {
+	return new BigNumber(
+		Math.pow(a.div(BONE).toNumber(), exp.div(BONE).toNumber()))
+		.multipliedBy(BONE).integerValue(BigNumber.ROUND_UP)
+	// const expWhole = exp.idiv(BONE).multipliedBy(BONE)
+	// const expRemain = exp.minus(expWhole)
+
+	// const powWhole = a.div(BONE).pow(expWhole.idiv(BONE)).multipliedBy(BONE).integerValue(BigNumber.ROUND_UP)
+	// if (expRemain.eq(0)) {
+	// 	return powWhole
+	// }
+	// const powRemainApprox = new BigNumber(
+	// 	Math.pow(a.div(BONE).toNumber(), expRemain.div(BONE).toNumber()))
+	// 	.multipliedBy(BONE)
+	// 	.integerValue(BigNumber.ROUND_UP)
+	// return bmul(powWhole, powRemainApprox)
 }

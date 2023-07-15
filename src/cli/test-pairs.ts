@@ -64,7 +64,8 @@ async function main() {
 		const outputB = pair.outputAmount(pair.tokenA, inputAmountA)
 		const outputA = pair.outputAmount(pair.tokenB, inputAmountB)
 		const passed = outputB.eq(expectedOutputB) && outputA.eq(expectedOutputA)
-		const highOutput = outputB.gt(expectedOutputB) || outputA.gt(expectedOutputA)
+		const highOutput =
+			outputB.multipliedBy(0.999999).gt(expectedOutputB) || outputA.multipliedBy(0.999999).gt(expectedOutputA)
 		if (!passed) {
 			console.warn(
 				`Mismatch (HIGH?: ${highOutput}): ${tokenByAddrOrSymbol(pair.tokenA).symbol}/${tokenByAddrOrSymbol(pair.tokenB).symbol}: ` +
