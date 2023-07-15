@@ -105,10 +105,6 @@ export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	mainnetRegistrySushiswap(kit),
 	// Curve forks:
 	mainnetRegistryCurve(kit),
-	// Stableswap forks:
-	mainnetRegistryMobius(kit),
-	// Balancer forks:
-	mainnetRegistrySymmetric(kit),
 	// Direct conversion protocols:
 	mainnetRegistryMoola(kit),
 	mainnetRegistryMoolaV2(kit),
