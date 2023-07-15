@@ -31,7 +31,7 @@ export class PairBPool extends Pair {
 		public tokenA: Address,
 		public tokenB: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairBPoolAddress}))
+		super(web3, selectAddress(chainId, {mainnet: pairBPoolAddress}))
 		this.bPool = new web3.eth.Contract(BPoolABI, poolAddr) as unknown as IbPool
 	}
 

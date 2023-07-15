@@ -21,7 +21,7 @@ export class PairMento extends PairXYeqK {
 		private kit: ContractKit,
 		private stableToken: StableToken,
 	) {
-		super(selectAddress(chainId, {mainnet: pairMentoAddress}))
+		super(kit.web3 as unknown as Web3, selectAddress(chainId, {mainnet: pairMentoAddress}))
 	}
 
 	protected async _init() {

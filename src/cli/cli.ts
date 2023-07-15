@@ -1,22 +1,16 @@
 #!/usr/bin/env node
 import commander from 'commander';
-import axios from 'axios';
-import { ContractKit, newKit } from '@celo/contractkit';
+import { newKit } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 import { toTransactionObject } from '@celo/connect';
 
-import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap-experimental.token-list.json'
 import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
 import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 
 import { SwappaManager } from '../swappa-manager';
-import {
-	mainnetRegistryMobius, mainnetRegistryMoola, mainnetRegistryMoolaV2,
-	mainnetRegistrySavingsCELO, mainnetRegistrySushiswap, mainnetRegistryUbeswap,
-	mainnetRegistryCeloDex, mainnetRegistrySymmetric, mainnetRegistryMisc, mainnetRegistryCurve, mainnetRegistryUniswapV3, mainnetRegistriesWhitelist, mainnetRegistryStCelo,
-} from '../registry-cfg';
-import { RegistryMento } from '../registries/mento';
-import { Registry } from '../registry';
+import { mainnetRegistriesWhitelist } from '../registry-cfg';
+import { initAllTokens, tokenByAddrOrSymbol } from './tokens';
+import { registriesByName } from './registries';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
@@ -37,61 +31,15 @@ process.on('unhandledRejection', (reason: any, _promise: any) => {
 	process.exit(1)
 })
 
-const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
-	"mento":       (kit: ContractKit) => new RegistryMento(kit),
-	"ubeswap":     mainnetRegistryUbeswap,
-	"sushiswap":   mainnetRegistrySushiswap,
-	"mobius":      mainnetRegistryMobius,
-	"moola":       mainnetRegistryMoola,
-	"moola-v2":    mainnetRegistryMoolaV2,
-	"savingscelo": mainnetRegistrySavingsCELO,
-	"celodex":     mainnetRegistryCeloDex,
-	"symmetric":   mainnetRegistrySymmetric,
-	"misc":        mainnetRegistryMisc,
-	"curve":       mainnetRegistryCurve,
-	"uniswap-v3":  mainnetRegistryUniswapV3,
-	"stcelo":      mainnetRegistryStCelo,
-}
-
-interface Token {
-	chainId: number,
-	address: string,
-	symbol: string,
-	decimals: number,
-}
-let chainId: number
-let ALL_TOKENS: Token[]
-
-function tokenByAddrOrSymbol(addressOrSymbol: string) {
-	const t = ALL_TOKENS.find((t) => t.chainId === chainId && (t.address === addressOrSymbol || t.symbol === addressOrSymbol))
-	if (!t) {
-		throw new Error(`Unrecognized token: ${addressOrSymbol}!`)
-	}
-	return t
-}
-
 async function main() {
 	const opts = program.opts()
 	const kit = await newKit(opts.network)
-	chainId = await kit.web3.eth.getChainId()
-
-	const celoTokenListURI = "https://celo-org.github.io/celo-token-list/celo.tokenlist.json"
-	const celoTokenList = (await axios.get<{tokens: Token[]}>(celoTokenListURI)).data
-	ALL_TOKENS = [
-		...ubeswapTokens.tokens,
-		...celoTokenList.tokens,
-		{
-			chainId: 42220,
-			address: "0x617f3112bf5397D0467D315cC709EF968D9ba546",
-			symbol: "USDTxWormhole",
-			decimals: 6,
-		}
-	]
-
+	const chainId = await kit.web3.eth.getChainId()
+	const allTokens = await initAllTokens(chainId)
 	const inputToken = tokenByAddrOrSymbol(opts.input)
 	const outputToken = tokenByAddrOrSymbol(opts.output)
 	const inputAmount = new BigNumber(opts.amount).shiftedBy(inputToken.decimals)
-	const tokenWhitelist = ALL_TOKENS.filter((v) => v.chainId === chainId).map((v) => v.address)
+	const tokenWhitelist = allTokens.filter((v) => v.chainId === chainId).map((v) => v.address)
 
 	let registries
 	if (opts.registries === "default"){

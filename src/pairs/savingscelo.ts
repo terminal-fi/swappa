@@ -23,7 +23,7 @@ export class PairSavingsCELO extends Pair {
 		private kit: ContractKit,
 		savingsCELOAddr: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairSavingsCELOAddress}))
+		super(kit.web3 as unknown as Web3, selectAddress(chainId, {mainnet: pairSavingsCELOAddress}))
 		this.savingsKit = new SavingsKit(kit, savingsCELOAddr)
 	}
 

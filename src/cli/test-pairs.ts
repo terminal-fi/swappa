@@ -1,21 +1,13 @@
 #!/usr/bin/env node
 import commander from 'commander';
-import axios from 'axios';
-import { ContractKit, newKit } from '@celo/contractkit';
+import { ContractKit, newKit, setImplementationOnProxy } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
-import { toTransactionObject } from '@celo/connect';
 
-import * as ubeswapTokens from '@ubeswap/default-token-list/ubeswap-experimental.token-list.json'
-import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
 import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 
 import { SwappaManager } from '../swappa-manager';
-import {
-	mainnetRegistryUniswapV3, mainnetRegistriesWhitelist,
-} from '../registry-cfg';
-import { RegistryMento } from '../registries/mento';
-import { Registry } from '../registry';
 import { initAllTokens, tokenByAddrOrSymbol } from './tokens';
+import { registriesByName } from './registries';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
@@ -28,10 +20,6 @@ process.on('unhandledRejection', (reason: any, _promise: any) => {
 	console.error('Unhandled Rejection for promise:', _promise, 'at:', reason.stack || reason)
 	process.exit(1)
 })
-
-const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
-	"uniswap-v3":  mainnetRegistryUniswapV3,
-}
 
 async function main() {
 	const opts = program.opts()
@@ -47,13 +35,21 @@ async function main() {
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs (${pairs.length}):`)
 
+	const initBlockN = await kit.web3.eth.getBlockNumber()
+	console.info("Waiting for new block before running tests...")
+	while (true) {
+		const blockN = await kit.web3.eth.getBlockNumber()
+		if (blockN > initBlockN) {
+			break
+		}
+		await new Promise(resolve => setTimeout(resolve, 100))
+	}
+
+	console.info("Running tests...")
 	let passedN = 0
 	let failedN = 0
 	let highN = 0
 	for (const pair of pairs) {
-		if (!("outputAmountAsync" in pair)) {
-			continue
-		}
 		const inputAmountA = new BigNumber(opts.amount).shiftedBy(tokenByAddrOrSymbol(pair.tokenA).decimals)
 		const inputAmountB = new BigNumber(opts.amount).shiftedBy(tokenByAddrOrSymbol(pair.tokenB).decimals)
 		const [
@@ -61,8 +57,8 @@ async function main() {
 			expectedOutputA,
 			_
 		] = await Promise.all([
-			(pair.outputAmountAsync as any)(pair.tokenA, inputAmountA, pair.tokenB).catch(() => { return 0 }),
-			(pair.outputAmountAsync as any)(pair.tokenB, inputAmountB, pair.tokenA).catch(() => { return 0 }),
+			pair.outputAmountAsync(pair.tokenA, inputAmountA).catch(() => { return 0 }),
+			pair.outputAmountAsync(pair.tokenB, inputAmountB).catch(() => { return 0 }),
 			pair.refresh()
 		])
 		const outputB = pair.outputAmount(pair.tokenA, inputAmountA)
@@ -71,7 +67,7 @@ async function main() {
 		const highOutput = outputB.gt(expectedOutputB) || outputA.gt(expectedOutputA)
 		if (!passed) {
 			console.warn(
-				`Mismatch (HIGH?: ${highOutput}): ${pair.pairKey}: ` +
+				`Mismatch (HIGH?: ${highOutput}): ${tokenByAddrOrSymbol(pair.tokenA).symbol}/${tokenByAddrOrSymbol(pair.tokenB).symbol}: ` +
 				`${outputB.toFixed(0)} vs ${expectedOutputB} (${outputB.eq(expectedOutputB)}), ` +
 				`${outputA.toFixed(0)} vs ${expectedOutputA} (${outputA.eq(expectedOutputA)})`)
 			failedN += 1

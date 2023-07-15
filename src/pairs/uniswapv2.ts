@@ -18,7 +18,7 @@ export class PairUniswapV2 extends PairXYeqK {
 		private pairAddr: Address,
 		private fixedFee: BigNumber = new BigNumber(0.997),
 	) {
-		super(selectAddress(chainId, { mainnet: pairUniswapV2Address }))
+		super(web3, selectAddress(chainId, { mainnet: pairUniswapV2Address }))
 		this.pair = new this.web3.eth.Contract(PairABI, pairAddr) as unknown as IUniswapV2Pair
 		const feeKInv = new BigNumber(10000).minus(this.fixedFee.multipliedBy(10000))
 		if (!feeKInv.isInteger() || !feeKInv.gt(0) || !feeKInv.lt(256)) {

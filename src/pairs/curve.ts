@@ -39,7 +39,7 @@ export class PairCurve extends Pair {
 		private poolAddr: Address,
 		opts?: {nCoins: number, token0Idx: number, token1Idx: number},
 	) {
-		super(selectAddress(chainId, {mainnet: pairCurveAddress}))
+		super(web3, selectAddress(chainId, {mainnet: pairCurveAddress}))
 		this.curvePool = new web3.eth.Contract(CurveABI, poolAddr) as unknown as ICurve
 		this.nCoins = opts ? opts.nCoins : 2
 		this.token0Idx = opts ? opts.token0Idx : 0
