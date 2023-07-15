@@ -165,13 +165,28 @@ export abstract class PairContentratedLiquidity extends Pair {
       ? TickMath.MIN_SQRT_RATIO + ONE
       : TickMath.MAX_SQRT_RATIO - ONE;
 
-    if (zeroForOne && sqrtPriceLimitX96 >= (this.sqrtRatioX96 ?? -1))
-      throw new SwappaMathError("RATIO_CURRENT");
-    else if (sqrtPriceLimitX96 <= (this.sqrtRatioX96 ?? -1))
-      throw new SwappaMathError("RATIO_CURRENT");
+    if (zeroForOne) {
+      if (!(
+        sqrtPriceLimitX96 > TickMath.MIN_SQRT_RATIO &&
+        sqrtPriceLimitX96 < this.sqrtRatioX96!
+      )) {
+        // UniV3 errors out in this case, however for Swappa just returning 0 output is enough.
+        // throw new SwappaMathError(`RATIO_CURRENT: ${sqrtPriceLimitX96} !< ${this.sqrtRatioX96}`)
+        return ZERO
+      }
+    } else {
+      if (!(
+        sqrtPriceLimitX96 < TickMath.MAX_SQRT_RATIO &&
+        sqrtPriceLimitX96 > this.sqrtRatioX96!
+      )) {
+        // UniV3 errors out in this case, however for Swappa just returning 0 output is enough.
+        // throw new SwappaMathError(`RATIO_CURRENT: ${sqrtPriceLimitX96} !> ${this.sqrtRatioX96}`)
+        return ZERO
+      }
+    }
 
     const state = {
-      tickIndex: this.tickIndex ?? 1,
+      tickIndex: this.tickIndex!,
       amountSpecifiedRemaining: inputAmount,
       amountCalculated: ZERO,
       sqrtPriceX96: this.sqrtRatioX96,
@@ -293,8 +308,9 @@ export abstract class PairContentratedLiquidity extends Pair {
       this.sqrtRatioX96 === undefined ||
       this.liquidity === undefined ||
       this.tickIndex === undefined
-    )
+    ) {
       throw new Error("Pair not initialized");
+    }
     return {
       swapFee: this.swapFee,
       tick: this.tick,

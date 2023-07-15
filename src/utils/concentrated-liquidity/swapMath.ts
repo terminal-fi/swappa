@@ -15,6 +15,8 @@ export enum UniV3FeeAmount {
   HIGH = 10000,
 }
 
+export const UniV3FeeAmounts = Object.keys(UniV3FeeAmount).map((v) => Number(v)).filter((v) => !isNaN(v))
+
 /**
  * The default factory tick spacings by fee amount.
  */
@@ -38,12 +40,6 @@ export abstract class SwapMath {
     amountRemaining: bigint,
     feePips: UniV3FeeAmount
   ): [bigint, bigint, bigint, bigint] {
-    //   sqrtRatioCurrentX96,
-    //   sqrtRatioTargetX96,
-    //   liquidity,
-    //   amountRemaining,
-    //   feePips,
-    // });
     const returnValues: Partial<{
       sqrtRatioNextX96: bigint;
       amountIn: bigint;

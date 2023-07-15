@@ -242,6 +242,7 @@ export const mainnetRegistryUniswapV3 = (kit: ContractKit) =>
     "uniswap-v3",
     kit.web3 as unknown as Web3,
     "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc",
+    {fetchUsingPoolEvents: true},
   );
 
 // mainnetRegistriesWhitelist contains list of more established protocols with
