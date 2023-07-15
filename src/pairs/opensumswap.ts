@@ -25,7 +25,7 @@ export class PairOpenSumSwap extends Pair {
 		web3: Web3,
 		private swapPoolAddr: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairOpenSumSwapAddress}))
+		super(web3, selectAddress(chainId, {mainnet: pairOpenSumSwapAddress}))
 		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as IOpenSumSwap
 	}
 

@@ -20,7 +20,7 @@ export class PairUniswapV3 extends PairContentratedLiquidity {
   private swapPool: IUniswapV3Pool;
 
   constructor(chainId: number, private web3: Web3, private pairAddr: Address) {
-    super(selectAddress(chainId, { mainnet: pairUniV3Address }));
+    super(web3, selectAddress(chainId, { mainnet: pairUniV3Address }));
     const univ3SwappaPairAddr = selectAddress(chainId, { mainnet: pairUniV3Address });
 
     this.pairKey = pairAddr;
@@ -49,22 +49,6 @@ export class PairUniswapV3 extends PairContentratedLiquidity {
       tokenA,
       tokenB,
     };
-  }
-
-  public async outputAmountAsync(
-    inputToken: Address,
-    inputAmount: bigint,
-    outputToken: string
-  ): Promise<bigint> {
-    const res = await this.swappaPool.methods
-      .getOutputAmount(
-        inputToken,
-        outputToken,
-        inputAmount.toString(),
-        this.swapData(inputToken).extra
-      )
-      .call();
-    return BigInt(res);
   }
 
   public async refresh() {

@@ -33,7 +33,7 @@ abstract class PairStakedCelo extends Pair {
     private stakedCeloAddress: Address,
     private accountAddress: Address
   ) {
-    super(swappaPairAddress);
+    super(web3, swappaPairAddress);
     this.stCeloContract = new this.web3.eth.Contract(
       StakedCeloABI,
       this.stakedCeloAddress

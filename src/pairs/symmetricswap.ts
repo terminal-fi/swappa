@@ -32,7 +32,7 @@ export class PairSymmetricSwap extends Pair {
 		public tokenA: Address,
 		public tokenB: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairSymmetricSwapAddress}))
+		super(web3, selectAddress(chainId, {mainnet: pairSymmetricSwapAddress}))
 		// Unfortunately SymmetricSwap contract doesn't expose token addresses that it stores,
 		// thus they have to be hardcoded in the constructor and can't be fetched from swapPool
 		// directly.

@@ -21,7 +21,7 @@ export class PairAToken extends Pair {
 		private providerAddr: Address,
 		private reserve: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairATokenAddress}))
+		super(kit.web3 as unknown as Web3, selectAddress(chainId, {mainnet: pairATokenAddress}))
 		this.provider = new kit.web3.eth.Contract(
 			LendingPoolAddressProviderABI, providerAddr) as unknown as ILendingPoolAddressesProvider
 	}

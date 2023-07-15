@@ -34,7 +34,7 @@ export class PairStableSwap extends Pair {
 		private web3: Web3,
 		private swapPoolAddr: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairStableSwapAddress}))
+		super(web3, selectAddress(chainId, {mainnet: pairStableSwapAddress}))
 		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
 	}
 

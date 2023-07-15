@@ -85,12 +85,6 @@ export abstract class PairContentratedLiquidity extends Pair {
   // Tick index is calculated based on the positon of the current tick within the tick's wordPosition
   protected tickIndex?: number;
 
-  public abstract outputAmountAsync(
-    inputToken: Address,
-    inputAmount: bigint,
-    outputToken: string
-  ): Promise<bigint>;
-
   public static transformGetSpotTicksPayload({
     sqrtPriceX96,
     tick,
