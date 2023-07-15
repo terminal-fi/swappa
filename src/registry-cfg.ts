@@ -141,12 +141,18 @@ export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	new RegistryMento(kit),
 	// Curve forks:
 	mainnetRegistryCurve(kit),
+	// UniswapV3 forks:
+	mainnetRegistryUniswapV3(kit),
 	// UniswapV2 forks:
 	mainnetRegistryUbeswap(kit),
 	mainnetRegistrySushiswap(kit),
 
 	// Direct conversion protocols:
 	mainnetRegistryMoolaV2(kit),
-	mainnetRegistryMoola(kit),
+	mainnetRegistryStCelo(kit),
 	mainnetRegistryMisc(kit),
+
+	// DEPRECATED stuff that is very cheap to maintain:
+	mainnetRegistrySavingsCELO(kit),
+	mainnetRegistryMoola(kit),
 ])
