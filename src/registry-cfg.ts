@@ -108,13 +108,14 @@ export const mainnetRegistryUniswapV3 = (kit: ContractKit) =>
 // overall higher TVL.
 export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	new RegistryMento(kit),
-	// Uniswap forks:
-	mainnetRegistryUbeswap(kit),
-	mainnetRegistrySushiswap(kit),
 	// Curve forks:
 	mainnetRegistryCurve(kit),
+	// UniswapV2 forks:
+	mainnetRegistryUbeswap(kit),
+	mainnetRegistrySushiswap(kit),
+
 	// Direct conversion protocols:
-	mainnetRegistryMoola(kit),
 	mainnetRegistryMoolaV2(kit),
+	mainnetRegistryMoola(kit),
 	mainnetRegistryMisc(kit),
 ])
