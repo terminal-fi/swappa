@@ -1,3 +1,4 @@
+import Web3 from "web3"
 import { ContractKit, CeloContract } from "@celo/contractkit";
 import { Mento } from "@mento-protocol/mento-sdk";
 import { ethers, providers } from "ethers";
@@ -21,7 +22,7 @@ export class RegistryMentoV2 extends Registry {
     const mento = await Mento.create(this.provider);
     const exchanges = await mento.getExchanges();
     const pairs: PairMentoV2[] = exchanges.map(
-      (exchange) => new PairMentoV2(chainId, this.provider, mento, exchange, sortedOracelsAddress)
+      (exchange) => new PairMentoV2(chainId, this.kit.web3 as unknown as Web3, mento, exchange, sortedOracelsAddress)
     );
     return initPairsAndFilterByWhitelist(pairs, tokenWhitelist);
   };

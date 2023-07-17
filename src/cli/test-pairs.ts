@@ -12,7 +12,7 @@ import { registriesByName } from './registries';
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
 	.option("--registry <registry>", "Registry to use for testing.", "")
-	.option("--amount <amount>", "Input amount.", "0.001")
+	.option("--amount <amount>", "Input amount.", "0.01")
 	.parse(process.argv)
 
 process.on('unhandledRejection', (reason: any, _promise: any) => {
@@ -34,6 +34,14 @@ async function main() {
 	console.info(`Finding & initializing pairs...`)
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs (${pairs.length}):`)
+	for (const registry of registries) {
+		for (const pair of manager.getPairsByRegistry(registry.getName())) {
+			console.info(
+				`${registry.getName().padEnd(12)}` +
+				`${(pair as any).constructor?.name}:${pair.pairKey}: ` +
+				`${tokenByAddrOrSymbol(pair.tokenA).symbol} / ${tokenByAddrOrSymbol(pair.tokenB).symbol}`)
+		}
+	}
 
 	const initBlockN = await kit.web3.eth.getBlockNumber()
 	console.info("Waiting for new block before running tests...")

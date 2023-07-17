@@ -853,17 +853,17 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@mento-protocol/mento-core-ts@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@mento-protocol/mento-core-ts/-/mento-core-ts-0.1.0.tgz#c17458597daa783c7907dd7fe4df202bb1188739"
-  integrity sha512-kREPdwLiM6JGTuNISyuZYWmdnq74CfljgNZWRqXsghO3dIf0B6bByFmtMet52DdJBkr2wGNWQ4OE0ePiZJPSZA==
+"@mento-protocol/mento-core-ts@^0.1.0", "@mento-protocol/mento-core-ts@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@mento-protocol/mento-core-ts/-/mento-core-ts-0.1.1.tgz#a775db1eadd8ccf895b9b33f5a7e490628566193"
+  integrity sha512-3kQUqwi19sZlCFInROqSNqwaTDN5K3ZZ2K1W1BVuoNpTqhPEs26n5CWYQQPMZaEA8hAybQyQsGlQbGXpYNeinw==
 
 "@mento-protocol/mento-sdk@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@mento-protocol/mento-sdk/-/mento-sdk-0.1.4.tgz#9d24821fef9be418264c4398d4f5061ec3a90439"
-  integrity sha512-HkDleJRwS6OIM8M27Dj5VCgAn5Jk+gBC3mc44rTW2+assKGALCNPLMqCa9Jee51rcoxydVixcQVQ2XH4PL0IeA==
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@mento-protocol/mento-sdk/-/mento-sdk-0.1.5.tgz#8704ada987a8f3e98601a613f81f5f9090560ab2"
+  integrity sha512-YEYHNMMp0wtCE1UN+83nGYoyELfdgA2URlG+CFOtHPfPS8yc/zAgnNkCI4R7ehRnX1RDRQgf9s/w0kGKsi7M9w==
   dependencies:
-    "@mento-protocol/mento-core-ts" "^0.1.0"
+    "@mento-protocol/mento-core-ts" "^0.1.1"
 
 "@multiformats/base-x@^4.0.1":
   version "4.0.1"
@@ -1763,6 +1763,11 @@
   version "12.20.43"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-12.20.43.tgz#6cf47894da4a4748c62fccf720ba269e1b1ff5a4"
   integrity sha512-HCfJdaYqJX3BCzeihgZrD7b85Cu05OC/GVJ4kEYIflwUs4jbnUlLLWoq7hw1LBcdvUyehO+gr6P5JQ895/2ZfA==
+
+"@types/node@^20.4.2":
+  version "20.4.2"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.4.2.tgz#129cc9ae69f93824f92fac653eebfb4812ab4af9"
+  integrity sha512-Dd0BYtWgnWJKwO1jkmTrzofjK2QXXcai0dmtzvIBhcA+RsG5h8R3xlyta0kGOZRNfL9GuRtb1knmPEhQrePCEw==
 
 "@types/node@^8.0.0":
   version "8.10.66"
