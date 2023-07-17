@@ -1,4 +1,6 @@
 import BigNumber from "bignumber.js"
+import Web3 from "web3"
+import { ISwappaPairV1, ABI as ISwappaPairV1ABI } from "../types/web3-v1-contracts/ISwappaPairV1"
 
 export type Address = string
 
@@ -14,13 +16,15 @@ export abstract class Pair {
 	// pairKey is used to identify conflicting pairs. In a single route, every non-null pairKey must
 	// be unique. On the otherhand, Pair-s with null pairKey can be used unlimited amount of times in
 	// a single route.
-	public pairKey: string | null = null;
-	public tokenA: Address = "";
-	public tokenB: Address = "";
-	private swappaPairAddress: Address = "";
+	public pairKey: string | null = null
+	public tokenA: Address = ""
+	public tokenB: Address = ""
+	private swappaPairAddress: Address
+	private swappaPair: ISwappaPairV1
 
-	constructor(swappaPairAddress: Address) {
+	constructor(web3: Web3, swappaPairAddress: Address) {
 		this.swappaPairAddress = swappaPairAddress
+		this.swappaPair = new web3.eth.Contract(ISwappaPairV1ABI, this.swappaPairAddress) as unknown as ISwappaPairV1
 	}
 
 	public async init(): Promise<void> {
@@ -44,6 +48,17 @@ export abstract class Pair {
 	}
 	protected abstract swapExtraData(inputToken: Address): string;
 	public abstract outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber;
+
+	public outputAmountAsync = async (inputToken: Address, inputAmount: BigNumber): Promise<BigNumber> => {
+		const outputToken = inputToken === this.tokenA ? this.tokenB : this.tokenA
+		const out = await this.swappaPair.methods.getOutputAmount(
+			inputToken,
+			outputToken,
+			inputAmount.toFixed(0),
+			this.swapExtraData(inputToken),
+		).call()
+		return new BigNumber(out)
+	}
 
 	public abstract snapshot(): Snapshot;
 	public abstract restore(snapshot: Snapshot): void;
@@ -77,7 +92,7 @@ export abstract class PairXYeqK extends Pair {
 			return new BigNumber(0)
 		}
 		const amountWithFee = inputAmount.multipliedBy(this.fee)
-		const outputAmount = buckets[1].multipliedBy(amountWithFee).dividedToIntegerBy(buckets[0].plus(amountWithFee))
+		const outputAmount = buckets[1].multipliedBy(amountWithFee).idiv(buckets[0].plus(amountWithFee))
 		return !outputAmount.isNaN() ? outputAmount : new BigNumber(0)
 	}
 
@@ -88,7 +103,7 @@ export abstract class PairXYeqK extends Pair {
 		if (buckets === null) {
 			throw new Error(`unsupported output: ${outputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
 		}
-		return buckets[0].multipliedBy(outputAmount).div(
+		return buckets[0].multipliedBy(outputAmount).idiv(
 			buckets[1].minus(outputAmount).multipliedBy(this.fee))
 	}
 

@@ -18,7 +18,7 @@ export class PairATokenV2 extends Pair {
 		private poolAddr: Address,
 		private reserve: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairATokenV2Address}))
+		super(web3, selectAddress(chainId, {mainnet: pairATokenV2Address}))
 		this.pool = new this.web3.eth.Contract(ILendingPoolV2ABI, this.poolAddr) as unknown as ILendingPoolV2
 	}
 

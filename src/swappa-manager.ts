@@ -81,6 +81,16 @@ export class SwappaManager {
 		return swapTX(this.kit, this.routerAddr, route, inputAmount, minOutputAmount, to, opts)
 	}
 
+	public calcSwapOutput = async (
+		route: {
+			pairs: Pair[],
+			path: Address[],
+		},
+		inputAmount: BigNumber,
+		): Promise<BigNumber> => {
+		return calcSwapOutput(this.kit, this.routerAddr, route, inputAmount)
+	}
+
 	public getPairsByRegistry(registry: string): Pair[] {
 		return this.pairsByRegistry.get(registry) || []
 	}
@@ -117,4 +127,24 @@ export const swapTX = (
 			deadlineMs.toFixed(0),
 		))
 	return tx
+}
+
+export const calcSwapOutput = async (
+	kit: ContractKit,
+	routerAddr: Address,
+	route: {
+		pairs: Pair[],
+		path: Address[],
+	},
+	inputAmount: BigNumber,
+	): Promise<BigNumber> => {
+	const router = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
+	const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
+	const out = await router.methods.getOutputAmount(
+		route.path,
+		routeData.map((d) => d.addr),
+		routeData.map((d) => d.extra),
+		inputAmount.toFixed(0),
+		).call()
+	return new BigNumber(out)
 }

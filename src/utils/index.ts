@@ -1,7 +1,7 @@
 import Web3 from "web3"
 import { concurrentMap } from '@celo/utils/lib/async'
 
-import { Address, Pair } from "./pair"
+import { Address, Pair } from "../pair"
 
 export const initPairsAndFilterByWhitelist = async (pairs: Pair[], tokenWhitelist: Address[]) => {
 	await concurrentMap(10, pairs, (p) => p.init())

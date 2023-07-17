@@ -11,7 +11,7 @@ contract PairUniswapV2 is ISwappaPairV1 {
 
 	function swap(
 		address input,
-		address output,
+		address,
 		address to,
 		bytes calldata data
 	) external override {
@@ -42,7 +42,7 @@ contract PairUniswapV2 is ISwappaPairV1 {
 
 	function getOutputAmount(
 		address input,
-		address output,
+		address,
 		uint amountIn,
 		bytes calldata data
 	) external view override returns (uint amountOut) {

@@ -16,6 +16,8 @@ interface PairStableSwapSnapshot extends Snapshot {
 	preciseA: BigNumberString
 }
 
+const SWAP_FEE_DENOM = new BigNumber(10).pow(10)
+
 export class PairStableSwap extends Pair {
 	allowRepeats = false
 	private swapPool: ISwap
@@ -34,7 +36,7 @@ export class PairStableSwap extends Pair {
 		private web3: Web3,
 		private swapPoolAddr: Address,
 	) {
-		super(selectAddress(chainId, {mainnet: pairStableSwapAddress}))
+		super(web3, selectAddress(chainId, {mainnet: pairStableSwapAddress}))
 		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
 	}
 
@@ -82,7 +84,7 @@ export class PairStableSwap extends Pair {
 		}
 		this.paused = paused
 		this.balancesWithAdjustedPrecision = balances.map((b, idx) => this.tokenPrecisionMultipliers[idx].multipliedBy(b))
-		this.swapFee = new BigNumber(swapFee).div(new BigNumber(10).pow(10))
+		this.swapFee = new BigNumber(swapFee)
 		this.preciseA = new BigNumber(preciseA)
 	}
 
@@ -101,8 +103,8 @@ export class PairStableSwap extends Pair {
 			this.balancesWithAdjustedPrecision,
 			this.preciseA)
 		const outputAmountWithFee = this.balancesWithAdjustedPrecision[tokenIndexTo].minus(y).minus(1)
-		const fee = outputAmountWithFee.multipliedBy(this.swapFee)
-  	const outputAmount = outputAmountWithFee.minus(fee).div(this.tokenPrecisionMultipliers[tokenIndexTo]).integerValue()
+		const fee = outputAmountWithFee.multipliedBy(this.swapFee).idiv(SWAP_FEE_DENOM)
+  	const outputAmount = outputAmountWithFee.minus(fee).idiv(this.tokenPrecisionMultipliers[tokenIndexTo])
 		return outputAmount
 	}
 
@@ -114,19 +116,15 @@ export class PairStableSwap extends Pair {
 
 		const s = x
 		const c = d
-			.multipliedBy(d).div(x.multipliedBy(nTokens))
-			.integerValue()
-			.multipliedBy(d).multipliedBy(PairStableSwap.A_PRECISION).div(nA.multipliedBy(nTokens))
-			.integerValue()
-		const b = s.plus(d.multipliedBy(PairStableSwap.A_PRECISION).div(nA)).integerValue()
+			.multipliedBy(d).idiv(x.multipliedBy(nTokens))
+			.multipliedBy(d).multipliedBy(PairStableSwap.A_PRECISION).idiv(nA.multipliedBy(nTokens))
+		const b = s.plus(d.multipliedBy(PairStableSwap.A_PRECISION).idiv(nA))
 
 		let yPrev
 		let y = d
 		for (let i = 0; i < 256; i++) {
 			yPrev = y
-			y = y.multipliedBy(y).plus(c).div(
-				y.multipliedBy(2).plus(b).minus(d))
-				.integerValue()
+			y = y.multipliedBy(y).plus(c).idiv(y.multipliedBy(2).plus(b).minus(d))
 			if (y.minus(yPrev).abs().lte(1)) {
 				return y
 			}
@@ -149,14 +147,14 @@ export class PairStableSwap extends Pair {
 		for (let i = 0; i < 256; i++) {
 			let dP = d
 			xp.forEach((x) => {
-				dP = dP.multipliedBy(d).div(x.multipliedBy(nTokens)).integerValue()
+				dP = dP.multipliedBy(d).idiv(x.multipliedBy(nTokens))
 			})
 			prevD = d
-			d = nA.multipliedBy(s).div(PairStableSwap.A_PRECISION).plus(dP.multipliedBy(nTokens)).multipliedBy(d).div(
-				nA.minus(PairStableSwap.A_PRECISION).multipliedBy(d).div(PairStableSwap.A_PRECISION).plus(
+			d = nA.multipliedBy(s).idiv(PairStableSwap.A_PRECISION).plus(dP.multipliedBy(nTokens)).multipliedBy(d).idiv(
+				nA.minus(PairStableSwap.A_PRECISION).multipliedBy(d).idiv(PairStableSwap.A_PRECISION).plus(
 					new BigNumber(nTokens).plus(1).multipliedBy(dP)
 				)
-			).integerValue()
+			)
 			if (d.minus(prevD).abs().lte(1)) {
 				return d
 			}

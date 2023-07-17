@@ -42,7 +42,7 @@ contract PairStableSwap is ISwappaPairV1 {
 
 	function getOutputAmount(
 		address input,
-		address output,
+		address,
 		uint amountIn,
 		bytes calldata data
 	) external view override returns (uint amountOut) {
