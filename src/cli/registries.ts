@@ -19,7 +19,7 @@ import { RegistryMentoV2 } from '../registries/mento-v2';
 
 export const registriesByName: {[name: string]: (kit: ContractKit) => Registry} = {
 	// Sorted by importance based on TVL.
-	"mento-v2":	   (kit: ContractKit) => new RegistryMentoV2(kit),
+	"mento-v2":    (kit: ContractKit) => new RegistryMentoV2(kit),
 	"mento":       (kit: ContractKit) => new RegistryMento(kit),
 	"curve":       mainnetRegistryCurve,
 	"uniswap-v3":  mainnetRegistryUniswapV3,

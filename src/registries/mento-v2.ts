@@ -7,7 +7,6 @@ import { Registry } from "../registry";
 import { PairMentoV2 } from "../pairs/mento-v2";
 import { initPairsAndFilterByWhitelist } from "../utils";
 
-
 export class RegistryMentoV2 extends Registry {
   private provider: ethers.providers.Provider;
 
