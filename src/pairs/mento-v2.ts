@@ -39,6 +39,7 @@ export class PairMentoV2 extends Pair {
   private tokenPrecisionMultipliers: BigNumber[] = []
 
   private provider: ethers.providers.Provider;
+  private biPoolManager: IBiPoolManager
 
   constructor(
     chainId: number,
@@ -49,6 +50,7 @@ export class PairMentoV2 extends Pair {
   ) {
     super(web3, selectAddress(chainId, {mainnet: mainnetPairMentoV2Address }))
     this.provider = new providers.Web3Provider(web3.currentProvider as any);
+    this.biPoolManager = IBiPoolManager__factory.connect(this.exchange.providerAddr, this.provider);
   }
 
   protected async _init(): Promise<{
@@ -56,20 +58,11 @@ export class PairMentoV2 extends Pair {
     tokenA: string;
     tokenB: string;
   }> {
-    // For this version we will expect that the provider is a BiPoolManager
-    const biPoolManager = IBiPoolManager__factory.connect(
-      this.exchange.providerAddr,
-      this.provider
-    );
-    this.poolExchange = await biPoolManager.getPoolExchange(this.exchange.id);
+    this.poolExchange = await this.biPoolManager.getPoolExchange(this.exchange.id);
     const managerW3 = new this.web3.eth.Contract(IBiPoolManagerABI, this.exchange.providerAddr) as unknown as IBiPoolManagerW3
     this.tokenPrecisionMultipliers = await Promise.all(
       this.exchange.assets.map((asset) => managerW3.methods.tokenPrecisionMultipliers(asset).call().then((v) => new BigNumber(v))))
-    this.pricingModule = await this.getPricingModuleName(
-      this.poolExchange.pricingModule
-    );
-    this.spread = new BigNumber(this.poolExchange.config.spread.value._hex);
-    this.updateFrequency = new BigNumber(this.poolExchange.config.referenceRateResetFrequency._hex);
+    this.pricingModule = await this.getPricingModuleName(this.poolExchange.pricingModule);
     return {
       pairKey: this.exchange.id,
       tokenA: this.exchange.assets[0],
@@ -78,9 +71,10 @@ export class PairMentoV2 extends Pair {
   }
 
   public async refresh() {
-    const [lastBucketUpdate] = [
-      new BigNumber(this.poolExchange.lastBucketUpdate._hex),
-    ];
+    this.poolExchange = await this.biPoolManager.getPoolExchange(this.exchange.id);
+    this.spread = new BigNumber(this.poolExchange.config.spread.value._hex);
+    this.updateFrequency = new BigNumber(this.poolExchange.config.referenceRateResetFrequency._hex);
+    const lastBucketUpdate = new BigNumber(this.poolExchange.lastBucketUpdate._hex);
     const tillUpdateSecs = lastBucketUpdate
       .plus(this.updateFrequency)
       .minus(Date.now() / 1000);
