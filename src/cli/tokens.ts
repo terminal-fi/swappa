@@ -27,7 +27,12 @@ export async function initAllTokens(chainId: number) {
 			address: "0xDc5762753043327d74e0a538199c1488FC1F44cf",
 			symbol: "rstCELO",
 			decimals: 18,
-		}
+		}, {
+			chainId: 42220,
+			address: "0xEB466342C4d449BC9f53A865D5Cb90586f405215",
+			symbol: "axlUSDC",
+			decimals: 6,
+		},
 	]
 	return _ALL_TOKENS
 }
