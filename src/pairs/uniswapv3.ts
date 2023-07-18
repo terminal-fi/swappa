@@ -9,7 +9,7 @@ import {
   IUniswapV3Pool,
   ABI as V3PoolABI,
 } from "../../types/web3-v1-contracts/IUniswapV3Pool";
-import { PairContentratedLiquidity } from "./concentrated-liquidity/pair-concentrated-liquidity";
+import { PairContentratedLiquidity } from "./pair-concentrated-liquidity";
 import { UniV3FeeAmount } from "../utils/concentrated-liquidity/swapMath";
 import { selectAddress } from "../utils";
 import { address as pairUniV3Address } from "../../tools/deployed/mainnet.PairUniswapV3.addr.json";

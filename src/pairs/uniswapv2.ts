@@ -2,9 +2,10 @@ import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
 import { IUniswapV2Pair, ABI as PairABI } from "../../types/web3-v1-contracts/IUniswapV2Pair"
-import { Address, PairXYeqK } from "../pair"
+import { Address } from "../pair"
 import { address as pairUniswapV2Address } from "../../tools/deployed/mainnet.PairUniswapV2.addr.json"
 import { selectAddress } from "../utils"
+import { PairXYeqK } from "./pair-xyeqk"
 
 export class PairUniswapV2 extends PairXYeqK {
 	allowRepeats = false
