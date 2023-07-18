@@ -1,13 +1,11 @@
-import { Address, BigNumberString, Pair, Snapshot } from "../../pair";
+import { Address, BigNumberString, Pair, Snapshot } from "../pair";
 
-import { TickMath } from "../../utils/concentrated-liquidity/tickMath";
-import { SwapMath, UniV3FeeAmount } from "../../utils/concentrated-liquidity/swapMath";
-import { LiquidityMath } from "../../utils/concentrated-liquidity/liquidityMath";
+import { TickMath } from "../utils/concentrated-liquidity/tickMath";
+import { SwapMath, UniV3FeeAmount } from "../utils/concentrated-liquidity/swapMath";
+import { LiquidityMath } from "../utils/concentrated-liquidity/liquidityMath";
 
-import { NEGATIVE_ONE, ONE, ZERO } from "../../constants";
-import { JSBI_BN } from "../../utils/JSBI_BN";
+import { ONE, ZERO } from "../constants";
 import BigNumber from "bignumber.js";
-import { SwappaMathError } from "../../errors";
 
 export interface SpotTicksPayload {
   sqrtPriceX96: string;
@@ -232,32 +230,26 @@ export abstract class PairContentratedLiquidity extends Pair {
         state.amountSpecifiedRemaining - (step.amountIn + step.feeAmount);
       state.amountCalculated = state.amountCalculated + step.amountOut;
 
-      if (JSBI_BN.equal(state.sqrtPriceX96, step.sqrtPriceNextX96 ?? 0)) {
+      if (state.sqrtPriceX96 === step.sqrtPriceNextX96!) {
         // if the tick is initialized, run the tick transition
         if (step.initialized) {
-          let liquidityNet = BigInt(
-            this.ticks[step.tickIndexNext].liquidityNet
-          );
+          let liquidityNet = this.ticks[step.tickIndexNext].liquidityNet
 
           // if we're moving leftward, we interpret liquidityNet as the opposite sign
           // safe because liquidityNet cannot be type(int128).min
-          if (zeroForOne)
-            liquidityNet = JSBI_BN.multiply(liquidityNet, NEGATIVE_ONE);
+          if (zeroForOne) {
+            liquidityNet = -liquidityNet
+          }
 
           state.liquidity = LiquidityMath.addDelta(
-            state.liquidity ?? BigInt(0),
+            state.liquidity!,
             liquidityNet
           );
         }
 
         state.tick = zeroForOne ? step.tickNext - 1 : step.tickNext;
         state.tickIndex = this.tickToIndex[step.tickNext];
-      } else if (
-        JSBI_BN.notEqual(
-          state.sqrtPriceX96,
-          step.sqrtPriceStartX96 ?? BigInt(0)
-        )
-      ) {
+      } else if (state.sqrtPriceX96 !== step.sqrtPriceStartX96!) {
         // updated comparison function
         // recompute unless we're on a lower tick boundary (i.e. already transitioned ticks), and haven't moved
         state.tick = TickMath.getTickAtSqrtRatio(state.sqrtPriceX96);

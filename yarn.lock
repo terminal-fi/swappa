@@ -853,12 +853,12 @@
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-5.50.0.tgz#29c6419e8379d496ab6d0426eadf3c4d100cd186"
   integrity sha512-swKHYCOZUGyVt4ge0u8a7AwNcA//h4nx5wIi0sruGye1IJ5Cva0GyK9L2/WdX+kWVTKp92ZiEo1df31lrWGPgA==
 
-"@mento-protocol/mento-core-ts@^0.1.0", "@mento-protocol/mento-core-ts@^0.1.1":
+"@mento-protocol/mento-core-ts@^0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@mento-protocol/mento-core-ts/-/mento-core-ts-0.1.1.tgz#a775db1eadd8ccf895b9b33f5a7e490628566193"
   integrity sha512-3kQUqwi19sZlCFInROqSNqwaTDN5K3ZZ2K1W1BVuoNpTqhPEs26n5CWYQQPMZaEA8hAybQyQsGlQbGXpYNeinw==
 
-"@mento-protocol/mento-sdk@^0.1.4":
+"@mento-protocol/mento-sdk@^0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@mento-protocol/mento-sdk/-/mento-sdk-0.1.5.tgz#8704ada987a8f3e98601a613f81f5f9090560ab2"
   integrity sha512-YEYHNMMp0wtCE1UN+83nGYoyELfdgA2URlG+CFOtHPfPS8yc/zAgnNkCI4R7ehRnX1RDRQgf9s/w0kGKsi7M9w==

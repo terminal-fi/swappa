@@ -3,11 +3,11 @@ import { ExchangeWrapper } from "@celo/contractkit/lib/wrappers/Exchange"
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
 
-import { PairXYeqK } from "../pair"
 import { address as pairMentoAddress } from "../../tools/deployed/mainnet.PairMento.addr.json"
 import { ReserveWrapper } from "@celo/contractkit/lib/wrappers/Reserve"
 import { SortedOraclesWrapper } from "@celo/contractkit/lib/wrappers/SortedOracles"
 import { selectAddress } from "../utils"
+import { PairXYeqK } from "./pair-xyeqk"
 
 export class PairMento extends PairXYeqK {
 	allowRepeats = false
