@@ -1,7 +1,6 @@
 import path from "path";
 import fs from "fs";
 import Web3 from "web3";
-import { concurrentMap } from "@celo/utils/lib/async";
 
 import { Address, Pair } from "../pair";
 import { Registry } from "../registry";
@@ -12,6 +11,7 @@ import {
 import { PairUniswapV3 } from "../pairs/uniswapv3";
 import { UniV3FeeAmounts } from "../utils/concentrated-liquidity/swapMath";
 import { initPairsAndFilterByWhitelist } from "../utils";
+import { fastConcurrentMap } from "../utils/async";
 
 interface UniV3Pool {
   token0: string
@@ -65,7 +65,7 @@ export class RegistryUniswapV3 extends Registry {
         }
       }
 
-      const fetched = await concurrentMap(
+      const fetched = await fastConcurrentMap(
         10,
         pairsToFetch,
         async (pairInfo) => {

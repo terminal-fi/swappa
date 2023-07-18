@@ -1,10 +1,8 @@
-import Web3 from "web3"
-import { concurrentMap } from '@celo/utils/lib/async'
-
 import { Address, Pair } from "../pair"
+import { fastConcurrentMap } from "./async"
 
 export const initPairsAndFilterByWhitelist = async (pairs: Pair[], tokenWhitelist: Address[]) => {
-	await concurrentMap(10, pairs, (p) => p.init())
+	await fastConcurrentMap(10, pairs, (p) => p.init())
 	return pairs.filter((p) => (
 		tokenWhitelist.indexOf(p.tokenA) >= 0 &&
 		tokenWhitelist.indexOf(p.tokenB) >= 0

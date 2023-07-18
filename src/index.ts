@@ -11,3 +11,4 @@ export * from "./registries/uniswapv3"
 export * from "./registry-cfg"
 export { address as swappaRouterV1Address } from '../tools/deployed/mainnet.SwappaRouterV1.addr.json'
 export { SwappaRouterV1, ABI as SwappaRouterV1ABI } from '../types/web3-v1-contracts/SwappaRouterV1'
+export { fastConcurrentMap } from "./utils/async"

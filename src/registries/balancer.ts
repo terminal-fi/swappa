@@ -1,11 +1,11 @@
 import Web3 from 'web3'
-import { concurrentMap } from '@celo/utils/lib/async'
 
 import { IbRegistry, ABI as IbRegistryABI } from "../../types/web3-v1-contracts/IBRegistry"
 import { Address, Pair } from "../pair"
 import { PairBPool } from "../pairs/bpool"
 import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
+import { fastConcurrentMap } from '../utils/async'
 
 export class RegistryBalancer extends Registry {
 	private registry: IbRegistry
@@ -28,7 +28,7 @@ export class RegistryBalancer extends Registry {
 			}
 		}
 		const poolPairs = new Map<string, PairBPool>()
-		await concurrentMap(
+		await fastConcurrentMap(
 			10,
 			pairsToFetch,
 			async (toFetch) => {

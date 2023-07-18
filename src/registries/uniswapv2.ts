@@ -1,6 +1,5 @@
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
-import { concurrentMap } from '@celo/utils/lib/async'
 
 import { RegistryHelperUniswapV2, ABI as RegistryHelperUniswapV2ABI } from "../../types/web3-v1-contracts/RegistryHelperUniswapV2"
 import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contracts/IUniswapV2Factory"
@@ -8,6 +7,7 @@ import { Address, Pair } from "../pair"
 import { PairUniswapV2 } from "../pairs/uniswapv2"
 import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
+import { fastConcurrentMap } from "../utils/async"
 
 export class RegistryUniswapV2 extends Registry {
 	private factory: IUniswapV2Factory
@@ -54,7 +54,7 @@ export class RegistryUniswapV2 extends Registry {
 					pairsToFetch.push({tokenA: tokenWhitelist[i], tokenB: tokenWhitelist[j]})
 				}
 			}
-			pairsFetched = await concurrentMap(
+			pairsFetched = await fastConcurrentMap(
 				10,
 				pairsToFetch,
 				async (toFetch) => {
@@ -66,7 +66,7 @@ export class RegistryUniswapV2 extends Registry {
 				})
 		} else {
 			const nPairs = Number.parseInt(await this.factory.methods.allPairsLength().call())
-			pairsFetched = await concurrentMap(
+			pairsFetched = await fastConcurrentMap(
 				10,
 				[...Array(nPairs).keys()],
 				async (idx) => {

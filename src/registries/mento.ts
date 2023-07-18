@@ -1,10 +1,10 @@
 import { ContractKit, StableToken } from "@celo/contractkit"
-import { concurrentMap } from '@celo/utils/lib/async'
 
 import { Address } from "../pair"
 import { PairMento } from "../pairs/mento"
 import { Registry } from "../registry"
 import { initPairsAndFilterByWhitelist } from "../utils"
+import { fastConcurrentMap } from "../utils/async"
 
 export class RegistryMento extends Registry{
 	constructor(private kit: ContractKit) {
@@ -12,7 +12,7 @@ export class RegistryMento extends Registry{
 	}
 
 	findPairs = async (tokenWhitelist: Address[]) => {
-		const cSTBs = await concurrentMap(
+		const cSTBs = await fastConcurrentMap(
 			5,
 			Object.values(StableToken),
 			(stableToken) => {
