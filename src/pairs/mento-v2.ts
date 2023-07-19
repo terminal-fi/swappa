@@ -103,7 +103,9 @@ export class PairMentoV2 extends Pair {
       (inputToken === this.tokenA) ? [this.bucket0, this.bucket1] : [this.bucket1, this.bucket0];
 
     const [inputMultiplier, outputMultiplier] =
-      (inputToken === this.tokenA) ? this.tokenPrecisionMultipliers : this.tokenPrecisionMultipliers.reverse()
+      (inputToken === this.tokenA) ?
+      [this.tokenPrecisionMultipliers[0], this.tokenPrecisionMultipliers[1]] :
+      [this.tokenPrecisionMultipliers[1], this.tokenPrecisionMultipliers[0]]
     const scaledInputAmount = inputAmount.multipliedBy(inputMultiplier)
     const amountOut = getAmountOut(
       tokenInBucketSize,
