@@ -5,7 +5,7 @@ import invariant from 'tiny-invariant'
 
 import {
   FeeAmount, LiquidityMath, SwapMath,
-  TICK_SPACINGS, Tick, TickList, TickMath, isSorted
+  TICK_SPACINGS, Tick, TickMath, isSorted
 } from "@uniswap/v3-sdk";
 
 import { Address, Pair, Snapshot } from "../pair";
@@ -44,6 +44,9 @@ export class PairUniswapV3 extends Pair {
   private liquidity: JSBI = ZERO
   private tickCurrent: number = 0
   private ticks: Tick[] = []
+  private tickIndexes: Map<number, number> = new Map<number, number>()
+  private tickIndexNextDESC = 0
+  private tickIndexNextASC = 0
 
   constructor(chainId: number, private web3: Web3, private pairAddr: Address) {
     super(web3, selectAddress(chainId, { mainnet: pairUniV3Address }));
@@ -97,6 +100,13 @@ export class PairUniswapV3 extends Pair {
     }))
     invariant(this.ticks.every(({ index }) => index % this.tickSpacing === 0), 'TICK_SPACING')
     invariant(isSorted(this.ticks, (a, b) => a.index - b.index), 'SORTED')
+    this.tickIndexes = new Map<number, number>()
+    this.ticks.forEach((t, idx) => this.tickIndexes.set(t.index, idx))
+
+    const currentIdx = this.ticks.findIndex((t) => t.index >= this.tickCurrent)
+    this.tickIndexNextASC = currentIdx < 0 ? this.ticks.length :
+      this.ticks[currentIdx].index === this.tickCurrent ? currentIdx : currentIdx + 1
+    this.tickIndexNextDESC = currentIdx < 0 ? 0 : currentIdx
   }
 
   protected swapExtraData() {
@@ -113,7 +123,9 @@ export class PairUniswapV3 extends Pair {
     }
     // console.info(
     //   "WTF, TICK LIQUDITY",
-    //   this.ticks.reduce((accumulator, { liquidityNet }) => JSBI.add(accumulator, liquidityNet), ZERO).toString()
+    //   this.ticks.reduce((accumulator, { liquidityNet }) => JSBI.add(accumulator, liquidityNet), ZERO).toString(),
+    //   "TICK",
+    //   this.tickCurrent,
     //   )
     const zeroForOne = inputToken === this.tokenA
     const sqrtPriceLimitX96 = zeroForOne
@@ -135,7 +147,8 @@ export class PairUniswapV3 extends Pair {
       amountCalculated: ZERO,
       sqrtPriceX96: this.sqrtRatioX96,
       tick: this.tickCurrent,
-      liquidity: this.liquidity
+      liquidity: this.liquidity,
+      tickIndex: this.tickCurrentIdx,
     }
 
     // start swap while loop
@@ -146,6 +159,7 @@ export class PairUniswapV3 extends Pair {
       // because each iteration of the while loop rounds, we can't optimize this code (relative to the smart contract)
       // by simply traversing to the next available tick, we instead need to exactly replicate
       // tickBitmap.nextInitializedTickWithinOneWord
+      const tickIndexNext = zeroForOne ? state.tickIndex - 1 : state.tickIndex
       ;[step.tickNext, step.initialized] = TickList.nextInitializedTickWithinOneWord(
         this.ticks,
         state.tick,
