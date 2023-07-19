@@ -1,10 +1,11 @@
+import BigNumber from "bignumber.js";
 import Web3 from "web3";
 import JSBI from "jsbi"
 import invariant from 'tiny-invariant'
 
 import {
   FeeAmount, LiquidityMath, SwapMath,
-  TICK_SPACINGS, Tick, TickConstructorArgs, TickList, TickMath, isSorted
+  TICK_SPACINGS, Tick, TickList, TickMath, isSorted
 } from "@uniswap/v3-sdk";
 
 import { Address, Pair, Snapshot } from "../pair";
@@ -18,7 +19,6 @@ import {
 } from "../../types/web3-v1-contracts/IUniswapV3Pool";
 import { selectAddress } from "../utils";
 import { address as pairUniV3Address } from "../../tools/deployed/mainnet.PairUniswapV3.addr.json";
-import BigNumber from "bignumber.js";
 
 const ONE = JSBI.BigInt(1)
 const NEGATIVE_ONE = JSBI.BigInt(-1)
@@ -85,24 +85,18 @@ export class PairUniswapV3 extends Pair {
     this.liquidity = JSBI.BigInt(liquidity)
 
     this.ticks = [
-      ...info.populatedTicksTwiceBelow.reversed(),
-      ...info.populatedTicksBelow.reversed(),
-      ...info.populatedTicksSpot.reversed(),
-      ...info.populatedTicksAbove.reversed(),
-      ...info.populatedTicksTwiceAbove.reversed(),
-    ].map((i) => new Tick({
+      ...info.populatedTicksTwiceAbove,
+      ...info.populatedTicksAbove,
+      ...info.populatedTicksSpot,
+      ...info.populatedTicksBelow,
+      ...info.populatedTicksTwiceBelow,
+    ].reverse().map((i) => new Tick({
       index: Number.parseInt(i.tick),
       liquidityGross: i.liquidityGross,
       liquidityNet: i.liquidityNet,
     }))
-    console.info(`wTF`, this.ticks)
     invariant(this.ticks.every(({ index }) => index % this.tickSpacing === 0), 'TICK_SPACING')
     invariant(isSorted(this.ticks, (a, b) => a.index - b.index), 'SORTED')
-    // try {
-    //   TickList.validateList(this.ticks, this.tickSpacing)
-    // } catch (e) {
-    //   this.ticks = []
-    // }
   }
 
   protected swapExtraData() {
@@ -117,6 +111,10 @@ export class PairUniswapV3 extends Pair {
     if (this.ticks.length === 0) {
       return new BigNumber(0)
     }
+    // console.info(
+    //   "WTF, TICK LIQUDITY",
+    //   this.ticks.reduce((accumulator, { liquidityNet }) => JSBI.add(accumulator, liquidityNet), ZERO).toString()
+    //   )
     const zeroForOne = inputToken === this.tokenA
     const sqrtPriceLimitX96 = zeroForOne
       ? JSBI.add(TickMath.MIN_SQRT_RATIO, ONE)
@@ -131,10 +129,7 @@ export class PairUniswapV3 extends Pair {
     }
 
     const amountSpecified = JSBI.BigInt(inputAmount.toFixed())
-    const exactInput = JSBI.greaterThanOrEqual(amountSpecified, ZERO)
-
     // keep track of swap state
-
     const state = {
       amountSpecifiedRemaining: amountSpecified,
       amountCalculated: ZERO,
@@ -177,28 +172,17 @@ export class PairUniswapV3 extends Pair {
         this.fee
       )
 
-      if (exactInput) {
-        state.amountSpecifiedRemaining = JSBI.subtract(
-          state.amountSpecifiedRemaining,
-          JSBI.add(step.amountIn, step.feeAmount)
-        )
-        state.amountCalculated = JSBI.subtract(state.amountCalculated, step.amountOut)
-      } else {
-        state.amountSpecifiedRemaining = JSBI.add(state.amountSpecifiedRemaining, step.amountOut)
-        state.amountCalculated = JSBI.add(state.amountCalculated, JSBI.add(step.amountIn, step.feeAmount))
-      }
+      state.amountSpecifiedRemaining = JSBI.subtract(
+        state.amountSpecifiedRemaining,
+        JSBI.add(step.amountIn, step.feeAmount)
+      )
+      state.amountCalculated = JSBI.add(state.amountCalculated, step.amountOut)
 
       // TODO
       if (JSBI.equal(state.sqrtPriceX96, step.sqrtPriceNextX96)) {
         // if the tick is initialized, run the tick transition
         if (step.initialized) {
-          let liquidityNet
-          try {
-            liquidityNet = JSBI.BigInt((TickList.getTick(this.ticks, step.tickNext)).liquidityNet)
-          } catch (e) {
-            console.warn("getTICKErr", e)
-            break
-          }
+          let liquidityNet = JSBI.BigInt((TickList.getTick(this.ticks, step.tickNext)).liquidityNet)
           // if we're moving leftward, we interpret liquidityNet as the opposite sign
           // safe because liquidityNet cannot be type(int128).min
           if (zeroForOne) liquidityNet = JSBI.multiply(liquidityNet, NEGATIVE_ONE)
@@ -214,7 +198,7 @@ export class PairUniswapV3 extends Pair {
       }
     }
 
-    return new BigNumber(state.amountCalculated.toString()).negated()
+    return new BigNumber(state.amountCalculated.toString())
   }
 
   public snapshot(): Snapshot {

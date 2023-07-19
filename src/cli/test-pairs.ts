@@ -75,10 +75,12 @@ async function main() {
 		const highOutput =
 			outputB.multipliedBy(0.999999).gt(expectedOutputB) || outputA.multipliedBy(0.999999).gt(expectedOutputA)
 		if (!passed) {
+			const tokenA = tokenByAddrOrSymbol(pair.tokenA)
+			const tokenB = tokenByAddrOrSymbol(pair.tokenB)
 			console.warn(
-				`Mismatch (HIGH?: ${highOutput}): ${tokenByAddrOrSymbol(pair.tokenA).symbol}/${tokenByAddrOrSymbol(pair.tokenB).symbol}: ` +
-				`${outputB.toFixed(0)} vs ${expectedOutputB} (${outputB.eq(expectedOutputB)}), ` +
-				`${outputA.toFixed(0)} vs ${expectedOutputA} (${outputA.eq(expectedOutputA)})`)
+				`Mismatch (HIGH?: ${highOutput}): ${tokenA.symbol}/${tokenB.symbol}: ` +
+				`${outputB.shiftedBy(-tokenB.decimals)} vs ${new BigNumber(expectedOutputB).shiftedBy(-tokenB.decimals)} (${outputB.eq(expectedOutputB)}), ` +
+				`${outputA.shiftedBy(-tokenA.decimals)} vs ${new BigNumber(expectedOutputA).shiftedBy(-tokenA.decimals)} (${outputA.eq(expectedOutputA)})`)
 			failedN += 1
 			if (highOutput) {
 				highN += 1
