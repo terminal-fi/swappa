@@ -12,6 +12,9 @@ library TickLens {
         uint128 liquidityGross;
     }
 
+    // getPoolTicks returns populated ticks from the Uniswapv3 pool.
+    // To keep things reasonably performant it only tries to fetch 5 populated tick words.
+    // populatedTicks are not sorted, thus it is up to the user to sort them appropriately.
     function getPoolTicks(IUniswapV3Pool pool, int16 maxLoopN)
         internal
         view
