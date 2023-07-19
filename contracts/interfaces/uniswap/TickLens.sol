@@ -44,18 +44,11 @@ library TickLens {
         int16 tickBitmapIndex = int16(compressed >> 8);
 
         // get the populated ticks at, above, and below the current word
-        populatedTicksTwiceAbove = new PopulatedTick[](0);
         populatedTicksSpot = getPopulatedTicksInWord(pool, tickBitmapIndex);
-        populatedTicksTwiceBelow = getPopulatedTicksInWord(
-            pool,
-            tickBitmapIndex - 2
-        );
-        populatedTicksAbove = getPopulatedTicksInWord(
-            pool,
-            tickBitmapIndex + 1
-        );
-        populatedTicksTwiceBelow = new PopulatedTick[](0);
-
+        populatedTicksAbove = getPopulatedTicksInWord(pool, tickBitmapIndex + 1);
+        populatedTicksBelow = getPopulatedTicksInWord(pool, tickBitmapIndex - 1);
+        populatedTicksTwiceAbove = getPopulatedTicksInWord(pool, tickBitmapIndex + 2);
+        populatedTicksTwiceBelow = getPopulatedTicksInWord(pool, tickBitmapIndex - 2);
     }
 
     function getPopulatedTicksInWord(IUniswapV3Pool pool, int16 tickBitmapIndex)
