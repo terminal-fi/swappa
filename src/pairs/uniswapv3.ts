@@ -5,7 +5,7 @@ import invariant from 'tiny-invariant'
 
 import {
   FeeAmount, LiquidityMath, SwapMath,
-  TICK_SPACINGS, Tick, TickList, TickMath, isSorted
+  TICK_SPACINGS, Tick, TickConstructorArgs, TickList, TickMath, isSorted
 } from "@uniswap/v3-sdk";
 
 import { Address, Pair, Snapshot } from "../pair";
@@ -32,6 +32,21 @@ interface StepComputations {
   amountIn: JSBI
   amountOut: JSBI
   feeAmount: JSBI
+}
+
+type JSBIString = string
+
+interface PairUniswapV3Snapshot extends Snapshot {
+  fee: FeeAmount
+  sqrtRatioX96: JSBIString
+  liquidity: JSBIString
+  tickCurrent: number
+  ticks: TickConstructorArgs[],
+}
+
+let _REFRESH_MAX_LOOP_N = 64
+export const configureUniV3RefreshMaxLoopN = (n: number) => {
+  _REFRESH_MAX_LOOP_N = n
 }
 
 export class PairUniswapV3 extends Pair {
@@ -76,10 +91,13 @@ export class PairUniswapV3 extends Pair {
   }
 
   public async refresh() {
-    let info = await this.swappaPool.methods.getPoolTicks(this.pairAddr, 20).call()
+    let info = await this.swappaPool.methods.getPoolTicks(this.pairAddr, _REFRESH_MAX_LOOP_N).call()
     this.tickCurrent = Number.parseInt(info.tick)
     this.sqrtRatioX96 = JSBI.BigInt(info.sqrtPriceX96)
     this.liquidity = JSBI.BigInt(info.liquidity)
+
+    const tickCurrentSqrtRatioX96 = TickMath.getSqrtRatioAtTick(this.tickCurrent)
+    const nextTickSqrtRatioX96 = TickMath.getSqrtRatioAtTick(this.tickCurrent + 1)
 
     this.ticks = [
       ...info.populatedTicks0,
@@ -93,8 +111,23 @@ export class PairUniswapV3 extends Pair {
       liquidityNet: i.liquidityNet,
     }))
     .sort((a, b) => a.index - b.index)
-    invariant(this.ticks.every(({ index }) => index % this.tickSpacing === 0), 'Univ3: TICK_SPACING')
-    invariant(this.ticks.every(({ index }, idx) => idx === 0 || this.ticks[idx - 1].index < index), 'Univ3: TICK_DUPLICATES')
+    if (this.ticks.length > 0) {
+      try {
+        invariant(
+          JSBI.greaterThanOrEqual(JSBI.BigInt(this.sqrtRatioX96), tickCurrentSqrtRatioX96) &&
+          JSBI.lessThanOrEqual(JSBI.BigInt(this.sqrtRatioX96), nextTickSqrtRatioX96),
+          'Univ3: PRICE_BOUNDS')
+
+        invariant(this.ticks.every(({ index }) => index % this.tickSpacing === 0), 'Univ3: TICK_SPACING')
+        invariant(this.ticks.every(({ index }, idx) => idx === 0 || this.ticks[idx - 1].index < index), 'Univ3: TICK_DUPLICATES')
+
+        invariant(JSBI.lessThan(JSBI.add(TickMath.MIN_SQRT_RATIO, ONE), this.sqrtRatioX96), 'RATIO_CURRENT')
+        invariant(JSBI.greaterThan(JSBI.subtract(TickMath.MAX_SQRT_RATIO, ONE), this.sqrtRatioX96), 'RATIO_CURRENT')
+      } catch (e) {
+        console.warn(`Univ3 ${this.tokenA}/${this.tokenB}/${this.fee.toString()}: REFRESH ERR: ${e}`)
+        this.ticks = []
+      }
+    }
   }
 
   protected swapExtraData() {
@@ -115,14 +148,6 @@ export class PairUniswapV3 extends Pair {
       ? JSBI.add(TickMath.MIN_SQRT_RATIO, ONE)
       : JSBI.subtract(TickMath.MAX_SQRT_RATIO, ONE)
 
-    if (zeroForOne) {
-      invariant(JSBI.greaterThan(sqrtPriceLimitX96, TickMath.MIN_SQRT_RATIO), 'RATIO_MIN')
-      invariant(JSBI.lessThan(sqrtPriceLimitX96, this.sqrtRatioX96), 'RATIO_CURRENT')
-    } else {
-      invariant(JSBI.lessThan(sqrtPriceLimitX96, TickMath.MAX_SQRT_RATIO), 'RATIO_MAX')
-      invariant(JSBI.greaterThan(sqrtPriceLimitX96, this.sqrtRatioX96), 'RATIO_CURRENT')
-    }
-
     const amountSpecified = JSBI.BigInt(inputAmount.toFixed())
     // keep track of swap state
     const state = {
@@ -138,10 +163,13 @@ export class PairUniswapV3 extends Pair {
       let step: Partial<StepComputations> = {}
       step.sqrtPriceStartX96 = state.sqrtPriceX96
 
-      if ((zeroForOne && (state.tick >> 8) <= (this.ticks[0].index >> 8)) ||
-        (!zeroForOne && (state.tick >> 8) >= (this.ticks[this.ticks.length - 1].index >> 8))) {
-        // NOTE(zviad): for whatever reason, when we get to last word position in our `this.ticks` this loop
-        // performs an incorrect extra iteration, giving us a wrong answer.
+      if (
+        (
+          (zeroForOne && state.tick < this.ticks[0].index) ||
+          (!zeroForOne && state.tick > this.ticks[this.ticks.length - 1].index)
+        )) {
+        // NOTE(zviad): our `this.ticks` array might be incomplete, thus it is dangerous to go beyond
+        // its bounds because total liquidity could become incorrect after that.
         return new BigNumber(state.amountCalculated.toString())
       }
 
@@ -201,21 +229,25 @@ export class PairUniswapV3 extends Pair {
     return new BigNumber(state.amountCalculated.toString())
   }
 
-	// public outputAmountAsync = async (inputToken: Address, inputAmount: BigNumber): Promise<BigNumber> => {
-	// 	const outputToken = inputToken === this.tokenA ? this.tokenB : this.tokenA
-	// 	const out = await this.swappaPool.methods.getOutputAmount2(
-	// 		inputToken,
-	// 		outputToken,
-	// 		inputAmount.toFixed(0),
-	// 		this.swapExtraData(),
-	// 	).call()
-	// 	return new BigNumber(out)
-	// }
-
-  public snapshot(): Snapshot {
-    throw new Error("not implemented")
+  public snapshot(): PairUniswapV3Snapshot {
+    return {
+      fee: this.fee,
+      sqrtRatioX96: this.sqrtRatioX96.toString(),
+      liquidity: this.liquidity.toString(),
+      tickCurrent: this.tickCurrent,
+      ticks: this.ticks.map((t) => ({
+        index: t.index,
+        liquidityGross: t.liquidityGross.toString(),
+        liquidityNet: t.liquidityNet.toString(),
+      })),
+    }
   }
-  public restore(snapshot: Snapshot): void {
-    throw new Error("not implemented")
+  public restore(snapshot: PairUniswapV3Snapshot): void {
+    this.fee = snapshot.fee
+    this.sqrtRatioX96 = JSBI.BigInt(snapshot.sqrtRatioX96)
+    this.liquidity = JSBI.BigInt(snapshot.liquidity)
+    this.tickCurrent = snapshot.tickCurrent
+    this.ticks = snapshot.ticks.map((t) => new Tick(t))
   }
 }
+

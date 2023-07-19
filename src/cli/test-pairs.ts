@@ -54,12 +54,15 @@ async function main() {
 	}
 
 	console.info("Running tests...")
+	const testT0 = Date.now()
 	let passedN = 0
 	let failedN = 0
 	let highN = 0
+	let refreshTotalMs = 0
 	for (const pair of pairs) {
 		const inputAmountA = new BigNumber(opts.amount).shiftedBy(tokenByAddrOrSymbol(pair.tokenA).decimals)
 		const inputAmountB = new BigNumber(opts.amount).shiftedBy(tokenByAddrOrSymbol(pair.tokenB).decimals)
+		const refreshT0 = Date.now()
 		const [
 			expectedOutputB,
 			expectedOutputA,
@@ -69,6 +72,7 @@ async function main() {
 			pair.outputAmountAsync(pair.tokenB, inputAmountB).catch(() => { return 0 }),
 			pair.refresh()
 		])
+		refreshTotalMs += Date.now() - refreshT0
 		const outputB = pair.outputAmount(pair.tokenA, inputAmountA)
 		const outputA = pair.outputAmount(pair.tokenB, inputAmountB)
 		const passed = outputB.eq(expectedOutputB) && outputA.eq(expectedOutputA)
@@ -83,6 +87,7 @@ async function main() {
 				`${outputA.shiftedBy(-tokenA.decimals)} vs ${new BigNumber(expectedOutputA).shiftedBy(-tokenA.decimals)} (${outputA.eq(expectedOutputA)})`)
 			failedN += 1
 			if (highOutput) {
+				console.warn(`SNAPSHOT:`, JSON.stringify(pair.snapshot()))
 				highN += 1
 			}
 		} else {
@@ -91,7 +96,7 @@ async function main() {
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)
-	console.info(`PASSED: ${passedN}, FAILED: ${failedN}, HIGH?: ${highN}`)
+	console.info(`PASSED: ${passedN}, FAILED: ${failedN}, HIGH?: ${highN}, Elapsed: ${Date.now()-testT0}ms / Refresh: ${refreshTotalMs}ms`)
 	kit.stop()
 }
 

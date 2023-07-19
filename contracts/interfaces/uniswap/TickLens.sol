@@ -48,13 +48,13 @@ library TickLens {
         int16 boundTickBitmapIndex = tickBitmapIndex + maxLoopN / 2;
         int16 nextBitmapIndex = tickBitmapIndex;
         (populatedTicks0, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
-        (populatedTicks1, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex + 1, boundTickBitmapIndex);
-        (populatedTicks2, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex + 1, boundTickBitmapIndex);
+        (populatedTicks1, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
+        (populatedTicks2, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
 
         boundTickBitmapIndex = tickBitmapIndex - maxLoopN / 2;
-        nextBitmapIndex = tickBitmapIndex;
-        (populatedTicks3, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex - 1, boundTickBitmapIndex);
-        (populatedTicks4, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex - 1, boundTickBitmapIndex);
+        nextBitmapIndex = tickBitmapIndex - 1;
+        (populatedTicks3, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
+        (populatedTicks4, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
     }
 
     function nextPopulatedTick(
@@ -63,13 +63,13 @@ library TickLens {
         int16 maxTickBitmapIndex)
         internal
         view
-        returns (PopulatedTick[] memory populatedTicks, int16 populatedBitmapIndex)
+        returns (PopulatedTick[] memory populatedTicks, int16 nextBitmapIndex)
     {
         for (
-            populatedBitmapIndex = tickBitmapIndex;
-            populatedBitmapIndex <= maxTickBitmapIndex && populatedTicks.length == 0;
-            populatedBitmapIndex += 1) {
-            populatedTicks = getPopulatedTicksInWord(pool, populatedBitmapIndex);
+            nextBitmapIndex = tickBitmapIndex;
+            nextBitmapIndex <= maxTickBitmapIndex && populatedTicks.length == 0;
+            nextBitmapIndex += 1) {
+            populatedTicks = getPopulatedTicksInWord(pool, nextBitmapIndex);
         }
     }
 
@@ -79,13 +79,13 @@ library TickLens {
         int16 minTickBitmapIndex)
         internal
         view
-        returns (PopulatedTick[] memory populatedTicks, int16 populatedBitmapIndex)
+        returns (PopulatedTick[] memory populatedTicks, int16 nextBitmapIndex)
     {
         for (
-            populatedBitmapIndex = tickBitmapIndex;
-            populatedBitmapIndex <= minTickBitmapIndex && populatedTicks.length == 0;
-            populatedBitmapIndex += 1) {
-            populatedTicks = getPopulatedTicksInWord(pool, populatedBitmapIndex);
+            nextBitmapIndex = tickBitmapIndex;
+            nextBitmapIndex >= minTickBitmapIndex && populatedTicks.length == 0;
+            nextBitmapIndex -= 1) {
+            populatedTicks = getPopulatedTicksInWord(pool, nextBitmapIndex);
         }
     }
 
