@@ -55,7 +55,7 @@ contract PairCurve is ISwappaPairV1 {
 		address output,
 		uint256 amountIn,
 		bytes calldata data
-	) external view override returns (uint256 amountOut) {
+	) external override returns (uint256 amountOut) {
 		address swapPoolAddr = parseData(data);
 		ICurve swapPool = ICurve(swapPoolAddr);
 		(int128 fromIdx, int128 toIdx) = getInputOutputIdx(

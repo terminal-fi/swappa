@@ -44,7 +44,7 @@ contract PairRStCelo is ISwappaPairV1 {
 		address,
 		uint amountIn,
 		bytes calldata data
-	) external view override returns (uint amountOut) {
+	) external override returns (uint amountOut) {
 		(address rebaseAddr, uint8 inputType) = parseData(data);
 		if (inputType == 1) {
 			// rstCelo -> stCelo

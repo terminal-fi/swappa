@@ -44,7 +44,7 @@ contract PairBPool is ISwappaPairV1 {
 		address output,
 		uint amountIn,
 		bytes calldata data
-	) external view override returns (uint amountOut) {
+	) external override returns (uint amountOut) {
 		IBPool pool = IBPool(parseData(data));
 		amountOut = pool.calcOutGivenIn(
 			pool.getBalance(input),

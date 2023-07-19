@@ -55,11 +55,11 @@ contract PairAToken is ISwappaPairV1 {
 	}
 
 	function getOutputAmount(
-		address input,
-		address output,
+		address,
+		address,
 		uint amountIn,
-		bytes calldata data
-	) external view override returns (uint amountOut) {
+		bytes calldata
+	) external override returns (uint amountOut) {
 		return amountIn;
 	}
 

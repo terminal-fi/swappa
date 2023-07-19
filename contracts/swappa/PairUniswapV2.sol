@@ -45,7 +45,7 @@ contract PairUniswapV2 is ISwappaPairV1 {
 		address,
 		uint amountIn,
 		bytes calldata data
-	) external view override returns (uint amountOut) {
+	) external override returns (uint amountOut) {
 		(address pairAddr, uint feeK) = parseData(data);
 		IUniswapV2Pair pair = IUniswapV2Pair(pairAddr);
 		(uint reserve0, uint reserve1,) = pair.getReserves();

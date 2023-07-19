@@ -16,5 +16,5 @@ interface ISwappaPairV1 {
 		address output,
 		uint amountIn,
 		bytes calldata data
-	) external view returns (uint amountOut);
+	) external returns (uint amountOut);
 }
