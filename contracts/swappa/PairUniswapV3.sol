@@ -78,6 +78,11 @@ contract PairUniswapV3 is ISwappaPairV1, IUniswapV3SwapCallback {
 	) external override returns (uint256 amountOut) {
 		address pairAddr = parseData(data);
 		IUniswapV3Pool pair = IUniswapV3Pool(pairAddr);
+		// TODO(zviadm): This is hardcoded address for Univ3 QuoterV2 for Celo Mainnet.
+		// For this to work on other chains, this would need to be fetched dynamically or
+		// would have to be part of the constructor.
+		// Alternatively, code from QuoterV2 could be ported inside here directly.
+		// https://docs.uniswap.org/contracts/v3/reference/deployments
 		IQuoterV2 quoter = IQuoterV2(0x82825d0554fA07f7FC52Ab63c961F330fdEFa8E8);
 		(amountOut,,,) = quoter.quoteExactInputSingle(IQuoterV2.QuoteExactInputSingleParams({
 			tokenIn: input,
