@@ -42,10 +42,10 @@ contract PairMento is ISwappaPairV1 {
 
 	function getOutputAmount(
 		address input,
-		address output,
+		address,
 		uint amountIn,
 		bytes calldata data
-	) external view override returns (uint amountOut) {
+	) external override returns (uint amountOut) {
 		address exchangeAddr = parseData(data);
 		IExchange exchange = IExchange(exchangeAddr);
 		bool sellGold = (exchange.stable() != input);

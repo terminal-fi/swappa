@@ -8,7 +8,7 @@ interface ISwappaRouterV1 {
 		address[] calldata pairs,
 		bytes[] calldata extras,
 		uint256 inputAmount
-	) external view returns (uint256 outputAmount);
+	) external returns (uint256 outputAmount);
 
 	function swapExactInputForOutput(
 		address[] calldata path,

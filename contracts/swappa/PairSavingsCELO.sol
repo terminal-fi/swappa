@@ -36,11 +36,11 @@ contract PairSavingsCELO is ISwappaPairV1 {
 	}
 
 	function getOutputAmount(
-		address input,
+		address,
 		address output,
 		uint amountIn,
 		bytes calldata data
-	) external view override returns (uint amountOut) {
+	) external override returns (uint amountOut) {
 		address savingsCELOAddr = parseData(data);
 		require(output == savingsCELOAddr, "PairSavingsCELO: invalid output!");
 		return ISavingsCELO(savingsCELOAddr).celoToSavings(amountIn);

@@ -3,29 +3,29 @@ pragma solidity >=0.4.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 
 import "./IUniswapV3Pool.sol";
+import "./TickMath.sol";
 
 library TickLens {
-
     struct PopulatedTick {
         int24 tick;
         int128 liquidityNet;
         uint128 liquidityGross;
     }
 
-    function getSpotTicks(IUniswapV3Pool pool)
+    function getPoolTicks(IUniswapV3Pool pool, int16 maxLoopN)
         internal
         view
         returns (
             uint160 sqrtPriceX96,
             int24 tick,
-            PopulatedTick[] memory populatedTicksTwiceAbove,
-            PopulatedTick[] memory populatedTicksAbove,
-            PopulatedTick[] memory populatedTicksSpot,
-            PopulatedTick[] memory populatedTicksBelow,
-            PopulatedTick[] memory populatedTicksTwiceBelow
+            uint128 liquidity,
+            PopulatedTick[] memory populatedTicks0,
+            PopulatedTick[] memory populatedTicks1,
+            PopulatedTick[] memory populatedTicks2,
+            PopulatedTick[] memory populatedTicks3,
+            PopulatedTick[] memory populatedTicks4
         )
     {
-        // get the populated ticks above and below the current spot tick
         (
             sqrtPriceX96,
             tick,
@@ -35,6 +35,7 @@ library TickLens {
             , // uint8 feeProtocol
             // bool unlocked
         ) = pool.slot0();
+        liquidity = pool.liquidity();
 
         int24 tickSpacing = pool.tickSpacing();
         int24 compressed = tick / tickSpacing;
@@ -43,12 +44,49 @@ library TickLens {
         // current word position within bitmap
         int16 tickBitmapIndex = int16(compressed >> 8);
 
-        // get the populated ticks at, above, and below the current word
-        populatedTicksSpot = getPopulatedTicksInWord(pool, tickBitmapIndex);
-        populatedTicksAbove = getPopulatedTicksInWord(pool, tickBitmapIndex + 1);
-        populatedTicksBelow = getPopulatedTicksInWord(pool, tickBitmapIndex - 1);
-        populatedTicksTwiceAbove = getPopulatedTicksInWord(pool, tickBitmapIndex + 2);
-        populatedTicksTwiceBelow = getPopulatedTicksInWord(pool, tickBitmapIndex - 2);
+        // get the populated ticks near current tick.
+        int16 boundTickBitmapIndex = tickBitmapIndex + maxLoopN / 2;
+        int16 nextBitmapIndex = tickBitmapIndex;
+        (populatedTicks0, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
+        (populatedTicks1, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex + 1, boundTickBitmapIndex);
+        (populatedTicks2, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex + 1, boundTickBitmapIndex);
+
+        boundTickBitmapIndex = tickBitmapIndex - maxLoopN / 2;
+        nextBitmapIndex = tickBitmapIndex;
+        (populatedTicks3, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex - 1, boundTickBitmapIndex);
+        (populatedTicks4, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex - 1, boundTickBitmapIndex);
+    }
+
+    function nextPopulatedTick(
+        IUniswapV3Pool pool,
+        int16 tickBitmapIndex,
+        int16 maxTickBitmapIndex)
+        internal
+        view
+        returns (PopulatedTick[] memory populatedTicks, int16 populatedBitmapIndex)
+    {
+        for (
+            populatedBitmapIndex = tickBitmapIndex;
+            populatedBitmapIndex <= maxTickBitmapIndex && populatedTicks.length == 0;
+            populatedBitmapIndex += 1) {
+            populatedTicks = getPopulatedTicksInWord(pool, populatedBitmapIndex);
+        }
+    }
+
+    function prevPopulatedTick(
+        IUniswapV3Pool pool,
+        int16 tickBitmapIndex,
+        int16 minTickBitmapIndex)
+        internal
+        view
+        returns (PopulatedTick[] memory populatedTicks, int16 populatedBitmapIndex)
+    {
+        for (
+            populatedBitmapIndex = tickBitmapIndex;
+            populatedBitmapIndex <= minTickBitmapIndex && populatedTicks.length == 0;
+            populatedBitmapIndex += 1) {
+            populatedTicks = getPopulatedTicksInWord(pool, populatedBitmapIndex);
+        }
     }
 
     function getPopulatedTicksInWord(IUniswapV3Pool pool, int16 tickBitmapIndex)

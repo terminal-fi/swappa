@@ -76,27 +76,25 @@ export class PairUniswapV3 extends Pair {
   }
 
   public async refresh() {
-    const [info, liquidity] = await Promise.all([
-      this.swappaPool.methods.getSpotTicks(this.pairAddr).call(),
-      this.swapPool.methods.liquidity().call(),
-    ]);
+    let info = await this.swappaPool.methods.getPoolTicks(this.pairAddr, 20).call()
     this.tickCurrent = Number.parseInt(info.tick)
     this.sqrtRatioX96 = JSBI.BigInt(info.sqrtPriceX96)
-    this.liquidity = JSBI.BigInt(liquidity)
+    this.liquidity = JSBI.BigInt(info.liquidity)
 
     this.ticks = [
-      ...info.populatedTicksTwiceAbove,
-      ...info.populatedTicksAbove,
-      ...info.populatedTicksSpot,
-      ...info.populatedTicksBelow,
-      ...info.populatedTicksTwiceBelow,
-    ].reverse().map((i) => new Tick({
+      ...info.populatedTicks0,
+      ...info.populatedTicks1,
+      ...info.populatedTicks2,
+      ...info.populatedTicks3,
+      ...info.populatedTicks4,
+    ].map((i) => new Tick({
       index: Number.parseInt(i.tick),
       liquidityGross: i.liquidityGross,
       liquidityNet: i.liquidityNet,
     }))
-    invariant(this.ticks.every(({ index }) => index % this.tickSpacing === 0), 'TICK_SPACING')
-    invariant(isSorted(this.ticks, (a, b) => a.index - b.index), 'SORTED')
+    .sort((a, b) => a.index - b.index)
+    invariant(this.ticks.every(({ index }) => index % this.tickSpacing === 0), 'Univ3: TICK_SPACING')
+    invariant(this.ticks.every(({ index }, idx) => idx === 0 || this.ticks[idx - 1].index < index), 'Univ3: TICK_DUPLICATES')
   }
 
   protected swapExtraData() {
@@ -111,10 +109,7 @@ export class PairUniswapV3 extends Pair {
     if (this.ticks.length === 0) {
       return new BigNumber(0)
     }
-    // console.info(
-    //   "WTF, TICK LIQUDITY",
-    //   this.ticks.reduce((accumulator, { liquidityNet }) => JSBI.add(accumulator, liquidityNet), ZERO).toString()
-    //   )
+    // Based ON: https://github.com/Uniswap/v3-sdk/blob/81d66099f07d1ec350767f497ef73222575fe032/src/entities/pool.ts#L215
     const zeroForOne = inputToken === this.tokenA
     const sqrtPriceLimitX96 = zeroForOne
       ? JSBI.add(TickMath.MIN_SQRT_RATIO, ONE)
@@ -142,6 +137,13 @@ export class PairUniswapV3 extends Pair {
     while (JSBI.notEqual(state.amountSpecifiedRemaining, ZERO) && state.sqrtPriceX96 != sqrtPriceLimitX96) {
       let step: Partial<StepComputations> = {}
       step.sqrtPriceStartX96 = state.sqrtPriceX96
+
+      if ((zeroForOne && (state.tick >> 8) <= (this.ticks[0].index >> 8)) ||
+        (!zeroForOne && (state.tick >> 8) >= (this.ticks[this.ticks.length - 1].index >> 8))) {
+        // NOTE(zviad): for whatever reason, when we get to last word position in our `this.ticks` this loop
+        // performs an incorrect extra iteration, giving us a wrong answer.
+        return new BigNumber(state.amountCalculated.toString())
+      }
 
       // because each iteration of the while loop rounds, we can't optimize this code (relative to the smart contract)
       // by simply traversing to the next available tick, we instead need to exactly replicate
@@ -178,7 +180,6 @@ export class PairUniswapV3 extends Pair {
       )
       state.amountCalculated = JSBI.add(state.amountCalculated, step.amountOut)
 
-      // TODO
       if (JSBI.equal(state.sqrtPriceX96, step.sqrtPriceNextX96)) {
         // if the tick is initialized, run the tick transition
         if (step.initialized) {
@@ -186,7 +187,6 @@ export class PairUniswapV3 extends Pair {
           // if we're moving leftward, we interpret liquidityNet as the opposite sign
           // safe because liquidityNet cannot be type(int128).min
           if (zeroForOne) liquidityNet = JSBI.multiply(liquidityNet, NEGATIVE_ONE)
-
           state.liquidity = LiquidityMath.addDelta(state.liquidity, liquidityNet)
         }
 
@@ -200,6 +200,17 @@ export class PairUniswapV3 extends Pair {
 
     return new BigNumber(state.amountCalculated.toString())
   }
+
+	// public outputAmountAsync = async (inputToken: Address, inputAmount: BigNumber): Promise<BigNumber> => {
+	// 	const outputToken = inputToken === this.tokenA ? this.tokenB : this.tokenA
+	// 	const out = await this.swappaPool.methods.getOutputAmount2(
+	// 		inputToken,
+	// 		outputToken,
+	// 		inputAmount.toFixed(0),
+	// 		this.swapExtraData(),
+	// 	).call()
+	// 	return new BigNumber(out)
+	// }
 
   public snapshot(): Snapshot {
     throw new Error("not implemented")

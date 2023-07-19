@@ -37,11 +37,11 @@ contract PairSymmetricSwap is ISwappaPairV1 {
 	}
 
 	function getOutputAmount(
-		address input,
+		address,
 		address output,
 		uint amountIn,
 		bytes calldata data
-	) external view override returns (uint amountOut) {
+	) external override returns (uint amountOut) {
 		// no fees are taken if there's enough output token
 		if (ERC20(output).balanceOf(parseData(data)) >= amountIn) {
 			amountOut = amountIn;

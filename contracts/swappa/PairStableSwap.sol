@@ -45,7 +45,7 @@ contract PairStableSwap is ISwappaPairV1 {
 		address,
 		uint amountIn,
 		bytes calldata data
-	) external view override returns (uint amountOut) {
+	) external override returns (uint amountOut) {
 		address swapPoolAddr = parseData(data);
 		ISwap swapPool = ISwap(swapPoolAddr);
 		// TODO(zviadm): This will need to change to support multi-token pools.

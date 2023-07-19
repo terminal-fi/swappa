@@ -9,9 +9,11 @@ import {
 	IUniswapV3Factory,
 } from "../../types/web3-v1-contracts/IUniswapV3Factory";
 import { PairUniswapV3 } from "../pairs/uniswapv3";
-import { UniV3FeeAmounts } from "../utils/concentrated-liquidity/swapMath";
 import { initPairsAndFilterByWhitelist } from "../utils";
 import { fastConcurrentMap } from "../utils/async";
+import { FeeAmount } from "@uniswap/v3-sdk";
+
+const FeeAmounts = Object.keys(FeeAmount).map((v) => Number(v)).filter((v) => !isNaN(v))
 
 interface UniV3Pool {
   token0: string
@@ -55,7 +57,7 @@ export class RegistryUniswapV3 extends Registry {
       const nPairs = tokenWhitelist.length;
       for (let i = 0; i < nPairs - 1; i += 1) {
         for (let j = i + 1; j < nPairs; j += 1) {
-					for (const feeAmount of UniV3FeeAmounts) {
+					for (const feeAmount of FeeAmounts) {
             pairsToFetch.push({
               tokenA: tokenWhitelist[i],
               tokenB: tokenWhitelist[j],

@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../interfaces/uniswap/IUniswapV3Pool.sol";
 import "../interfaces/uniswap/IUniswapV3SwapCallback.sol";
-import "../interfaces/uniswap/Quoter.sol";
+import "../interfaces/uniswap/IQuoterV2.sol";
 import "../interfaces/uniswap/SafeCast.sol";
 import "../interfaces/uniswap/TickLens.sol";
 import "../interfaces/uniswap/TickMath.sol";
@@ -72,71 +72,35 @@ contract PairUniswapV3 is ISwappaPairV1, IUniswapV3SwapCallback {
 
 	function getOutputAmount(
 		address input,
-		address,
+		address output,
 		uint256 amountIn,
 		bytes calldata data
-	) external view override returns (uint256 amountOut) {
+	) external override returns (uint256 amountOut) {
 		address pairAddr = parseData(data);
 		IUniswapV3Pool pair = IUniswapV3Pool(pairAddr);
-		bool zeroForOne = pair.token0() == input;
-		// amount0, amount1 are delta of the pair reserves
-		(int256 amount0, int256 amount1) = Quoter.quote(
-			pair,
-			zeroForOne,
-			amountIn.toInt256(),
-			zeroForOne
-				? TickMath.MIN_SQRT_RATIO + 1
-				: TickMath.MAX_SQRT_RATIO - 1
-		);
-		return uint256(-(zeroForOne ? amount1 : amount0));
+		IQuoterV2 quoter = IQuoterV2(0x82825d0554fA07f7FC52Ab63c961F330fdEFa8E8);
+		(amountOut,,,) = quoter.quoteExactInputSingle(IQuoterV2.QuoteExactInputSingleParams({
+			tokenIn: input,
+			tokenOut: output,
+			fee: pair.fee(),
+			amountIn: amountIn,
+			sqrtPriceLimitX96: 0}));
 	}
 
-	function getInputAmount(
-		address input,
-		address,
-		uint256 amountOut,
-		bytes calldata data
-	) external view returns (uint256 amountIn) {
-		address pairAddr = parseData(data);
-		IUniswapV3Pool pair = IUniswapV3Pool(pairAddr);
-		bool zeroForOne = pair.token0() == input;
-		// amount0, amount1 are delta of the pair reserves
-		(int256 amount0, int256 amount1) = Quoter.quote(
-			pair,
-			zeroForOne,
-			-amountOut.toInt256(),
-			zeroForOne
-				? TickMath.MIN_SQRT_RATIO + 1
-				: TickMath.MAX_SQRT_RATIO - 1
-		);
-		return uint256(zeroForOne ? amount0 : amount1);
-	}
-
-	function getSpotTicks(IUniswapV3Pool pool)
+	function getPoolTicks(IUniswapV3Pool pool, int16 maxLoopN)
 		public
 		view
 		returns (
 			uint160 sqrtPriceX96,
 			int24 tick,
-			TickLens.PopulatedTick[] memory populatedTicksTwiceAbove,
-			TickLens.PopulatedTick[] memory populatedTicksAbove,
-			TickLens.PopulatedTick[] memory populatedTicksSpot,
-			TickLens.PopulatedTick[] memory populatedTicksBelow,
-			TickLens.PopulatedTick[] memory populatedTicksTwiceBelow
+			uint128 liquidity,
+			TickLens.PopulatedTick[] memory populatedTicks0,
+			TickLens.PopulatedTick[] memory populatedTicks1,
+			TickLens.PopulatedTick[] memory populatedTicks2,
+			TickLens.PopulatedTick[] memory populatedTicks3,
+			TickLens.PopulatedTick[] memory populatedTicks4
 		)
 	{
-		return TickLens.getSpotTicks(pool);
-	}
-
-	function getPopulatedTicksInWord(IUniswapV3Pool pool, int16 tickBitmapIndex)
-		public
-		view
-		returns (TickLens.PopulatedTick[] memory populatedTicks)
-	{
-		return TickLens.getPopulatedTicksInWord(pool, tickBitmapIndex);
-	}
-
-	function recoverERC20(ERC20 token) public {
-		token.transfer(msg.sender, token.balanceOf(address(this)));
+		return TickLens.getPoolTicks(pool, maxLoopN);
 	}
 }

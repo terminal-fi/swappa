@@ -26,7 +26,7 @@ contract SwappaRouterV1 is ISwappaRouterV1 {
 		address[] calldata pairs,
 		bytes[] calldata extras,
 		uint256 inputAmount
-	) external override view returns (uint256 outputAmount) {
+	) external override returns (uint256 outputAmount) {
 		outputAmount = inputAmount;
 		for (uint i; i < pairs.length; i++) {
 			outputAmount =
