@@ -23,13 +23,13 @@ export const mainnetRegistryUbeswap =
 	(kit: ContractKit) => new RegistryUniswapV2(
 		"ubeswap", kit.web3 as unknown as Web3,
 		"0x62d5b84bE28a183aBB507E125B384122D2C25fAE",
-		{ registryHelperAddr: registryHelperUniswapV2 })
+		{ fetchUsing: "PairEvents" })
 export const mainnetRegistrySushiswap =
 	(kit: ContractKit) => new RegistryUniswapV2(
 		"sushiswap",
 		kit.web3 as unknown as Web3,
 		"0xc35DADB65012eC5796536bD9864eD8773aBc74C4",
-		{ registryHelperAddr: registryHelperUniswapV2 })
+		{ fetchUsing: "PairEvents" })
 export const mainnetRegistryMobius =
 	(kit: ContractKit) => {
 		const web3 = kit.web3 as unknown as Web3
@@ -82,7 +82,7 @@ export const mainnetRegistryCeloDex =
 		"celodex",
 		kit.web3 as unknown as Web3,
 		"0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6",
-		{ registryHelperAddr: registryHelperUniswapV2 })
+		{ fetchUsing: "PairEvents" })
 export const mainnetRegistrySymmetric =
 	(kit: ContractKit) => new RegistryBalancer("symmetric", kit.web3 as unknown as Web3, "0x3E30b138ecc85cD89210e1A19a8603544A917372")
 export const mainnetRegistryCurve =
@@ -98,12 +98,12 @@ export const mainnetRegistryCurve =
 		return new RegistryStatic("curve", pairs)
 	}
 export const mainnetRegistryUniswapV3 = (kit: ContractKit) =>
-  new RegistryUniswapV3(
-    "uniswap-v3",
-    kit.web3 as unknown as Web3,
-    "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc",
-    {fetchUsingPoolEvents: true},
-  );
+	new RegistryUniswapV3(
+		"uniswap-v3",
+		kit.web3 as unknown as Web3,
+		"0xAfE208a311B21f13EF87E33A90049fC17A7acDEc",
+		{fetchUsing: "PoolEvents"},
+	);
 export const mainnetRegistryStCelo = (kit: ContractKit) => {
 	const CELO = "0x471EcE3750Da237f93B8E339c536989b8978a438";
 	const ACCOUNT_PROXY = "0x4aAD04D41FD7fd495503731C5a2579e19054C432";
