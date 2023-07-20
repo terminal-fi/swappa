@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 
-import { IbRegistry, ABI as IbRegistryABI } from "../../types/web3-v1-contracts/IBRegistry"
+import { IbRegistry, newIbRegistry } from "../../types/web3-v1-contracts/IBRegistry"
 import { Address, Pair } from "../pair"
 import { PairBPool } from "../pairs/bpool"
 import { Registry } from "../registry"
@@ -16,7 +16,7 @@ export class RegistryBalancer extends Registry {
 		registryAddr: Address
 	) {
 		super(name)
-		this.registry = new web3.eth.Contract(IbRegistryABI, registryAddr) as unknown as IbRegistry
+		this.registry = newIbRegistry(web3, registryAddr)
 	}
 
 	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {

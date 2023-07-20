@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
 
-import { ILendingPoolV2, ABI as ILendingPoolV2ABI } from "../../types/web3-v1-contracts/ILendingPoolV2"
+import { ILendingPoolV2, newILendingPoolV2 } from "../../types/web3-v1-contracts/ILendingPoolV2"
 
 import { Address, Pair, Snapshot } from "../pair"
 import { selectAddress } from "../utils"
@@ -14,12 +14,12 @@ export class PairATokenV2 extends Pair {
 
 	constructor(
 		chainId: number,
-		private web3: Web3,
+		web3: Web3,
 		private poolAddr: Address,
 		private reserve: Address,
 	) {
 		super(web3, selectAddress(chainId, {mainnet: pairATokenV2Address}))
-		this.pool = new this.web3.eth.Contract(ILendingPoolV2ABI, this.poolAddr) as unknown as ILendingPoolV2
+		this.pool = newILendingPoolV2(web3, this.poolAddr)
 	}
 
 	protected async _init() {

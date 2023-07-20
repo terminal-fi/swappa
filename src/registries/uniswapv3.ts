@@ -5,8 +5,8 @@ import Web3 from "web3";
 import { Address, Pair } from "../pair";
 import { Registry } from "../registry";
 import {
-  ABI as FactoryABI,
 	IUniswapV3Factory,
+  newIUniswapV3Factory,
 } from "../../types/web3-v1-contracts/IUniswapV3Factory";
 import { PairUniswapV3 } from "../pairs/uniswapv3";
 import { initPairsAndFilterByWhitelist } from "../utils";
@@ -38,10 +38,7 @@ export class RegistryUniswapV3 extends Registry {
     }
   ) {
     super(name);
-    this.factory = new web3.eth.Contract(
-      FactoryABI,
-      factoryAddr
-    ) as unknown as IUniswapV3Factory;
+    this.factory = newIUniswapV3Factory(web3, factoryAddr)
   }
 
   findNumberOfPools = async (): Promise<number> => {

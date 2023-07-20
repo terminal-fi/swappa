@@ -1,7 +1,7 @@
 import { ContractKit } from "@celo/contractkit"
 
-import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contracts/ILendingPool"
-import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider"
+import { newILendingPool } from "../../types/web3-v1-contracts/ILendingPool"
+import { ILendingPoolAddressesProvider, newILendingPoolAddressesProvider } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider"
 import { Address } from "../pair"
 import { PairAToken, ReserveCELO } from "../pairs/atoken"
 import { Registry } from "../registry"
@@ -12,14 +12,13 @@ export class RegistryAave extends Registry {
 
 	constructor(name: string, private kit: ContractKit, lendingPoolAddrProviderAddr: string) {
 		super(name)
-		this.lendingPoolAddrProvider = new kit.web3.eth.Contract(
-			LendingPoolAddressProviderABI, lendingPoolAddrProviderAddr) as unknown as ILendingPoolAddressesProvider
+		this.lendingPoolAddrProvider = newILendingPoolAddressesProvider(kit.web3 as any, lendingPoolAddrProviderAddr)
 	}
 
 	findPairs = async (tokenWhitelist: Address[]) => {
 		const chainId = await this.kit.web3.eth.getChainId()
 		const lendingPoolAddr = await this.lendingPoolAddrProvider.methods.getLendingPool().call()
-		const lendingPool = new this.kit.web3.eth.Contract(LendingPoolABI, lendingPoolAddr) as unknown as ILendingPool
+		const lendingPool = newILendingPool(this.kit.web3 as any, lendingPoolAddr)
 		const reserves = await lendingPool.methods.getReserves().call()
 		const reservesMatched = [
 			ReserveCELO,

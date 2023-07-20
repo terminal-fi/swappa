@@ -1,7 +1,7 @@
 import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
-import { IOpenSumSwap, ABI as SwapABI } from "../../types/web3-v1-contracts/IOpenSumSwap"
+import { IOpenSumSwap, newIOpenSumSwap } from "../../types/web3-v1-contracts/IOpenSumSwap"
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairOpenSumSwapAddress } from "../../tools/deployed/mainnet.PairOpenSumSwap.addr.json"
@@ -26,7 +26,7 @@ export class PairOpenSumSwap extends Pair {
 		private swapPoolAddr: Address,
 	) {
 		super(web3, selectAddress(chainId, {mainnet: pairOpenSumSwapAddress}))
-		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as IOpenSumSwap
+		this.swapPool = newIOpenSumSwap(web3, swapPoolAddr)
 	}
 
 	protected async _init() {

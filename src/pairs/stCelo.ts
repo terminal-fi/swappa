@@ -2,11 +2,11 @@ import Web3 from "web3";
 import { Address, BigNumberString, Pair, Snapshot } from "../pair";
 import {
   IStakedCelo,
-  ABI as StakedCeloABI,
+  newIStakedCelo,
 } from "../../types/web3-v1-contracts/IStakedCelo";
 import {
   IAccount,
-  ABI as AccountABI,
+  newIAccount,
 } from "../../types/web3-v1-contracts/IAccount";
 import { address as pairStCeloAddress } from "../../tools/deployed/mainnet.PairStCelo.addr.json";
 import { address as pairRstCeloAddress } from "../../tools/deployed/mainnet.PairRStCelo.addr.json";
@@ -34,14 +34,8 @@ abstract class PairStakedCelo extends Pair {
     private accountAddress: Address
   ) {
     super(web3, swappaPairAddress);
-    this.stCeloContract = new this.web3.eth.Contract(
-      StakedCeloABI,
-      this.stakedCeloAddress
-    ) as unknown as IStakedCelo;
-    this.accountContract = new this.web3.eth.Contract(
-      AccountABI,
-      this.accountAddress
-    ) as unknown as IAccount;
+    this.stCeloContract = newIStakedCelo(web3, this.stakedCeloAddress)
+    this.accountContract = newIAccount(web3, this.accountAddress)
   }
 
   protected async _fetchSupplies() {

@@ -5,17 +5,17 @@ import invariant from 'tiny-invariant'
 
 import {
   FeeAmount, LiquidityMath, SwapMath,
-  TICK_SPACINGS, Tick, TickConstructorArgs, TickList, TickMath, isSorted
+  TICK_SPACINGS, Tick, TickConstructorArgs, TickList, TickMath
 } from "@uniswap/v3-sdk";
 
 import { Address, Pair, Snapshot } from "../pair";
 import {
   PairUniswapV3 as PairUniswapV3Contract,
-  ABI as PairUniswapV3ABI,
+  newPairUniswapV3,
 } from "../../types/web3-v1-contracts/PairUniswapV3";
 import {
   IUniswapV3Pool,
-  ABI as V3PoolABI,
+  newIUniswapV3Pool,
 } from "../../types/web3-v1-contracts/IUniswapV3Pool";
 import { selectAddress } from "../utils";
 import { address as pairUniV3Address } from "../../tools/deployed/mainnet.PairUniswapV3.addr.json";
@@ -66,14 +66,8 @@ export class PairUniswapV3 extends Pair {
 
     this.pairKey = pairAddr;
 
-    this.swapPool = new this.web3.eth.Contract(
-      V3PoolABI,
-      pairAddr
-    ) as unknown as IUniswapV3Pool;
-    this.swappaPool = new this.web3.eth.Contract(
-      PairUniswapV3ABI,
-      univ3SwappaPairAddr
-    ) as unknown as PairUniswapV3Contract;
+    this.swapPool = newIUniswapV3Pool(this.web3, pairAddr)
+    this.swappaPool = newPairUniswapV3(this.web3, univ3SwappaPairAddr)
   }
 
   protected async _init() {

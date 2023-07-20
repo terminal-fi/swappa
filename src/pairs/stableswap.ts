@@ -1,8 +1,8 @@
 import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
-import { ISwap, ABI as SwapABI } from "../../types/web3-v1-contracts/ISwap"
-import { Erc20, ABI as Erc20ABI } from '../../types/web3-v1-contracts/ERC20';
+import { ISwap, newISwap } from "../../types/web3-v1-contracts/ISwap"
+import { newErc20 } from '../../types/web3-v1-contracts/ERC20';
 
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
@@ -37,7 +37,7 @@ export class PairStableSwap extends Pair {
 		private swapPoolAddr: Address,
 	) {
 		super(web3, selectAddress(chainId, {mainnet: pairStableSwapAddress}))
-		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISwap
+		this.swapPool = newISwap(web3, swapPoolAddr)
 	}
 
 	protected async _init() {
@@ -48,8 +48,8 @@ export class PairStableSwap extends Pair {
 			this.swapPool.methods.getToken(0).call(),
 			this.swapPool.methods.getToken(1).call(),
 		])
-		const erc20A = new this.web3.eth.Contract(Erc20ABI, tokenA) as unknown as Erc20
-		const erc20B = new this.web3.eth.Contract(Erc20ABI, tokenB) as unknown as Erc20
+		const erc20A = newErc20(this.web3, tokenA)
+		const erc20B = newErc20(this.web3, tokenB)
 		const [
 			decimalsA,
 			decimalsB,

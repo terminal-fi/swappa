@@ -1,8 +1,8 @@
 import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
-import { ISymmetricSwap, ABI as SwapABI } from "../../types/web3-v1-contracts/ISymmetricSwap"
-import { Ierc20, ABI as Ierc20ABI } from '../../types/web3-v1-contracts/IERC20';
+import { ISymmetricSwap, newISymmetricSwap } from "../../types/web3-v1-contracts/ISymmetricSwap"
+import { Ierc20, newIerc20 } from '../../types/web3-v1-contracts/IERC20';
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairSymmetricSwapAddress } from "../../tools/deployed/mainnet.PairSymmetricSwap.addr.json"
@@ -36,9 +36,9 @@ export class PairSymmetricSwap extends Pair {
 		// Unfortunately SymmetricSwap contract doesn't expose token addresses that it stores,
 		// thus they have to be hardcoded in the constructor and can't be fetched from swapPool
 		// directly.
-		this.swapPool = new web3.eth.Contract(SwapABI, swapPoolAddr) as unknown as ISymmetricSwap
-		this.ercA = new web3.eth.Contract(Ierc20ABI, tokenA) as unknown as Ierc20
-		this.ercB = new web3.eth.Contract(Ierc20ABI, tokenB) as unknown as Ierc20
+		this.swapPool = newISymmetricSwap(web3, swapPoolAddr)
+		this.ercA = newIerc20(web3, tokenA)
+		this.ercB = newIerc20(web3, tokenB)
 	}
 
 	protected async _init() {

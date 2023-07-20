@@ -1,8 +1,8 @@
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
 
-import { RegistryHelperUniswapV2, ABI as RegistryHelperUniswapV2ABI } from "../../types/web3-v1-contracts/RegistryHelperUniswapV2"
-import { IUniswapV2Factory, ABI as FactoryABI } from "../../types/web3-v1-contracts/IUniswapV2Factory"
+import { RegistryHelperUniswapV2, newRegistryHelperUniswapV2 } from "../../types/web3-v1-contracts/RegistryHelperUniswapV2"
+import { IUniswapV2Factory, newIUniswapV2Factory } from "../../types/web3-v1-contracts/IUniswapV2Factory"
 import { Address, Pair } from "../pair"
 import { PairUniswapV2 } from "../pairs/uniswapv2"
 import { Registry } from "../registry"
@@ -24,9 +24,9 @@ export class RegistryUniswapV2 extends Registry {
 		},
 	) {
 		super(name)
-		this.factory = new web3.eth.Contract(FactoryABI, factoryAddr) as unknown as IUniswapV2Factory
+		this.factory = newIUniswapV2Factory(web3, factoryAddr)
 		if (opts?.registryHelperAddr) {
-			this.helper = new web3.eth.Contract(RegistryHelperUniswapV2ABI, opts.registryHelperAddr) as unknown as RegistryHelperUniswapV2
+			this.helper = newRegistryHelperUniswapV2(web3, opts.registryHelperAddr)
 		}
 	}
 
