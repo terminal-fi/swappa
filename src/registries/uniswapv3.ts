@@ -12,7 +12,9 @@ import {
 import { PairUniswapV3 } from "../pairs/uniswapv3";
 import { initPairsAndFilterByWhitelist } from "../utils";
 import { fastConcurrentMap } from "../utils/async";
-import * as mainnetUniV3CacheData from "../../tools/caches/swappa.uniswapv3.42220.0xAfE208a311B21f13EF87E33A90049fC17A7acDEc.pools.json"
+import { fetchEvents } from "../utils/events";
+
+import * as mainnetUniV3CachedData from "../../tools/caches/swappa.uniswapv3.42220.0xAfE208a311B21f13EF87E33A90049fC17A7acDEc.pools.json"
 
 const FeeAmounts = Object.keys(FeeAmount).map((v) => Number(v)).filter((v) => !isNaN(v))
 
@@ -27,12 +29,11 @@ interface CachedData {
   pools: UniV3Pool[]
 }
 
-const cachedDataGlobal: {[key: number]: {[key: string]: CachedData}} = {
+const cachedDataGlobal: {[key: number]: {[key: string]: CachedData | undefined} | undefined} = {
   42220: {
-    "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc": mainnetUniV3CacheData,
+    "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc": mainnetUniV3CachedData,
   }
 }
-
 
 const cacheDataFileName = (chainId: number, factoryAddr: Address) => {
   return path.join("/tmp", `swappa.uniswapv3.${chainId}.${factoryAddr}.pools.json`)
@@ -46,7 +47,7 @@ export class RegistryUniswapV3 extends Registry {
     private web3: Web3,
     factoryAddr: Address,
     private opts?: {
-      fetchUsingPoolEvents?: boolean;
+      fetchUsing?: "PoolEvents" | "TokenList";
     }
   ) {
     super(name);
@@ -60,99 +61,104 @@ export class RegistryUniswapV3 extends Registry {
 
   findPairs = async (tokenWhitelist: Address[] = []): Promise<Pair[]> => {
     const chainId = await this.web3.eth.getChainId();
-
-    if (!this.opts?.fetchUsingPoolEvents) {
-      const pairsToFetch: { tokenA: Address; tokenB: Address; feeAmount: number }[] = [];
-      const nPairs = tokenWhitelist.length;
-      for (let i = 0; i < nPairs - 1; i += 1) {
-        for (let j = i + 1; j < nPairs; j += 1) {
-					for (const feeAmount of FeeAmounts) {
-            pairsToFetch.push({
-              tokenA: tokenWhitelist[i],
-              tokenB: tokenWhitelist[j],
-              feeAmount,
-            });
+    const fetchUsing = this.opts?.fetchUsing || "PoolEvents"
+    switch (fetchUsing) {
+      case "TokenList": {
+        const pairsToFetch: { tokenA: Address; tokenB: Address; feeAmount: number }[] = [];
+        const nPairs = tokenWhitelist.length;
+        for (let i = 0; i < nPairs - 1; i += 1) {
+          for (let j = i + 1; j < nPairs; j += 1) {
+            for (const feeAmount of FeeAmounts) {
+              pairsToFetch.push({
+                tokenA: tokenWhitelist[i],
+                tokenB: tokenWhitelist[j],
+                feeAmount,
+              });
+            }
           }
         }
-      }
 
-      const fetched = await fastConcurrentMap(
-        10,
-        pairsToFetch,
-        async (pairInfo) => {
-          const pairAddr = await this.factory.methods
-            .getPool(pairInfo.tokenA, pairInfo.tokenB, pairInfo.feeAmount)
-            .call();
+        const fetched = await fastConcurrentMap(
+          10,
+          pairsToFetch,
+          async (pairInfo) => {
+            const pairAddr = await this.factory.methods
+              .getPool(pairInfo.tokenA, pairInfo.tokenB, pairInfo.feeAmount)
+              .call();
 
-          if (pairAddr === "0x0000000000000000000000000000000000000000")
-            return null;
-          const pair = new PairUniswapV3(chainId, this.web3, pairAddr);
-          pair.pairKey = pairAddr;
-          return pair;
-        }
-      );
-      const pairs = fetched.filter((p) => p !== null) as Pair[];
-      return initPairsAndFilterByWhitelist(pairs, tokenWhitelist);
-    } else {
-      let cachedData: CachedData | undefined = cachedDataGlobal[chainId][this.factory.options.address]
-      const cachedDataFile = cacheDataFileName(chainId, this.factory.options.address)
-      try {
-        if (fs.existsSync(cachedDataFile)) {
-          const cachedDataFromFile: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
-          if (!cachedData || cachedDataFromFile.blockN > cachedData.blockN) {
-            cachedData = cachedDataFromFile
+            if (pairAddr === "0x0000000000000000000000000000000000000000")
+              return null;
+            const pair = new PairUniswapV3(chainId, this.web3, pairAddr);
+            pair.pairKey = pairAddr;
+            return pair;
           }
-        }
-      } catch (e) {
-        console.warn(`UniV3Registry: Error while trying to read cache file: ${cachedDataFile}: ${e}`)
+        );
+        const pairs = fetched.filter((p) => p !== null) as Pair[];
+        return initPairsAndFilterByWhitelist(pairs, tokenWhitelist);
       }
-
-      let pools: {token0: string, token1: string, pool: string}[] = []
-      let fromBlock = 0
-      if (cachedData) {
-        pools.push(...cachedData.pools)
-        fromBlock = cachedData.blockN + 1
-      }
-
-      const batchSize = 1_000_000
-      const endBlock = await this.web3.eth.getBlockNumber()
-      while (fromBlock < endBlock) {
-        const toBlock = Math.min(fromBlock + batchSize - 1, endBlock)
-        pools.push(...(await this.factory.getPastEvents("PoolCreated", {fromBlock, toBlock})).map(
-          (v) => ({
-            token0: v.returnValues.token0 as string,
-            token1: v.returnValues.token1 as string,
-            pool: v.returnValues.pool as string,
-          })
-        ))
-        if (toBlock < endBlock) {
-          const toCache: CachedData = {
-            blockN: toBlock,
-            pools: pools,
+      case "PoolEvents": {
+        let cachedData = cachedDataGlobal[chainId]?.[this.factory.options.address]
+        const cachedDataFile = cacheDataFileName(chainId, this.factory.options.address)
+        try {
+          if (fs.existsSync(cachedDataFile)) {
+            const cachedDataFromFile: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
+            if (!cachedData || cachedDataFromFile.blockN > cachedData.blockN) {
+              cachedData = cachedDataFromFile
+            }
           }
-          fs.writeFileSync(cachedDataFile, JSON.stringify(toCache))
+        } catch (e) {
+          console.warn(`UniV3Registry: Error while trying to read cache file: ${cachedDataFile}: ${e}`)
         }
-        console.info(`UniV3Registry: Fetching events: ${fromBlock}...${toBlock}, Pools: ${pools.length}...`)
-        fromBlock = toBlock + 1
-      }
-      const poolAddrSet = new Set<string>()
-      pools = pools.filter((p) => {
-        if (poolAddrSet.has(p.pool)) {
-          return false
-        }
-        poolAddrSet.add(p.pool)
-        return true
-      })
-      const toCache: CachedData = {
-        blockN: endBlock,
-        pools: pools,
-      }
-      console.info(`UniV3Registry: BlockN: ${toCache.blockN}, Pools: ${toCache.pools.length} -> ${cachedDataFile}`)
-      fs.writeFileSync(cachedDataFile, JSON.stringify(toCache))
 
-      pools = pools.filter((p) => tokenWhitelist.indexOf(p.token0) >= 0 && tokenWhitelist.indexOf(p.token1) >= 0);
-      const pairs = pools.map((p) => new PairUniswapV3(chainId, this.web3, p.pool))
-      return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
+        let pools: UniV3Pool[] = []
+        let fromBlock = 0
+        if (cachedData) {
+          pools.push(...cachedData.pools)
+          fromBlock = cachedData.blockN + 1
+        }
+        const poolAddrSet = new Set<string>()
+        pools = pools.filter((p) => {
+          if (poolAddrSet.has(p.pool)) {
+            return false
+          }
+          poolAddrSet.add(p.pool)
+          return true
+        })
+        const endBlock = await this.web3.eth.getBlockNumber()
+				await fetchEvents(
+					async (fromBlock, toBlock) => {
+						const events = await this.factory.getPastEvents("PoolCreated", {fromBlock, toBlock})
+						return events.map(
+							(v) => ({
+								token0: v.returnValues.token0 as string,
+								token1: v.returnValues.token1 as string,
+								pool: v.returnValues.pool as string,
+							} as UniV3Pool)
+						)
+					},
+					fromBlock,
+					endBlock,
+					(fromBlock: number, toBlock: number, batch: UniV3Pool[]) => {
+						batch = batch.filter((p) => {
+							if (poolAddrSet.has(p.pool)) {
+								return false
+							}
+							poolAddrSet.add(p.pool)
+							return true
+						})
+						pools.push(...batch)
+            const toCache: CachedData = {
+              blockN: toBlock,
+              pools: pools,
+            }
+            fs.writeFileSync(cachedDataFile, JSON.stringify(toCache))
+					},
+					"UNIV3REGISTRY",
+				)
+        pools = pools.filter((p) => tokenWhitelist.indexOf(p.token0) >= 0 && tokenWhitelist.indexOf(p.token1) >= 0);
+        const pairs = pools.map((p) => new PairUniswapV3(chainId, this.web3, p.pool))
+        return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
+      }
     }
   };
 }

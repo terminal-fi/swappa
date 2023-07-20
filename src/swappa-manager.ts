@@ -22,29 +22,26 @@ export class SwappaManager {
 	}
 
 	public reinitializePairs = async (tokenWhitelist: Address[]) => {
-		const initT0 = Date.now()
 		this.pairsByRegistry = new Map<string, Pair[]>()
-		const pairsAll = await fastConcurrentMap(5, this.registries, (r) =>
-			r.findPairs(tokenWhitelist).then(pairs => {
-				console.log(`SwappaManager: initialized ${r.getName()} in ${Date.now() - initT0}ms...`)
-				this.pairsByRegistry.set(r.getName(), pairs)
-				return pairs
-			})
-		)
 		this.pairs = []
+		for (const r of this.registries) {
+			const initT0 = Date.now()
+			const pairs = await r.findPairs(tokenWhitelist)
+			console.log(`SwappaManager: initialized ${r.getName()} in ${Date.now() - initT0}ms...`)
+			this.pairsByRegistry.set(r.getName(), pairs)
+			this.pairs.push(...pairs)
+		}
+
 		this.pairsByToken = new Map<string, Pair[]>()
-		pairsAll.forEach((pairs) => {
-			pairs.forEach((p) => {
-				this.pairs.push(p)
-				for (const token of [p.tokenA, p.tokenB]) {
-					const x = this.pairsByToken.get(token)
-					if (x) {
-						x.push(p)
-					} else {
-						this.pairsByToken.set(token, [p])
-					}
+		this.pairs.forEach((p) => {
+			for (const token of [p.tokenA, p.tokenB]) {
+				const x = this.pairsByToken.get(token)
+				if (x) {
+					x.push(p)
+				} else {
+					this.pairsByToken.set(token, [p])
 				}
-			})
+			}
 		})
 		return this.pairs
 	}
