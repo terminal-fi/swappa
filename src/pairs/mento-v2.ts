@@ -27,8 +27,11 @@ interface PairMentoV2Snapshot extends Snapshot {
   pricingModule: PricingFunctionType;
   bucket0: BigNumberString;
   bucket1: BigNumberString;
-  tokenPrecisionMultipliers: BigNumberString[],
+  tokenPrecisionMultipliers: [BigNumberString, BigNumberString],
   decimals: [number, number],
+  tokenMaxIn: [BigNumberString, BigNumberString],
+  tokenMaxOut: [BigNumberString, BigNumberString],
+
 }
 
 export class PairMentoV2 extends Pair {
@@ -36,7 +39,7 @@ export class PairMentoV2 extends Pair {
   private spread: BigNumber = new BigNumber(0);
   private updateFrequency: BigNumber = new BigNumber(0);
   private pricingModule!: PricingFunctionType;
-  private tokenPrecisionMultipliers: BigNumber[] = []
+  private tokenPrecisionMultipliers: [BigNumber, BigNumber] = [new BigNumber(0), new BigNumber(0)]
   private decimals: [number, number] = [0, 0]
 
   private bucket0: BigNumber = new BigNumber(0);
@@ -66,8 +69,10 @@ export class PairMentoV2 extends Pair {
   }> {
     this.poolExchange = await this.biPoolManager.getPoolExchange(this.exchange.id);
     const managerW3 = newIBiPoolManager(this.web3, this.exchange.providerAddr)
-    this.tokenPrecisionMultipliers = await Promise.all(
-      this.exchange.assets.map((asset) => managerW3.methods.tokenPrecisionMultipliers(asset).call().then((v) => new BigNumber(v))))
+    this.tokenPrecisionMultipliers = await Promise.all([
+      managerW3.methods.tokenPrecisionMultipliers(this.exchange.assets[0]).call().then((v) => new BigNumber(v)),
+      managerW3.methods.tokenPrecisionMultipliers(this.exchange.assets[1]).call().then((v) => new BigNumber(v)),
+    ])
     const [
       decimalsA,
       decimalsB,
@@ -166,8 +171,13 @@ export class PairMentoV2 extends Pair {
       pricingModule: this.pricingModule,
       bucket0: this.bucket0.toFixed(),
       bucket1: this.bucket1.toFixed(),
-      tokenPrecisionMultipliers: this.tokenPrecisionMultipliers.map((v) => v.toFixed()),
+      tokenPrecisionMultipliers: [
+        this.tokenPrecisionMultipliers[0].toFixed(),
+        this.tokenPrecisionMultipliers[1].toFixed(),
+      ],
       decimals: this.decimals,
+      tokenMaxIn: [this.tokenMaxIn[0].toFixed(), this.tokenMaxIn[1].toFixed()],
+      tokenMaxOut: [this.tokenMaxOut[0].toFixed(), this.tokenMaxOut[1].toFixed()],
     };
   }
 
@@ -177,8 +187,19 @@ export class PairMentoV2 extends Pair {
     this.pricingModule = snapshot.pricingModule
     this.bucket0 = new BigNumber(snapshot.bucket0)
     this.bucket1 = new BigNumber(snapshot.bucket1)
-    this.tokenPrecisionMultipliers = snapshot.tokenPrecisionMultipliers.map((v) => new BigNumber(v))
+    this.tokenPrecisionMultipliers = [
+      new BigNumber(snapshot.tokenPrecisionMultipliers[0]),
+      new BigNumber(snapshot.tokenPrecisionMultipliers[1]),
+    ]
     this.decimals = snapshot.decimals
+    this.tokenMaxIn = [
+      new BigNumber(snapshot.tokenMaxIn[0]),
+      new BigNumber(snapshot.tokenMaxIn[1]),
+    ]
+    this.tokenMaxOut = [
+      new BigNumber(snapshot.tokenMaxOut[0]),
+      new BigNumber(snapshot.tokenMaxOut[1]),
+    ]
   }
 
   private mentoBucketsAfterUpdate = async () => {
