@@ -15,6 +15,7 @@ import { address as registryHelperUniswapV2 } from "../tools/deployed/mainnet.Re
 import { createCurvePairs } from "./pairs/curve"
 import { RegistryUniswapV3 } from "./registries/uniswapv3"
 import { PairRebasedStCelo, PairStCelo } from "./pairs/stCelo"
+import { RegistryMentoV2 } from "./registries/mento-v2"
 
 export const mainnetRegistryMoola =
 	(kit: ContractKit) => new RegistryAave("moola", kit, "0x7AAaD5a5fa74Aec83b74C2a098FBC86E17Ce4aEA")
@@ -138,6 +139,7 @@ export const mainnetRegistryStCelo = (kit: ContractKit) => {
 // mainnetRegistriesWhitelist contains list of more established protocols with
 // overall higher TVL.
 export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
+	new RegistryMentoV2(kit),
 	new RegistryMento(kit),
 	// Curve forks:
 	mainnetRegistryCurve(kit),
