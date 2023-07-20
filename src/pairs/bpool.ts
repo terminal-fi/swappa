@@ -1,11 +1,10 @@
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
 
-import { IbPool, ABI as BPoolABI } from "../../types/web3-v1-contracts/IBPool"
+import { IbPool, newIbPool } from "../../types/web3-v1-contracts/IBPool"
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { address as pairBPoolAddress } from "../../tools/deployed/mainnet.PairBPool.addr.json"
 import { selectAddress } from "../utils"
-import { BlockchainParameters } from "@celo/contractkit/lib/generated/BlockchainParameters"
 
 const ZERO = new BigNumber(0)
 const ONE = new BigNumber(1)
@@ -33,7 +32,7 @@ export class PairBPool extends Pair {
 		public tokenB: Address,
 	) {
 		super(web3, selectAddress(chainId, {mainnet: pairBPoolAddress}))
-		this.bPool = new web3.eth.Contract(BPoolABI, poolAddr) as unknown as IbPool
+		this.bPool = newIbPool(web3, poolAddr)
 	}
 
 	protected async _init() {

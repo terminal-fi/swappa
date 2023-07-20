@@ -1,6 +1,6 @@
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
-import { ISwappaPairV1, ABI as ISwappaPairV1ABI } from "../types/web3-v1-contracts/ISwappaPairV1"
+import { ISwappaPairV1, newISwappaPairV1 } from "../types/web3-v1-contracts/ISwappaPairV1"
 
 export type Address = string
 
@@ -24,7 +24,7 @@ export abstract class Pair {
 
 	constructor(web3: Web3, swappaPairAddress: Address) {
 		this.swappaPairAddress = swappaPairAddress
-		this.swappaPair = new web3.eth.Contract(ISwappaPairV1ABI, this.swappaPairAddress) as unknown as ISwappaPairV1
+		this.swappaPair = newISwappaPairV1(web3, this.swappaPairAddress)
 	}
 
 	public async init(): Promise<void> {

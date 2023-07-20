@@ -1,8 +1,8 @@
 import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
-import { ICurve, ABI as CurveABI } from "../../types/web3-v1-contracts/ICurve"
-import { Erc20, ABI as Erc20ABI } from '../../types/web3-v1-contracts/ERC20';
+import { ICurve, newICurve } from "../../types/web3-v1-contracts/ICurve"
+import { newErc20 } from '../../types/web3-v1-contracts/ERC20';
 
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
@@ -42,7 +42,7 @@ export class PairCurve extends Pair {
 		opts?: {nCoins: number, token0Idx: number, token1Idx: number},
 	) {
 		super(web3, selectAddress(chainId, {mainnet: pairCurveAddress}))
-		this.curvePool = new web3.eth.Contract(CurveABI, poolAddr) as unknown as ICurve
+		this.curvePool = newICurve(web3, poolAddr)
 		this.nCoins = opts ? opts.nCoins : 2
 		this.token0Idx = opts ? opts.token0Idx : 0
 		this.token1Idx = opts ? opts.token1Idx : 1
@@ -54,7 +54,7 @@ export class PairCurve extends Pair {
 		for (let i = 0; i < this.nCoins; i += 1) {
 			const coin = await this.curvePool.methods.coins(i).call()
 			coins.push(coin)
-			const erc20 = new this.web3.eth.Contract(Erc20ABI, coin) as unknown as Erc20
+			const erc20 = newErc20(this.web3, coin)
 			const decimals = await erc20.methods.decimals().call()
 			this.tokenPrecisionMultipliers.push(
 				new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimals)),
@@ -203,7 +203,6 @@ export async function createCurvePairs(
 	poolAddr: Address,
 	nCoins: number,
 ): Promise<Pair[]> {
-	const swapPool = new web3.eth.Contract(CurveABI, poolAddr) as unknown as ICurve
 	const r: Pair[] = []
 	for (let token0Idx = 0; token0Idx < nCoins - 1; token0Idx++) {
 		for (let token1Idx = token0Idx+1; token1Idx < nCoins; token1Idx++) {

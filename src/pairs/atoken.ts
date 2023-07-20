@@ -1,8 +1,8 @@
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
 import { ContractKit } from "@celo/contractkit"
-import { ILendingPool, ABI as LendingPoolABI } from "../../types/web3-v1-contracts/ILendingPool"
-import { ILendingPoolAddressesProvider, ABI as LendingPoolAddressProviderABI } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider"
+import { newILendingPool } from "../../types/web3-v1-contracts/ILendingPool"
+import { ILendingPoolAddressesProvider, newILendingPoolAddressesProvider } from "../../types/web3-v1-contracts/ILendingPoolAddressesProvider"
 
 import { Address, Pair, Snapshot } from "../pair"
 import { selectAddress } from "../utils"
@@ -22,13 +22,12 @@ export class PairAToken extends Pair {
 		private reserve: Address,
 	) {
 		super(kit.web3 as unknown as Web3, selectAddress(chainId, {mainnet: pairATokenAddress}))
-		this.provider = new kit.web3.eth.Contract(
-			LendingPoolAddressProviderABI, providerAddr) as unknown as ILendingPoolAddressesProvider
+		this.provider = newILendingPoolAddressesProvider(kit.web3 as any, providerAddr)
 	}
 
 	protected async _init() {
 		const lendingPoolAddr = await this.provider.methods.getLendingPool().call()
-		const lendingPool = new this.kit.web3.eth.Contract(LendingPoolABI, lendingPoolAddr) as unknown as ILendingPool
+		const lendingPool = newILendingPool(this.kit.web3 as any, lendingPoolAddr)
 		const data = await lendingPool.methods.getReserveData(this.reserve).call()
 
 		const tokenA = data.aTokenAddress

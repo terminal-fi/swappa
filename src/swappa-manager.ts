@@ -2,7 +2,7 @@ import { CeloTransactionObject, toTransactionObject } from "@celo/connect"
 import { ContractKit } from "@celo/contractkit"
 import BigNumber from "bignumber.js"
 
-import { SwappaRouterV1, ABI as SwappaRouterABI } from '../types/web3-v1-contracts/SwappaRouterV1'
+import { SwappaRouterV1, ABI as SwappaRouterABI, newSwappaRouterV1 } from '../types/web3-v1-contracts/SwappaRouterV1'
 
 import { Address, Pair } from "./pair"
 import { Registry } from "./registry"
@@ -111,7 +111,7 @@ export const swapTX = (
 		deadlineMs?: number,
 	}
 	): CeloTransactionObject<unknown> => {
-	const router = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
+	const router = newSwappaRouterV1(kit.web3 as any, routerAddr)
 	const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
 	const deadlineMs = opts?.deadlineMs || (Date.now() / 1000 + 60)
 	const swapF = opts?.precheckOutputAmount ? router.methods.swapExactInputForOutputWithPrecheck : router.methods.swapExactInputForOutput
@@ -138,7 +138,7 @@ export const calcSwapOutput = async (
 	},
 	inputAmount: BigNumber,
 	): Promise<BigNumber> => {
-	const router = new kit.web3.eth.Contract(SwappaRouterABI, routerAddr) as unknown as SwappaRouterV1
+	const router = newSwappaRouterV1(kit.web3 as any, routerAddr)
 	const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
 	const out = await router.methods.getOutputAmount(
 		route.path,
