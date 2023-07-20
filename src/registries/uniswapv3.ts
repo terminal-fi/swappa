@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import Web3 from "web3";
+import { FeeAmount } from "@uniswap/v3-sdk";
 
 import { Address, Pair } from "../pair";
 import { Registry } from "../registry";
@@ -11,7 +12,7 @@ import {
 import { PairUniswapV3 } from "../pairs/uniswapv3";
 import { initPairsAndFilterByWhitelist } from "../utils";
 import { fastConcurrentMap } from "../utils/async";
-import { FeeAmount } from "@uniswap/v3-sdk";
+import * as mainnetUniV3CacheData from "../../tools/caches/swappa.uniswapv3.42220.0xAfE208a311B21f13EF87E33A90049fC17A7acDEc.pools.json"
 
 const FeeAmounts = Object.keys(FeeAmount).map((v) => Number(v)).filter((v) => !isNaN(v))
 
@@ -24,6 +25,17 @@ interface UniV3Pool {
 interface CachedData {
   blockN: number
   pools: UniV3Pool[]
+}
+
+const cachedDataGlobal: {[key: number]: {[key: string]: CachedData}} = {
+  42220: {
+    "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc": mainnetUniV3CacheData,
+  }
+}
+
+
+const cacheDataFileName = (chainId: number, factoryAddr: Address) => {
+  return path.join("/tmp", `swappa.uniswapv3.${chainId}.${factoryAddr}.pools.json`)
 }
 
 export class RegistryUniswapV3 extends Registry {
@@ -82,17 +94,24 @@ export class RegistryUniswapV3 extends Registry {
       const pairs = fetched.filter((p) => p !== null) as Pair[];
       return initPairsAndFilterByWhitelist(pairs, tokenWhitelist);
     } else {
-      const cachedDataFile = path.join("/tmp", `swappa.uniswapv3.${chainId}.pools.json`)
-      let pools: {token0: string, token1: string, pool: string}[] = []
-      let fromBlock = 0
+      let cachedData: CachedData | undefined = cachedDataGlobal[chainId][this.factory.options.address]
+      const cachedDataFile = cacheDataFileName(chainId, this.factory.options.address)
       try {
         if (fs.existsSync(cachedDataFile)) {
-          const cachedData: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
-          pools.push(...cachedData.pools)
-          fromBlock = cachedData.blockN + 1
+          const cachedDataFromFile: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
+          if (!cachedData || cachedDataFromFile.blockN > cachedData.blockN) {
+            cachedData = cachedDataFromFile
+          }
         }
       } catch (e) {
         console.warn(`UniV3Registry: Error while trying to read cache file: ${cachedDataFile}: ${e}`)
+      }
+
+      let pools: {token0: string, token1: string, pool: string}[] = []
+      let fromBlock = 0
+      if (cachedData) {
+        pools.push(...cachedData.pools)
+        fromBlock = cachedData.blockN + 1
       }
 
       const batchSize = 1_000_000

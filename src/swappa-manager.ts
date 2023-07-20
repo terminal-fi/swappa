@@ -2,11 +2,11 @@ import { CeloTransactionObject, toTransactionObject } from "@celo/connect"
 import { ContractKit } from "@celo/contractkit"
 import BigNumber from "bignumber.js"
 
-import { SwappaRouterV1, ABI as SwappaRouterABI, newSwappaRouterV1 } from '../types/web3-v1-contracts/SwappaRouterV1'
+import { newSwappaRouterV1 } from '../types/web3-v1-contracts/SwappaRouterV1'
 
 import { Address, Pair } from "./pair"
 import { Registry } from "./registry"
-import { findBestRoutesForFixedInputAmount, Route, RouterOpts } from "./router"
+import { findBestRoutesForFixedInputAmount, RouterOpts } from "./router"
 import { fastConcurrentMap } from "./utils/async"
 
 export class SwappaManager {
@@ -22,9 +22,11 @@ export class SwappaManager {
 	}
 
 	public reinitializePairs = async (tokenWhitelist: Address[]) => {
+		const initT0 = Date.now()
 		this.pairsByRegistry = new Map<string, Pair[]>()
 		const pairsAll = await fastConcurrentMap(5, this.registries, (r) =>
 			r.findPairs(tokenWhitelist).then(pairs => {
+				console.log(`SwappaManager: initialized ${r.getName()} in ${Date.now() - initT0}ms...`)
 				this.pairsByRegistry.set(r.getName(), pairs)
 				return pairs
 			})
