@@ -17,14 +17,14 @@ import * as mainnetSushiSwapCachedData from "../../tools/caches/swappa.uniswapv2
 import * as mainnetCeloDexCachedData from "../../tools/caches/swappa.uniswapv2.42220.0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6.pairs.json"
 
 interface UniV2Pair {
-  token0: string
-  token1: string
-  pair: string
+	token0: string
+	token1: string
+	pair: string
 }
 
 interface CachedData {
-  blockN: number
-  pairs: UniV2Pair[]
+	blockN: number
+	pairs: UniV2Pair[]
 }
 
 const cachedDataGlobal: {[key: number]: {[key: string]: CachedData | undefined} | undefined} = {
@@ -36,7 +36,7 @@ const cachedDataGlobal: {[key: number]: {[key: string]: CachedData | undefined} 
 }
 
 const cacheDataFileName = (chainId: number, factoryAddr: Address) => {
-  return path.join("/tmp", `swappa.uniswapv2.${chainId}.${factoryAddr}.pairs.json`)
+	return path.join("/tmp", `swappa.uniswapv2.${chainId}.${factoryAddr}.pairs.json`)
 }
 
 export class RegistryUniswapV2 extends Registry {
@@ -60,9 +60,9 @@ export class RegistryUniswapV2 extends Registry {
 		}
 	}
 
-	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
+	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>	{
 		const chainId = await this.web3.eth.getChainId()
-    const fetchUsing = this.opts?.fetchUsing || "PairEvents"
+		const fetchUsing = this.opts?.fetchUsing || "PairEvents"
 		switch (fetchUsing) {
 			case "RegistryHelper": {
 				// registry helper contract is available for fast discovery of pairs
@@ -100,34 +100,34 @@ export class RegistryUniswapV2 extends Registry {
 				return initPairsAndFilterByWhitelist(pairsFetched.filter((p) => p !== null) as Pair[], tokenWhitelist)
 			}
 			case "PairEvents": {
-        let cachedData = cachedDataGlobal[chainId]?.[this.factory.options.address]
-        const cachedDataFile = cacheDataFileName(chainId, this.factory.options.address)
-        try {
-          if (fs.existsSync(cachedDataFile)) {
-            const cachedDataFromFile: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
-            if (!cachedData || cachedDataFromFile.blockN > cachedData.blockN) {
-              cachedData = cachedDataFromFile
-            }
-          }
-        } catch (e) {
-          console.warn(`UniV2Registry: Error while trying to read cache file: ${cachedDataFile}: ${e}`)
-        }
+				let cachedData = cachedDataGlobal[chainId]?.[this.factory.options.address]
+				const cachedDataFile = cacheDataFileName(chainId, this.factory.options.address)
+				try {
+					if (fs.existsSync(cachedDataFile)) {
+						const cachedDataFromFile: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
+						if (!cachedData || cachedDataFromFile.blockN > cachedData.blockN) {
+							cachedData = cachedDataFromFile
+						}
+					}
+				} catch (e) {
+					console.warn(`UniV2Registry: Error while trying to read cache file: ${cachedDataFile}: ${e}`)
+				}
 
-        let pairs: UniV2Pair[] = []
-        let fromBlock = 0
-        if (cachedData) {
-          pairs.push(...cachedData.pairs)
-          fromBlock = cachedData.blockN + 1
-        }
-        const pairAddrSet = new Set<string>()
-        pairs = pairs.filter((p) => {
-          if (pairAddrSet.has(p.pair)) {
-            return false
-          }
-          pairAddrSet.add(p.pair)
-          return true
-        })
-        const endBlock = await this.web3.eth.getBlockNumber()
+				let pairs: UniV2Pair[] = []
+				let fromBlock = 0
+				if (cachedData) {
+					pairs.push(...cachedData.pairs)
+					fromBlock = cachedData.blockN + 1
+				}
+				const pairAddrSet = new Set<string>()
+				pairs = pairs.filter((p) => {
+					if (pairAddrSet.has(p.pair)) {
+						return false
+					}
+					pairAddrSet.add(p.pair)
+					return true
+				})
+				const endBlock = await this.web3.eth.getBlockNumber()
 				await fetchEvents(
 					async (fromBlock, toBlock) => {
 						const events = await this.factory.getPastEvents("PairCreated", {fromBlock, toBlock})
@@ -158,10 +158,10 @@ export class RegistryUniswapV2 extends Registry {
 					},
 					"UNIV2REGISTRY",
 				)
-        pairs = pairs.filter((p) => tokenWhitelist.indexOf(p.token0) >= 0 && tokenWhitelist.indexOf(p.token1) >= 0);
-        const pairsFetched = pairs.map((p) => new PairUniswapV2(chainId, this.web3, p.pair))
-        return initPairsAndFilterByWhitelist(pairsFetched, tokenWhitelist)
-      }
+				pairs = pairs.filter((p) => tokenWhitelist.indexOf(p.token0) >= 0 && tokenWhitelist.indexOf(p.token1) >= 0);
+				const pairsFetched = pairs.map((p) => new PairUniswapV2(chainId, this.web3, p.pair))
+				return initPairsAndFilterByWhitelist(pairsFetched, tokenWhitelist)
+			}
 		}
 	}
 }

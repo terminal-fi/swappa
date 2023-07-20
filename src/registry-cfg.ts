@@ -98,12 +98,12 @@ export const mainnetRegistryCurve =
 		return new RegistryStatic("curve", pairs)
 	}
 export const mainnetRegistryUniswapV3 = (kit: ContractKit) =>
-  new RegistryUniswapV3(
-    "uniswap-v3",
-    kit.web3 as unknown as Web3,
-    "0xAfE208a311B21f13EF87E33A90049fC17A7acDEc",
-    {fetchUsing: "PoolEvents"},
-  );
+	new RegistryUniswapV3(
+		"uniswap-v3",
+		kit.web3 as unknown as Web3,
+		"0xAfE208a311B21f13EF87E33A90049fC17A7acDEc",
+		{fetchUsing: "PoolEvents"},
+	);
 export const mainnetRegistryStCelo = (kit: ContractKit) => {
 	const CELO = "0x471EcE3750Da237f93B8E339c536989b8978a438";
 	const ACCOUNT_PROXY = "0x4aAD04D41FD7fd495503731C5a2579e19054C432";
