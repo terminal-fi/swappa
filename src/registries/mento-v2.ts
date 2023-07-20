@@ -11,7 +11,7 @@ export class RegistryMentoV2 extends Registry {
   private provider: ethers.providers.Provider;
 
   constructor(private kit: ContractKit) {
-    super("mentoV2");
+    super("mento-v2");
     this.provider = new providers.Web3Provider(kit.web3.currentProvider as any);
   }
 
