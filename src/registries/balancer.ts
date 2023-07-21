@@ -19,7 +19,7 @@ export class RegistryBalancer extends Registry {
 		this.registry = newIbRegistry(web3, registryAddr)
 	}
 
-	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
+	findPairsWithoutInitialzing = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {
 		const chainId = await this.web3.eth.getChainId()
 		const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
 		for (let i = 0; i < tokenWhitelist.length - 1; i += 1) {
@@ -53,6 +53,6 @@ export class RegistryBalancer extends Registry {
 					poolPairs.set(key, pool)
 				}
 			})
-		return initPairsAndFilterByWhitelist(Array.from(poolPairs.values()), tokenWhitelist)
+		return Array.from(poolPairs.values())
 	}
 }

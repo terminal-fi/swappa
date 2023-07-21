@@ -125,6 +125,11 @@ async function main() {
 		const receipt = await tx.sendAndWaitForReceipt({from: from})
 		console.info(`TX Done: ${receipt.transactionHash}`)
 	}
+
+	console.info(`--------------------------------------------------------------------------------`)
+	const refreshT0 = Date.now()
+	const pairs0 = await manager.refreshPairs()
+	console.info(`Refreshed pairs: ${pairs0.length}, elapsed: ${Date.now() - refreshT0}ms`)
 }
 
 main()

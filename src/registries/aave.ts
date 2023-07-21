@@ -5,7 +5,6 @@ import { ILendingPoolAddressesProvider, newILendingPoolAddressesProvider } from 
 import { Address } from "../pair"
 import { PairAToken, ReserveCELO } from "../pairs/atoken"
 import { Registry } from "../registry"
-import { initPairsAndFilterByWhitelist } from "../utils"
 
 export class RegistryAave extends Registry {
 	private lendingPoolAddrProvider: ILendingPoolAddressesProvider
@@ -15,7 +14,7 @@ export class RegistryAave extends Registry {
 		this.lendingPoolAddrProvider = newILendingPoolAddressesProvider(kit.web3 as any, lendingPoolAddrProviderAddr)
 	}
 
-	findPairs = async (tokenWhitelist: Address[]) => {
+	findPairsWithoutInitialzing = async (tokenWhitelist: Address[]) => {
 		const chainId = await this.kit.web3.eth.getChainId()
 		const lendingPoolAddr = await this.lendingPoolAddrProvider.methods.getLendingPool().call()
 		const lendingPool = newILendingPool(this.kit.web3 as any, lendingPoolAddr)
@@ -26,6 +25,6 @@ export class RegistryAave extends Registry {
 		]
 		const pairs = reservesMatched.map((r) => (
 			new PairAToken(chainId, this.kit, this.lendingPoolAddrProvider.options.address, r)))
-		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
+		return pairs
 	}
 }

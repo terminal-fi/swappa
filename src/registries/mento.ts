@@ -3,7 +3,6 @@ import { ContractKit, StableToken } from "@celo/contractkit"
 import { Address } from "../pair"
 import { PairMento } from "../pairs/mento"
 import { Registry } from "../registry"
-import { initPairsAndFilterByWhitelist } from "../utils"
 import { fastConcurrentMap } from "../utils/async"
 
 export class RegistryMento extends Registry{
@@ -11,7 +10,7 @@ export class RegistryMento extends Registry{
 		super("mento")
 	}
 
-	findPairs = async (tokenWhitelist: Address[]) => {
+	findPairsWithoutInitialzing = async (tokenWhitelist: Address[]) => {
 		const cSTBs = await fastConcurrentMap(
 			5,
 			Object.values(StableToken),
@@ -23,6 +22,6 @@ export class RegistryMento extends Registry{
 			})
 		const chainId = await this.kit.web3.eth.getChainId()
 		const pairs = cSTBs.map((cSTB) => (new PairMento(chainId, this.kit, cSTB.name)))
-		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
+		return pairs
 	}
 }

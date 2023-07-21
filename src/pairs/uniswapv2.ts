@@ -15,9 +15,10 @@ export class PairUniswapV2 extends PairXYeqK {
 
 	constructor(
 		chainId: number,
-		private web3: Web3,
+		web3: Web3,
 		private pairAddr: Address,
 		private fixedFee: BigNumber = new BigNumber(0.997),
+		private initData?: {tokenA: Address, tokenB: Address},
 	) {
 		super(web3, selectAddress(chainId, { mainnet: pairUniswapV2Address }))
 		this.pair = newIUniswapV2Pair(web3, pairAddr)
@@ -30,6 +31,13 @@ export class PairUniswapV2 extends PairXYeqK {
 	}
 
 	protected async _init() {
+		if (this.initData) {
+			return {
+				...this.initData,
+				pairKey: this.pairAddr
+			}
+		}
+
 		const [tokenA, tokenB] = await Promise.all([
 			this.pair.methods.token0().call(),
 			this.pair.methods.token1().call(),

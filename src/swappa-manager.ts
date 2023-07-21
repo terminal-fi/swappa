@@ -8,6 +8,7 @@ import { Address, Pair } from "./pair"
 import { Registry } from "./registry"
 import { findBestRoutesForFixedInputAmount, RouterOpts } from "./router"
 import { fastConcurrentMap } from "./utils/async"
+import { initPairsAndFilterByWhitelist } from "./utils"
 
 export class SwappaManager {
 	private pairs: Pair[] = []
@@ -23,17 +24,30 @@ export class SwappaManager {
 
 	public reinitializePairs = async (tokenWhitelist: Address[]) => {
 		this.pairsByRegistry = new Map<string, Pair[]>()
+		const initT0 = Date.now()
+		const registryByPair = new Map<Pair, string>()
+		const pairsAll = await fastConcurrentMap(5, this.registries, (r) =>
+			r.findPairsWithoutInitialzing(tokenWhitelist).then(pairs => {
+				console.log(`SwappaManager: initialized ${r.getName()} in ${Date.now() - initT0}ms...`)
+				pairs.forEach((p) => { registryByPair.set(p, r.getName()) })
+				return pairs
+			}))
 		this.pairs = []
-		for (const r of this.registries) {
-			const initT0 = Date.now()
-			const pairs = await r.findPairs(tokenWhitelist)
-			console.log(`SwappaManager: initialized ${r.getName()} in ${Date.now() - initT0}ms...`)
-			this.pairsByRegistry.set(r.getName(), pairs)
-			this.pairs.push(...pairs)
-		}
+		pairsAll.forEach((pairs) => { this.pairs.push(...pairs) })
+		console.log(`SwappaManager: initializing pairs: ${this.pairs.length}...`)
+		const initPairsT0 = Date.now()
+		this.pairs = await initPairsAndFilterByWhitelist(this.pairs, tokenWhitelist)
+		console.log(`SwappaManager: initialized pairs: ${this.pairs.length}, elapsed: ${Date.now() - initPairsT0}ms...`)
 
 		this.pairsByToken = new Map<string, Pair[]>()
 		this.pairs.forEach((p) => {
+			const rName = registryByPair.get(p)!
+			const pairsByR = this.pairsByRegistry.get(rName)
+			if (!pairsByR) {
+				this.pairsByRegistry.set(rName, [p])
+			} else {
+				pairsByR.push(p)
+			}
 			for (const token of [p.tokenA, p.tokenB]) {
 				const x = this.pairsByToken.get(token)
 				if (x) {

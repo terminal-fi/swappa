@@ -1,4 +1,5 @@
 import { Address, Pair } from "./pair";
+import { initPairsAndFilterByWhitelist } from "./utils";
 
 export abstract class Registry {
 	private name: string
@@ -11,5 +12,9 @@ export abstract class Registry {
 		return this.name
 	}
 
-	public abstract findPairs(tokenWhitelist: Address[]): Promise<Pair[]>
+	public async findPairs(tokenWhitelist: Address[]): Promise<Pair[]> {
+		const pairs = await this.findPairsWithoutInitialzing(tokenWhitelist)
+		return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
+	}
+	public abstract findPairsWithoutInitialzing(tokenWhitelist: Address[]): Promise<Pair[]>
 }
