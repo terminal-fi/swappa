@@ -77,9 +77,11 @@ export class PairUniswapV3 extends Pair {
 
   protected async _init() {
     if (this.initData) {
+      this.fee = this.initData.fee
       return {
-        ...this.initData,
         pairKey: this.pairAddr,
+        tokenA: this.initData.tokenA,
+        tokenB: this.initData.tokenB,
       }
     }
 

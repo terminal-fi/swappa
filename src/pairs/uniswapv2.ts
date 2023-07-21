@@ -33,8 +33,9 @@ export class PairUniswapV2 extends PairXYeqK {
 	protected async _init() {
 		if (this.initData) {
 			return {
-				...this.initData,
-				pairKey: this.pairAddr
+				pairKey: this.pairAddr,
+        tokenA: this.initData.tokenA,
+        tokenB: this.initData.tokenB,
 			}
 		}
 
