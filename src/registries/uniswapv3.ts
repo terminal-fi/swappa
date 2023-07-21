@@ -10,7 +10,6 @@ import {
 	newIUniswapV3Factory,
 } from "../../types/web3-v1-contracts/IUniswapV3Factory";
 import { PairUniswapV3 } from "../pairs/uniswapv3";
-import { initPairsAndFilterByWhitelist } from "../utils";
 import { fastConcurrentMap } from "../utils/async";
 import { fetchEvents } from "../utils/events";
 
@@ -22,6 +21,7 @@ interface UniV3Pool {
 	token0: string
 	token1: string
 	pool: string
+	fee: string
 }
 
 interface CachedData {
@@ -59,7 +59,7 @@ export class RegistryUniswapV3 extends Registry {
 		return poolEvents.length;
 	};
 
-	findPairs = async (tokenWhitelist: Address[] = []): Promise<Pair[]> => {
+	findPairsWithoutInitialzing = async (tokenWhitelist: Address[]): Promise<Pair[]> => {
 		const chainId = await this.web3.eth.getChainId();
 		const fetchUsing = this.opts?.fetchUsing || "PoolEvents"
 		switch (fetchUsing) {
@@ -94,7 +94,7 @@ export class RegistryUniswapV3 extends Registry {
 					}
 				);
 				const pairs = fetched.filter((p) => p !== null) as Pair[];
-				return initPairsAndFilterByWhitelist(pairs, tokenWhitelist);
+				return pairs
 			}
 			case "PoolEvents": {
 				let cachedData = cachedDataGlobal[chainId]?.[this.factory.options.address]
@@ -102,6 +102,12 @@ export class RegistryUniswapV3 extends Registry {
 				try {
 					if (fs.existsSync(cachedDataFile)) {
 						const cachedDataFromFile: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
+						if (
+							!cachedDataFromFile.blockN || !cachedDataFromFile.pools ||
+							!cachedDataFromFile.pools.every((p) => p.pool && p.token0 && p.token1 && p.fee)
+						) {
+							throw new Error("CacheData invalid!")
+						}
 						if (!cachedData || cachedDataFromFile.blockN > cachedData.blockN) {
 							cachedData = cachedDataFromFile
 						}
@@ -133,6 +139,7 @@ export class RegistryUniswapV3 extends Registry {
 								token0: v.returnValues.token0 as string,
 								token1: v.returnValues.token1 as string,
 								pool: v.returnValues.pool as string,
+								fee: v.returnValues.fee as string,
 							} as UniV3Pool)
 						)
 					},
@@ -156,8 +163,11 @@ export class RegistryUniswapV3 extends Registry {
 					"UNIV3REGISTRY",
 				)
 				pools = pools.filter((p) => tokenWhitelist.indexOf(p.token0) >= 0 && tokenWhitelist.indexOf(p.token1) >= 0);
-				const pairs = pools.map((p) => new PairUniswapV3(chainId, this.web3, p.pool))
-				return initPairsAndFilterByWhitelist(pairs, tokenWhitelist)
+				const pairs = pools.map((p) => new PairUniswapV3(
+					chainId, this.web3, p.pool,
+					{tokenA: p.token0, tokenB: p.token1, fee: Number.parseInt(p.fee) as FeeAmount}
+				))
+				return pairs
 			}
 		}
 	};

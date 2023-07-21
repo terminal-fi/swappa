@@ -60,7 +60,12 @@ export class PairUniswapV3 extends Pair {
   private tickCurrent: number = 0
   private ticks: Tick[] = []
 
-  constructor(chainId: number, private web3: Web3, private pairAddr: Address) {
+  constructor(
+    chainId: number,
+    private web3: Web3,
+    private pairAddr: Address,
+    private initData?: {tokenA: Address, tokenB: Address, fee: FeeAmount},
+  ) {
     super(web3, selectAddress(chainId, { mainnet: pairUniV3Address }));
     const univ3SwappaPairAddr = selectAddress(chainId, { mainnet: pairUniV3Address });
 
@@ -71,6 +76,13 @@ export class PairUniswapV3 extends Pair {
   }
 
   protected async _init() {
+    if (this.initData) {
+      return {
+        ...this.initData,
+        pairKey: this.pairAddr,
+      }
+    }
+
     const [tokenA, tokenB, fee] = await Promise.all([
       this.swapPool.methods.token0().call(),
       this.swapPool.methods.token1().call(),

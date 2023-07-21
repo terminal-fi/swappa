@@ -24,7 +24,7 @@ export async function fetchEvents<T>(
 			const fetchMs = Date.now() - fetchT0
 			if (fetchMs > EVENTS_FETCH_TARGET_MS * 2 || fetchMs < EVENTS_FETCH_TARGET_MS / 2) {
 				const batchSizeMX =
-					Math.max(Math.min(EVENTS_FETCH_TARGET_MS / fetchMs, 10), 1/10)
+					Math.max(Math.min(EVENTS_FETCH_TARGET_MS / fetchMs, 2), 1/2)
 				batchSize = Math.min(
 					EVENTS_FETCH_BATCH_SIZE_MAX,
 					Math.max(EVENTS_FETCH_BATCH_SIZE_MIN, Math.floor(batchSize * batchSizeMX)))

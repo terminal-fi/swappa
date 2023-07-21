@@ -8,7 +8,6 @@ import { IUniswapV2Factory, newIUniswapV2Factory } from "../../types/web3-v1-con
 import { Address, Pair } from "../pair"
 import { PairUniswapV2 } from "../pairs/uniswapv2"
 import { Registry } from "../registry"
-import { initPairsAndFilterByWhitelist } from "../utils"
 import { fastConcurrentMap } from "../utils/async"
 import { fetchEvents } from "../utils/events"
 
@@ -60,7 +59,7 @@ export class RegistryUniswapV2 extends Registry {
 		}
 	}
 
-	findPairs = async (tokenWhitelist: Address[]): Promise<Pair[]> =>	{
+	findPairsWithoutInitialzing = async (tokenWhitelist: Address[]): Promise<Pair[]> =>	{
 		const chainId = await this.web3.eth.getChainId()
 		const fetchUsing = this.opts?.fetchUsing || "PairEvents"
 		switch (fetchUsing) {
@@ -78,7 +77,7 @@ export class RegistryUniswapV2 extends Registry {
 						pairsFetched.push(new PairUniswapV2(chainId, this.web3, pairInfo.pair, this.opts?.fixedFee))
 					}
 				}
-				return initPairsAndFilterByWhitelist(pairsFetched, tokenWhitelist)
+				return pairsFetched
 			}
 			case "TokenList": {
 				const pairsToFetch: {tokenA: Address, tokenB: Address}[] = []
@@ -97,7 +96,7 @@ export class RegistryUniswapV2 extends Registry {
 						}
 						return new PairUniswapV2(chainId, this.web3, pairAddr, this.opts?.fixedFee)
 					})
-				return initPairsAndFilterByWhitelist(pairsFetched.filter((p) => p !== null) as Pair[], tokenWhitelist)
+				return pairsFetched.filter((p) => p !== null) as Pair[]
 			}
 			case "PairEvents": {
 				let cachedData = cachedDataGlobal[chainId]?.[this.factory.options.address]
@@ -105,6 +104,12 @@ export class RegistryUniswapV2 extends Registry {
 				try {
 					if (fs.existsSync(cachedDataFile)) {
 						const cachedDataFromFile: CachedData = JSON.parse(fs.readFileSync(cachedDataFile).toString())
+						if (
+							!cachedDataFromFile.blockN || !cachedDataFromFile.pairs ||
+							!cachedDataFromFile.pairs.every((p) => p.pair && p.token0 && p.token1)
+						) {
+							throw new Error("CacheData invalid!")
+						}
 						if (!cachedData || cachedDataFromFile.blockN > cachedData.blockN) {
 							cachedData = cachedDataFromFile
 						}
@@ -159,8 +164,11 @@ export class RegistryUniswapV2 extends Registry {
 					"UNIV2REGISTRY",
 				)
 				pairs = pairs.filter((p) => tokenWhitelist.indexOf(p.token0) >= 0 && tokenWhitelist.indexOf(p.token1) >= 0);
-				const pairsFetched = pairs.map((p) => new PairUniswapV2(chainId, this.web3, p.pair))
-				return initPairsAndFilterByWhitelist(pairsFetched, tokenWhitelist)
+				const pairsFetched = pairs.map((p) => new PairUniswapV2(
+					chainId, this.web3, p.pair, this.opts?.fixedFee,
+					{tokenA: p.token0, tokenB: p.token1},
+				))
+				return pairsFetched
 			}
 		}
 	}
