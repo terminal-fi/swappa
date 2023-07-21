@@ -205,6 +205,7 @@ export class PairMentoV2 extends Pair {
   private mentoBucketsAfterUpdate = async () => {
     /*
     ## From BiPoolManager.sol:
+    https://github.com/mento-protocol/mento-core/blob/c843b386ae12a6987022842e6b52cc23340555f2/contracts/BiPoolManager.sol#L461
     function getUpdatedBuckets(PoolExchange memory exchange) internal view returns (uint256 bucket0, uint256 bucket1) {
       bucket0 = exchange.config.stablePoolResetSize;
       uint256 exchangeRateNumerator;
@@ -214,14 +215,10 @@ export class PairMentoV2 extends Pair {
       bucket1 = exchangeRateDenominator.mul(bucket0).div(exchangeRateNumerator);
     }
     */
-    let bucket0 = new BigNumber(
-      this.poolExchange.config.stablePoolResetSize._hex
-    );
+    const bucket0 = new BigNumber(this.poolExchange.config.stablePoolResetSize._hex)
     const [exchangeRateNumerator, exchangeRateDenominator] =
-      await this.getOracleExchangeRate(
-        this.poolExchange.config.referenceRateFeedID
-      );
-    let bucket1 = exchangeRateDenominator
+      await this.getOracleExchangeRate(this.poolExchange.config.referenceRateFeedID)
+    const bucket1 = exchangeRateDenominator
       .multipliedBy(bucket0)
       .idiv(exchangeRateNumerator)
     return { bucket0, bucket1 }
@@ -230,6 +227,7 @@ export class PairMentoV2 extends Pair {
   protected getOracleExchangeRate = async (
     rateFeedID: Address
   ): Promise<[BigNumber, BigNumber]> => {
+    // https://github.com/mento-protocol/mento-core/blob/c843b386ae12a6987022842e6b52cc23340555f2/contracts/BiPoolManager.sol#L477C4-L477C4
     const sortedOracles = ISortedOracles__factory.connect(
       this.sortedOraclesAddress,
       this.provider
