@@ -13,7 +13,6 @@ import { fetchEvents } from "../utils/events"
 
 import * as mainnetUbeswapCachedData from "../../tools/caches/swappa.uniswapv2.42220.0x62d5b84bE28a183aBB507E125B384122D2C25fAE.pairs.json"
 import * as mainnetSushiSwapCachedData from "../../tools/caches/swappa.uniswapv2.42220.0xc35DADB65012eC5796536bD9864eD8773aBc74C4.pairs.json"
-import * as mainnetCeloDexCachedData from "../../tools/caches/swappa.uniswapv2.42220.0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6.pairs.json"
 
 interface UniV2Pair {
 	token0: string
@@ -30,7 +29,6 @@ const cachedDataGlobal: {[key: number]: {[key: string]: CachedData | undefined} 
 	42220: {
 		"0x62d5b84bE28a183aBB507E125B384122D2C25fAE": mainnetUbeswapCachedData,
 		"0xc35DADB65012eC5796536bD9864eD8773aBc74C4": mainnetSushiSwapCachedData,
-		"0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6": mainnetCeloDexCachedData,
 	}
 }
 
@@ -74,7 +72,9 @@ export class RegistryUniswapV2 extends Registry {
 						if (tokenWhitelist.indexOf(pairInfo.token0) === -1 && tokenWhitelist.indexOf(pairInfo.token1) === -1) {
 							continue
 						}
-						pairsFetched.push(new PairUniswapV2(chainId, this.web3, pairInfo.pair, this.opts?.fixedFee))
+						pairsFetched.push(new PairUniswapV2(
+							chainId, this.web3, pairInfo.pair, this.opts?.fixedFee,
+							{tokenA: pairInfo.token0, tokenB: pairInfo.token1}))
 					}
 				}
 				return pairsFetched
