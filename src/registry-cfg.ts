@@ -11,7 +11,7 @@ import { RegistryMento } from "./registries/mento"
 import { RegistryStatic } from "./registries/static"
 import { RegistryUniswapV2 } from "./registries/uniswapv2"
 import { RegistryBalancer } from "./registries/balancer"
-import { address as registryHelperUniswapV2 } from "../tools/deployed/mainnet.RegistryHelperUniswapV2.addr.json"
+import { address as registryHelperUniswapV2Addr } from "../tools/deployed/mainnet.RegistryHelperUniswapV2.addr.json"
 import { createCurvePairs } from "./pairs/curve"
 import { RegistryUniswapV3 } from "./registries/uniswapv3"
 import { PairRebasedStCelo, PairStCelo } from "./pairs/stCelo"
@@ -82,7 +82,7 @@ export const mainnetRegistryCeloDex =
 		"celodex",
 		kit.web3 as unknown as Web3,
 		"0x31bD38d982ccDf3C2D95aF45a3456d319f0Ee1b6",
-		{ fetchUsing: "PairEvents" })
+		{ fetchUsing: "RegistryHelper", registryHelperAddr: registryHelperUniswapV2Addr })
 export const mainnetRegistrySymmetric =
 	(kit: ContractKit) => new RegistryBalancer("symmetric", kit.web3 as unknown as Web3, "0x3E30b138ecc85cD89210e1A19a8603544A917372")
 export const mainnetRegistryCurve =
