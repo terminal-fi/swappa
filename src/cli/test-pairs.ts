@@ -78,9 +78,9 @@ async function main() {
 		const passed = outputB.eq(expectedOutputB) && outputA.eq(expectedOutputA)
 		const highOutput =
 			outputB.multipliedBy(0.999999).gt(expectedOutputB) || outputA.multipliedBy(0.999999).gt(expectedOutputA)
+		const tokenA = tokenByAddrOrSymbol(pair.tokenA)
+		const tokenB = tokenByAddrOrSymbol(pair.tokenB)
 		if (!passed) {
-			const tokenA = tokenByAddrOrSymbol(pair.tokenA)
-			const tokenB = tokenByAddrOrSymbol(pair.tokenB)
 			console.warn(
 				`Mismatch (HIGH?: ${highOutput}): ${tokenA.symbol}/${tokenB.symbol}: ` +
 				`${outputB.shiftedBy(-tokenB.decimals)} vs ${new BigNumber(expectedOutputB).shiftedBy(-tokenB.decimals)} (${outputB.eq(expectedOutputB)}), ` +
@@ -92,6 +92,20 @@ async function main() {
 			}
 		} else {
 			passedN += 1
+		}
+
+		if ("inputAmount" in pair) {
+			const inputA: BigNumber = (pair.inputAmount as any)(pair.tokenB, outputB)
+			const inputB: BigNumber = (pair.inputAmount as any)(pair.tokenA, outputA)
+			if (
+				!inputA.minus(inputAmountA).abs().lte(inputAmountA.multipliedBy(0.0000000001)) ||
+				!inputB.minus(inputAmountB).abs().lte(inputAmountB.multipliedBy(0.0000000001))
+				) {
+				console.warn(
+					`Mismatch INPUT: ${tokenA.symbol}/${tokenB.symbol}: ` +
+					`${inputA.shiftedBy(-tokenA.decimals)} vs ${new BigNumber(inputAmountA).shiftedBy(-tokenA.decimals)}, `+
+					`${inputB.shiftedBy(-tokenB.decimals)} vs ${new BigNumber(inputAmountB).shiftedBy(-tokenB.decimals)}`)
+			}
 		}
 	}
 
