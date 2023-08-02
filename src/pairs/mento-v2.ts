@@ -31,7 +31,7 @@ interface PairMentoV2Snapshot extends Snapshot {
   decimals: [number, number],
   tokenMaxIn: [BigNumberString, BigNumberString],
   tokenMaxOut: [BigNumberString, BigNumberString],
-
+  tradingEnabled: boolean,
 }
 
 export class PairMentoV2 extends Pair {
@@ -46,6 +46,7 @@ export class PairMentoV2 extends Pair {
   private bucket1: BigNumber = new BigNumber(0);
   private tokenMaxIn = [new BigNumber(0), new BigNumber(0)]
   private tokenMaxOut = [new BigNumber(0), new BigNumber(0)]
+  private tradingEnabled: boolean = false
 
   private provider: ethers.providers.Provider;
   private biPoolManager: IBiPoolManager
@@ -93,9 +94,11 @@ export class PairMentoV2 extends Pair {
     const [
       poolExchange,
       tradingLimits,
+      tradingEnabled,
     ] = await Promise.all([
       this.biPoolManager.getPoolExchange(this.exchange.id),
       this.mento.getTradingLimits(this.exchange.id),
+      this.mento.isTradingEnabled(this.exchange.id)
     ])
     this.poolExchange = poolExchange
     this.spread = new BigNumber(this.poolExchange.config.spread.value._hex);
@@ -129,6 +132,7 @@ export class PairMentoV2 extends Pair {
         this.tokenMaxOut[idx] = maxOut
       }
     })
+    this.tradingEnabled = tradingEnabled
   }
 
   public swapExtraData(): string {
@@ -137,15 +141,14 @@ export class PairMentoV2 extends Pair {
   }
 
   public outputAmount(inputToken: Address, inputAmount: BigNumber) {
+    const [tokenMaxIn, tokenMaxOut] =
+      (inputToken === this.tokenA) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
+    if (!this.tradingEnabled || inputAmount.gt(tokenMaxIn)) {
+      return new BigNumber(0)
+    }
     const getAmountOut = GET_AMOUNT_OUT[this.pricingModule];
     const [tokenInBucketSize, tokenOutBucketSize] =
       (inputToken === this.tokenA) ? [this.bucket0, this.bucket1] : [this.bucket1, this.bucket0];
-    const [tokenMaxIn, tokenMaxOut] =
-      (inputToken === this.tokenA) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
-    if (inputAmount.gt(tokenMaxIn)) {
-      return new BigNumber(0)
-    }
-
     const [inputMultiplier, outputMultiplier] =
       (inputToken === this.tokenA) ?
       [this.tokenPrecisionMultipliers[0], this.tokenPrecisionMultipliers[1]] :
@@ -165,15 +168,14 @@ export class PairMentoV2 extends Pair {
   }
 
   public inputAmount(outputToken: Address, outputAmount: BigNumber) {
+    const [tokenMaxIn, tokenMaxOut] =
+      (outputToken === this.tokenB) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
+    if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut)) {
+      return new BigNumber(0)
+    }
     const getAmountIn = GET_AMOUNT_IN[this.pricingModule];
     const [tokenInBucketSize, tokenOutBucketSize] =
       (outputToken === this.tokenB) ? [this.bucket0, this.bucket1] : [this.bucket1, this.bucket0];
-    const [tokenMaxIn, tokenMaxOut] =
-      (outputToken === this.tokenB) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
-    if (outputAmount.gt(tokenMaxOut)) {
-      return new BigNumber(0)
-    }
-
     const [inputMultiplier, outputMultiplier] =
       (outputToken === this.tokenB) ?
       [this.tokenPrecisionMultipliers[0], this.tokenPrecisionMultipliers[1]] :
@@ -206,6 +208,7 @@ export class PairMentoV2 extends Pair {
       decimals: this.decimals,
       tokenMaxIn: [this.tokenMaxIn[0].toFixed(), this.tokenMaxIn[1].toFixed()],
       tokenMaxOut: [this.tokenMaxOut[0].toFixed(), this.tokenMaxOut[1].toFixed()],
+      tradingEnabled: this.tradingEnabled,
     };
   }
 
@@ -228,6 +231,7 @@ export class PairMentoV2 extends Pair {
       new BigNumber(snapshot.tokenMaxOut[0]),
       new BigNumber(snapshot.tokenMaxOut[1]),
     ]
+    this.tradingEnabled = snapshot.tradingEnabled
   }
 
   private mentoBucketsAfterUpdate = async () => {
