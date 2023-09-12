@@ -98,8 +98,8 @@ async function main() {
 			const inputA: BigNumber = (pair.inputAmount as any)(pair.tokenB, outputB)
 			const inputB: BigNumber = (pair.inputAmount as any)(pair.tokenA, outputA)
 			if (
-				!inputA.minus(inputAmountA).abs().lte(inputAmountA.multipliedBy(0.0000000001)) ||
-				!inputB.minus(inputAmountB).abs().lte(inputAmountB.multipliedBy(0.0000000001))
+				!inputA.minus(inputAmountA).abs().lte(inputAmountA.multipliedBy(0.0000001)) ||
+				!inputB.minus(inputAmountB).abs().lte(inputAmountB.multipliedBy(0.0000001))
 				) {
 				console.warn(
 					`Mismatch INPUT: ${tokenA.symbol}/${tokenB.symbol}: ` +

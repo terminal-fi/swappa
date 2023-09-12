@@ -304,7 +304,7 @@ const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
     spread,
     inputAmount
   ) => {
-    // https://github.com/mento-protocol/mento-core/blob/9879bdb4d5e22da2eacb0c3629fd8a032d2d7f9a/contracts/swap/ConstantProductPricingModule.sol#L28
+    // https://github.com/mento-protocol/mento-core/blob/c2e344ebd5f3018253cf26cb39a50f81d8db7c21/contracts/swap/ConstantProductPricingModule.sol#L28
     if (inputAmount.isZero()) {
       return new BigNumber(0);
     }
@@ -320,15 +320,13 @@ const GET_AMOUNT_OUT: Record<PricingFunctionType, TGetAmountOut> = {
     spread,
     inputAmount
   ) => {
-    // https://github.com/mento-protocol/mento-core/blob/c843b386ae12a6987022842e6b52cc23340555f2/contracts/ConstantSumPricingModule.sol#L36C5-L36C5
+    // https://github.com/mento-protocol/mento-core/blob/c2e344ebd5f3018253cf26cb39a50f81d8db7c21/contracts/swap/ConstantSumPricingModule.sol#L29
     if (inputAmount.isZero()){
       return new BigNumber(0);
     }
-    const spreadFraction = FIXED1.minus(spread)
-    const outputAmount = spreadFraction.multipliedBy(inputAmount).idiv(FIXED1)
-    if (outputAmount.gt(tokenOutBucketSize)) {
-      return new BigNumber(0)
-    }
+    const outputAmount =
+      FIXED1.minus(spread).multipliedBy(inputAmount).multipliedBy(tokenOutBucketSize)
+      .idiv(tokenInBucketSize.multipliedBy(FIXED1));
     return outputAmount
   },
 };
@@ -348,7 +346,7 @@ const GET_AMOUNT_IN: Record<PricingFunctionType, TGetAmountIn> = {
     spread,
     outputAmount
   ) => {
-    // https://github.com/mento-protocol/mento-core/blob/9879bdb4d5e22da2eacb0c3629fd8a032d2d7f9a/contracts/swap/ConstantProductPricingModule.sol#L60
+    // https://github.com/mento-protocol/mento-core/blob/c2e344ebd5f3018253cf26cb39a50f81d8db7c21/contracts/swap/ConstantProductPricingModule.sol#L60
     if (outputAmount.isZero()) {
       return new BigNumber(0);
     }
@@ -362,13 +360,12 @@ const GET_AMOUNT_IN: Record<PricingFunctionType, TGetAmountIn> = {
     spread,
     outputAmount
   ) => {
-    // https://github.com/mento-protocol/mento-core/blob/c843b386ae12a6987022842e6b52cc23340555f2/contracts/ConstantSumPricingModule.sol#L54
+    // https://github.com/mento-protocol/mento-core/blob/c2e344ebd5f3018253cf26cb39a50f81d8db7c21/contracts/swap/ConstantSumPricingModule.sol#L59
     if (outputAmount.isZero()){
       return new BigNumber(0);
     }
-    if (outputAmount.gt(tokenOutBucketSize)) {
-      return new BigNumber(0)
-    }
-    return outputAmount.multipliedBy(FIXED1).idiv(FIXED1.minus(spread))
+    const inputAmount = outputAmount.multipliedBy(tokenInBucketSize).multipliedBy(FIXED1)
+      .idiv(tokenOutBucketSize.multipliedBy(FIXED1.minus(spread)))
+    return inputAmount
   },
 };
