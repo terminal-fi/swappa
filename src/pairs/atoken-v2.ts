@@ -11,6 +11,7 @@ export class PairATokenV2 extends Pair {
 	allowRepeats = true
 
 	private pool: ILendingPoolV2
+	private paused = false
 
 	constructor(
 		chainId: number,
@@ -31,7 +32,9 @@ export class PairATokenV2 extends Pair {
 			tokenA, tokenB,
 		}
 	}
-	public async refresh(): Promise<void> {}
+	public async refresh(): Promise<void> {
+		this.paused = await this.pool.methods.paused().call()
+	}
 
 	protected swapExtraData(inputToken: Address) {
 		const swapType = inputToken === this.tokenA ? "01" : "02"
@@ -41,6 +44,9 @@ export class PairATokenV2 extends Pair {
 	public outputAmount(inputToken: Address, inputAmount: BigNumber): BigNumber {
 		if (inputToken !== this.tokenA && inputToken !== this.tokenB) {
 			throw new Error(`unsupported input: ${inputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
+		}
+		if (this.paused) {
+			return new BigNumber(0)
 		}
 		return inputAmount
 	}

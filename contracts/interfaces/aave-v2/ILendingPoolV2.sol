@@ -20,4 +20,6 @@ interface ILendingPoolV2 {
 
   function getReservesList() external view returns (address[] memory);
 	function getReserveData(address asset) external view returns (DataTypes.ReserveData memory);
+
+  function paused() external view returns (bool);
 }
