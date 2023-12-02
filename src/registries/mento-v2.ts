@@ -18,9 +18,15 @@ export class RegistryMentoV2 extends Registry {
     const mento = await Mento.create(new providers.Web3Provider(this.kit.web3.currentProvider as any));
     const exchanges = (await mento.getExchanges()).filter(
       (e) => e.assets.every((asset) => tokenWhitelist.indexOf(asset) >= 0))
-    const pairs: PairMentoV2[] = exchanges.map(
-      (exchange) => new PairMentoV2(chainId, this.kit.web3 as unknown as Web3, mento, exchange, sortedOracelsAddress)
-    )
+
+    const pairs: PairMentoV2[] = []
+    for (const exchange of exchanges) {
+      // NOTE(zviad): There is a really weird race conditiong somewhere between: ContractKit/Ethers/Mento when
+      // using direct IPC. To avoid these race conditions, just create separate `mento` instances for each Pair.
+      const mento_ = await Mento.create(new providers.Web3Provider(this.kit.web3.currentProvider as any));
+      const pair = new PairMentoV2(chainId, this.kit.web3 as unknown as Web3, mento_, exchange, sortedOracelsAddress)
+      pairs.push(pair)
+    }
     return pairs
   }
 }
