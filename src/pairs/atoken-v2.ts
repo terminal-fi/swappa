@@ -51,6 +51,16 @@ export class PairATokenV2 extends Pair {
 		return inputAmount
 	}
 
+	public inputAmount(outputToken: Address, outputAmount: BigNumber): BigNumber {
+		if (outputToken !== this.tokenA && outputToken !== this.tokenB) {
+			throw new Error(`unsupported output: ${outputToken}, pair: ${this.tokenA}/${this.tokenB}!`)
+		}
+		if (this.paused) {
+			return new BigNumber(0)
+		}
+		return outputAmount
+	}
+
 	public snapshot(): Snapshot {
 		return {}
 	}

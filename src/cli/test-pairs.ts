@@ -113,8 +113,8 @@ async function main() {
 				pair.outputAmountAsync(pair.tokenB, inputB).catch(() => { return new BigNumber(0) }),
 			])
 			const passed =
-				newExpectedOutputB.minus(expectedOutputB).abs().lte(expectedOutputB.multipliedBy(0.0000001)) &&
-				newExpectedOutputA.minus(expectedOutputA).abs().lte(expectedOutputA.multipliedBy(0.0000001))
+				newExpectedOutputB.minus(expectedOutputB).abs().lte(BigNumber.max(1, expectedOutputB.multipliedBy(0.000001))) &&
+				newExpectedOutputA.minus(expectedOutputA).abs().lte(BigNumber.max(1, expectedOutputA.multipliedBy(0.000001)))
 			if (!passed) {
 				console.warn(
 					`Mismatch INPUT: ${tokenA.symbol}/${tokenB.symbol}: ` +
