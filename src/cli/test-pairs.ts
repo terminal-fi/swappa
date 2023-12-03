@@ -13,6 +13,7 @@ const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
 	.option("--registry <registry>", "Registry to use for testing.", "")
 	.option("--amount <amount>", "Input amount.", "0.01")
+	.option("--pair <pair>", "Specific pair to test")
 	.parse(process.argv)
 
 process.on('unhandledRejection', (reason: any, _promise: any) => {
@@ -27,11 +28,17 @@ async function main() {
 	const chainId = await kit.web3.eth.getChainId()
 	const allTokens = await initAllTokens(chainId)
 
-	const tokenWhitelist = allTokens.filter((v) => v.chainId === chainId).map((v) => v.address)
 
 	const registries = [registriesByName[opts.registry](kit)]
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
+	let tokenWhitelist
+	if (opts.pair) {
+		const [pair0, pair1] = opts.pair.split("-")
+		tokenWhitelist = allTokens.filter((v) => v.chainId === chainId && (v.symbol === pair0 || v.symbol === pair1)).map((v) => v.address)
+	} else {
+		tokenWhitelist = allTokens.filter((v) => v.chainId === chainId).map((v) => v.address)
+	}
 	const pairs = await manager.reinitializePairs(tokenWhitelist)
 	console.info(`Pairs (${pairs.length}):`)
 	for (const registry of registries) {
@@ -58,6 +65,7 @@ async function main() {
 	let passedN = 0
 	let failedN = 0
 	let highN = 0
+	let failedInputN = 0
 	let refreshTotalMs = 0
 	for (const pair of pairs) {
 		const inputAmountA = new BigNumber(opts.amount).shiftedBy(tokenByAddrOrSymbol(pair.tokenA).decimals)
@@ -68,8 +76,8 @@ async function main() {
 			expectedOutputA,
 			_
 		] = await Promise.all([
-			pair.outputAmountAsync(pair.tokenA, inputAmountA).catch(() => { return 0 }),
-			pair.outputAmountAsync(pair.tokenB, inputAmountB).catch(() => { return 0 }),
+			pair.outputAmountAsync(pair.tokenA, inputAmountA).catch(() => { return new BigNumber(0) }),
+			pair.outputAmountAsync(pair.tokenB, inputAmountB).catch(() => { return new BigNumber(0) }),
 			pair.refresh()
 		])
 		refreshTotalMs += Date.now() - refreshT0
@@ -95,22 +103,34 @@ async function main() {
 		}
 
 		if ("inputAmount" in pair) {
-			const inputA: BigNumber = (pair.inputAmount as any)(pair.tokenB, outputB)
-			const inputB: BigNumber = (pair.inputAmount as any)(pair.tokenA, outputA)
-			if (
-				!inputA.minus(inputAmountA).abs().lte(inputAmountA.multipliedBy(0.0000001)) ||
-				!inputB.minus(inputAmountB).abs().lte(inputAmountB.multipliedBy(0.0000001))
-				) {
+			const inputA: BigNumber = (pair.inputAmount as any)(pair.tokenB, expectedOutputB)
+			const inputB: BigNumber = (pair.inputAmount as any)(pair.tokenA, expectedOutputA)
+			const [
+				newExpectedOutputB,
+				newExpectedOutputA,
+			] = await Promise.all([
+				pair.outputAmountAsync(pair.tokenA, inputA).catch(() => { return new BigNumber(0) }),
+				pair.outputAmountAsync(pair.tokenB, inputB).catch(() => { return new BigNumber(0) }),
+			])
+			const passed =
+				newExpectedOutputB.minus(expectedOutputB).abs().lte(expectedOutputB.multipliedBy(0.0000001)) &&
+				newExpectedOutputA.minus(expectedOutputA).abs().lte(expectedOutputA.multipliedBy(0.0000001))
+			if (!passed) {
 				console.warn(
 					`Mismatch INPUT: ${tokenA.symbol}/${tokenB.symbol}: ` +
-					`${inputA.shiftedBy(-tokenA.decimals)} vs ${new BigNumber(inputAmountA).shiftedBy(-tokenA.decimals)}, `+
-					`${inputB.shiftedBy(-tokenB.decimals)} vs ${new BigNumber(inputAmountB).shiftedBy(-tokenB.decimals)}`)
+					`${newExpectedOutputA.shiftedBy(-tokenA.decimals)} vs ${new BigNumber(expectedOutputA).shiftedBy(-tokenA.decimals)}, `+
+					`${newExpectedOutputB.shiftedBy(-tokenB.decimals)} vs ${new BigNumber(expectedOutputB).shiftedBy(-tokenB.decimals)}`)
+				if (
+					(!inputA.eq(0) && !newExpectedOutputB.eq(expectedOutputB)) ||
+					(!inputB.eq(0) && !newExpectedOutputA.eq(expectedOutputA))) { failedInputN += 1 }
 			}
 		}
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)
-	console.info(`PASSED: ${passedN}, FAILED: ${failedN}, HIGH?: ${highN}, Elapsed: ${Date.now()-testT0}ms / Refresh: ${refreshTotalMs}ms`)
+	console.info(
+		`PASSED: ${passedN}, FAILED: ${failedN}, HIGH?: ${highN}, FAILED INPUT: ${failedInputN}, ` +
+		`Elapsed: ${Date.now()-testT0}ms / Refresh: ${refreshTotalMs}ms`)
 	kit.stop()
 }
 

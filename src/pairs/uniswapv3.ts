@@ -147,16 +147,26 @@ export class PairUniswapV3 extends Pair {
   }
 
   public outputAmount(inputToken: string, inputAmount: BigNumber): BigNumber {
+    const zeroForOne = inputToken === this.tokenA
+    return this.calculateSwap(zeroForOne, inputAmount).negated()
+  }
+
+  public inputAmount(outputToken: string, outputAmount: BigNumber): BigNumber {
+    const zeroForOne = outputToken === this.tokenB
+    return this.calculateSwap(zeroForOne, outputAmount.negated())
+  }
+
+  public calculateSwap(zeroForOne: boolean, amountSpecifiedV: BigNumber): BigNumber {
+    // Based ON: https://github.com/Uniswap/v3-sdk/blob/81d66099f07d1ec350767f497ef73222575fe032/src/entities/pool.ts#L215
     if (this.ticks.length === 0) {
       return new BigNumber(0)
     }
-    // Based ON: https://github.com/Uniswap/v3-sdk/blob/81d66099f07d1ec350767f497ef73222575fe032/src/entities/pool.ts#L215
-    const zeroForOne = inputToken === this.tokenA
     const sqrtPriceLimitX96 = zeroForOne
       ? JSBI.add(TickMath.MIN_SQRT_RATIO, ONE)
       : JSBI.subtract(TickMath.MAX_SQRT_RATIO, ONE)
 
-    const amountSpecified = JSBI.BigInt(inputAmount.toFixed())
+    const amountSpecified = JSBI.BigInt(amountSpecifiedV.toFixed())
+    const exactInput = JSBI.greaterThanOrEqual(amountSpecified, ZERO)
     // keep track of swap state
     const state = {
       amountSpecifiedRemaining: amountSpecified,
@@ -178,7 +188,8 @@ export class PairUniswapV3 extends Pair {
         )) {
         // NOTE(zviad): our `this.ticks` array might be incomplete, thus it is dangerous to go beyond
         // its bounds because total liquidity could become incorrect after that.
-        return new BigNumber(state.amountCalculated.toString())
+        if (!exactInput) { return new BigNumber(0) }
+        break
       }
 
       // because each iteration of the while loop rounds, we can't optimize this code (relative to the smart contract)
@@ -210,11 +221,16 @@ export class PairUniswapV3 extends Pair {
         this.fee
       )
 
-      state.amountSpecifiedRemaining = JSBI.subtract(
-        state.amountSpecifiedRemaining,
-        JSBI.add(step.amountIn, step.feeAmount)
-      )
-      state.amountCalculated = JSBI.add(state.amountCalculated, step.amountOut)
+      if (exactInput) {
+        state.amountSpecifiedRemaining = JSBI.subtract(
+          state.amountSpecifiedRemaining,
+          JSBI.add(step.amountIn, step.feeAmount)
+        )
+        state.amountCalculated = JSBI.subtract(state.amountCalculated, step.amountOut)
+      } else {
+        state.amountSpecifiedRemaining = JSBI.add(state.amountSpecifiedRemaining, step.amountOut)
+        state.amountCalculated = JSBI.add(state.amountCalculated, JSBI.add(step.amountIn, step.feeAmount))
+      }
 
       if (JSBI.equal(state.sqrtPriceX96, step.sqrtPriceNextX96)) {
         // if the tick is initialized, run the tick transition
@@ -236,6 +252,27 @@ export class PairUniswapV3 extends Pair {
 
     return new BigNumber(state.amountCalculated.toString())
   }
+
+  // public async getInputAmount(
+  //   outputAmount: CurrencyAmount<Token>,
+  //   sqrtPriceLimitX96?: JSBI
+  // ): Promise<[CurrencyAmount<Token>, Pool]> {
+  //   invariant(outputAmount.currency.isToken && this.involvesToken(outputAmount.currency), 'TOKEN')
+
+  //   const zeroForOne = outputAmount.currency.equals(this.token1)
+
+  //   const { amountCalculated: inputAmount, sqrtRatioX96, liquidity, tickCurrent } = await this.swap(
+  //     zeroForOne,
+  //     JSBI.multiply(outputAmount.quotient, NEGATIVE_ONE),
+  //     sqrtPriceLimitX96
+  //   )
+  //   const inputToken = zeroForOne ? this.token0 : this.token1
+  //   return [
+  //     CurrencyAmount.fromRawAmount(inputToken, inputAmount),
+  //     new Pool(this.token0, this.token1, this.fee, sqrtRatioX96, liquidity, tickCurrent, this.tickDataProvider)
+  //   ]
+  // }
+
 
   public snapshot(): PairUniswapV3Snapshot {
     return {
