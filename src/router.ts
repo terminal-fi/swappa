@@ -11,6 +11,7 @@ export interface Route {
 
 export interface RouterOpts {
 	maxSwaps?: number,
+	tokenWhitelist?: Address[],
 }
 
 export const findBestRoutesForFixedInputAmount = (
@@ -21,6 +22,7 @@ export const findBestRoutesForFixedInputAmount = (
 	opts?: RouterOpts) => {
 
 	const maxSwaps = opts?.maxSwaps || 10
+	const tokenWhitelistSet = opts?.tokenWhitelist ? new Set(opts.tokenWhitelist) : null
 
 	const completedRoutes: Route[] = []
 	let currentRoutes = new Map<Address, Route>([
@@ -48,6 +50,9 @@ export const findBestRoutesForFixedInputAmount = (
 					pair.tokenB === route.outputToken ? pair.tokenA : null
 				if (!outputT) {
 					throw new Error(`pairsByToken is invalid? ${pair.tokenA}/${pair.tokenB} !== ${route.outputToken}`)
+				}
+				if (tokenWhitelistSet && !tokenWhitelistSet.has(outputT)) {
+					continue // not in whitelist
 				}
 				if (pair.pairKey !== null && route.pairs.find((p) => p.pairKey === pair.pairKey)) {
 					continue // skip already used or conflicting pairs.
