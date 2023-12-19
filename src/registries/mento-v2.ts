@@ -5,7 +5,7 @@ import { providers } from "ethers";
 import { Registry } from "../registry";
 import { PairMentoV2 } from "../pairs/mento-v2";
 import { Address } from "../pair";
-import { newIBroker } from "../../types/web3-v1-contracts/IBroker"
+import { newIBrokerV2 } from "../../types/web3-v1-contracts/IBrokerV2"
 
 export class RegistryMentoV2 extends Registry {
 
@@ -18,7 +18,7 @@ export class RegistryMentoV2 extends Registry {
     const sortedOracelsAddress = await this.kit.registry.addressFor(CeloContract.SortedOracles)
     const mento = await Mento.create(new providers.Web3Provider(this.kit.web3.currentProvider as any));
     const brokerAddr = (await mento.getBroker()).address
-    const broker = newIBroker(this.kit.web3 as any, brokerAddr)
+    const broker = newIBrokerV2(this.kit.web3 as any, brokerAddr)
     const reserveAddr = await broker.methods.reserve().call()
 
     const exchanges = (await mento.getExchanges()).filter(
