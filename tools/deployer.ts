@@ -8,7 +8,6 @@ import SwappaRouterV1Json from "../build/contracts/SwappaRouterV1.json"
 import RegistryHelperUniswapV2 from "../build/contracts/RegistryHelperUniswapV2.json"
 
 import PairUniswapV2 from "../build/contracts/PairUniswapV2.json"
-import PairMento from "../build/contracts/PairMento.json"
 import PairAToken from "../build/contracts/PairAToken.json"
 import PairStableSwap from "../build/contracts/PairStableSwap.json"
 import PairSavingsCELO from "../build/contracts/PairSavingsCELO.json"
@@ -106,8 +105,6 @@ async function main() {
 	// Pairs
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairUniswapV2", PairUniswapV2.bytecode)
-	await readAddressOrDeployContract(
-		kit, opts.network, "PairMento", PairMento.bytecode)
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairAToken", PairAToken.bytecode)
 	await readAddressOrDeployContract(
