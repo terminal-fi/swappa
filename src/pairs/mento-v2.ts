@@ -13,7 +13,8 @@ import { newIBiPoolManager } from "../../types/web3-v1-contracts/IBiPoolManager"
 import { Address, Pair, Snapshot, BigNumberString } from "../pair";
 import { selectAddress } from "../utils";
 import { address as mainnetPairMentoV2Address } from "../../tools/deployed/mainnet.PairMentoV2.addr.json";
-import { newErc20 } from "../../types/web3-v1-contracts/ERC20";
+import { Erc20, newErc20 } from "../../types/web3-v1-contracts/ERC20";
+import { IReserve, newIReserve } from "../../types/web3-v1-contracts/IReserve";
 
 enum PricingFunctionType {
   ConstantProduct = "ConstantProduct",
@@ -25,42 +26,59 @@ interface PairMentoV2Snapshot extends Snapshot {
   spread: BigNumberString;
   updateFrequency: BigNumberString;
   pricingModule: PricingFunctionType;
-  bucket0: BigNumberString;
-  bucket1: BigNumberString;
   tokenPrecisionMultipliers: [BigNumberString, BigNumberString],
   decimals: [number, number],
+  isCollateralA: boolean,
+  isCollateralB: boolean,
+
+  bucket0: BigNumberString;
+  bucket1: BigNumberString;
   tokenMaxIn: [BigNumberString, BigNumberString],
   tokenMaxOut: [BigNumberString, BigNumberString],
   tradingEnabled: boolean,
+  reserveBalanceA: string,
+  reserveBalanceB: string,
 }
 
 export class PairMentoV2 extends Pair {
   private poolExchange!: IBiPoolManager.PoolExchangeStructOutput;
+
   private spread: BigNumber = new BigNumber(0);
   private updateFrequency: BigNumber = new BigNumber(0);
   private pricingModule!: PricingFunctionType;
   private tokenPrecisionMultipliers: [BigNumber, BigNumber] = [new BigNumber(0), new BigNumber(0)]
   private decimals: [number, number] = [0, 0]
+  private isCollateralA: boolean = false
+  private isCollateralB: boolean = false
 
   private bucket0: BigNumber = new BigNumber(0);
   private bucket1: BigNumber = new BigNumber(0);
   private tokenMaxIn = [new BigNumber(0), new BigNumber(0)]
   private tokenMaxOut = [new BigNumber(0), new BigNumber(0)]
   private tradingEnabled: boolean = false
+  private reserveBalanceA: string = ""
+  private reserveBalanceB: string = ""
 
   private provider: ethers.providers.Provider;
   private biPoolManager: IBiPoolManager
+  private reserve: IReserve
+  private erc20A: Erc20
+  private erc20B: Erc20
 
   constructor(
     chainId: number,
     private web3: Web3,
     private mento: Mento,
     private exchange: Exchange,
-    private sortedOraclesAddress: string
+    private sortedOraclesAddress: string,
+    reserveAddress: string,
   ) {
     super(web3, selectAddress(chainId, {mainnet: mainnetPairMentoV2Address }))
     this.provider = new providers.Web3Provider(web3.currentProvider as any);
     this.biPoolManager = IBiPoolManager__factory.connect(this.exchange.providerAddr, this.provider);
+    this.reserve = newIReserve(this.web3 as any, reserveAddress)
+    this.erc20A = newErc20(this.web3, this.exchange.assets[0])
+    this.erc20B = newErc20(this.web3, this.exchange.assets[1])
   }
 
   protected async _init(): Promise<{
@@ -77,10 +95,16 @@ export class PairMentoV2 extends Pair {
     const [
       decimalsA,
       decimalsB,
+      isCollateralA,
+      isCollateralB,
     ] = await Promise.all([
-      newErc20(this.web3, this.exchange.assets[0]).methods.decimals().call(),
-      newErc20(this.web3, this.exchange.assets[1]).methods.decimals().call(),
+      this.erc20A.methods.decimals().call(),
+      this.erc20B.methods.decimals().call(),
+      this.reserve.methods.isCollateralAsset(this.exchange.assets[0]).call(),
+      this.reserve.methods.isCollateralAsset(this.exchange.assets[1]).call(),
     ])
+    this.isCollateralA = isCollateralA
+    this.isCollateralB = isCollateralB
     this.decimals = [Number.parseInt(decimalsA), Number.parseInt(decimalsB)]
     this.pricingModule = await this.getPricingModuleName(this.poolExchange.pricingModule);
     return {
@@ -95,10 +119,14 @@ export class PairMentoV2 extends Pair {
       poolExchange,
       tradingLimits,
       tradingEnabled,
+      reserveBalanceA,
+      reserveBalanceB,
     ] = await Promise.all([
       this.biPoolManager.getPoolExchange(this.exchange.id),
       this.mento.getTradingLimits(this.exchange.id),
-      this.mento.isTradingEnabled(this.exchange.id)
+      this.mento.isTradingEnabled(this.exchange.id),
+      this.erc20A.methods.balanceOf(this.reserve.options.address).call(),
+      this.erc20B.methods.balanceOf(this.reserve.options.address).call(),
     ])
     this.poolExchange = poolExchange
     this.spread = new BigNumber(this.poolExchange.config.spread.value._hex);
@@ -133,6 +161,8 @@ export class PairMentoV2 extends Pair {
       }
     })
     this.tradingEnabled = tradingEnabled
+    this.reserveBalanceA = reserveBalanceA
+    this.reserveBalanceB = reserveBalanceB
   }
 
   public swapExtraData(): string {
@@ -164,6 +194,11 @@ export class PairMentoV2 extends Pair {
     if (outputAmount.gt(tokenMaxOut)) {
       return new BigNumber(0)
     }
+    const [isOutputCollateral, reserveBalance] =
+      inputToken === this.tokenA ? [this.isCollateralB, this.reserveBalanceB] : [this.isCollateralA, this.reserveBalanceA]
+    if (isOutputCollateral && outputAmount.gte(reserveBalance)) {
+      return new BigNumber(0)
+    }
     return outputAmount
   }
 
@@ -171,6 +206,11 @@ export class PairMentoV2 extends Pair {
     const [tokenMaxIn, tokenMaxOut] =
       (outputToken === this.tokenB) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
     if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut)) {
+      return new BigNumber(0)
+    }
+    const [isOutputCollateral, reserveBalance] =
+      outputToken === this.tokenB ? [this.isCollateralB, this.reserveBalanceB] : [this.isCollateralA, this.reserveBalanceA]
+    if (isOutputCollateral && outputAmount.gte(reserveBalance)) {
       return new BigNumber(0)
     }
     const getAmountIn = GET_AMOUNT_IN[this.pricingModule];
@@ -199,16 +239,21 @@ export class PairMentoV2 extends Pair {
       spread: this.spread.toFixed(),
       updateFrequency: this.updateFrequency.toFixed(),
       pricingModule: this.pricingModule,
-      bucket0: this.bucket0.toFixed(),
-      bucket1: this.bucket1.toFixed(),
       tokenPrecisionMultipliers: [
         this.tokenPrecisionMultipliers[0].toFixed(),
         this.tokenPrecisionMultipliers[1].toFixed(),
       ],
       decimals: this.decimals,
+      isCollateralA: this.isCollateralA,
+      isCollateralB: this.isCollateralB,
+
+      bucket0: this.bucket0.toFixed(),
+      bucket1: this.bucket1.toFixed(),
       tokenMaxIn: [this.tokenMaxIn[0].toFixed(), this.tokenMaxIn[1].toFixed()],
       tokenMaxOut: [this.tokenMaxOut[0].toFixed(), this.tokenMaxOut[1].toFixed()],
       tradingEnabled: this.tradingEnabled,
+      reserveBalanceA: this.reserveBalanceA,
+      reserveBalanceB: this.reserveBalanceB,
     };
   }
 
@@ -216,13 +261,16 @@ export class PairMentoV2 extends Pair {
     this.spread = new BigNumber(snapshot.spread)
     this.updateFrequency = new BigNumber(snapshot.updateFrequency)
     this.pricingModule = snapshot.pricingModule
-    this.bucket0 = new BigNumber(snapshot.bucket0)
-    this.bucket1 = new BigNumber(snapshot.bucket1)
     this.tokenPrecisionMultipliers = [
       new BigNumber(snapshot.tokenPrecisionMultipliers[0]),
       new BigNumber(snapshot.tokenPrecisionMultipliers[1]),
     ]
     this.decimals = snapshot.decimals
+    this.isCollateralA = snapshot.isCollateralA
+    this.isCollateralB = snapshot.isCollateralB
+
+    this.bucket0 = new BigNumber(snapshot.bucket0)
+    this.bucket1 = new BigNumber(snapshot.bucket1)
     this.tokenMaxIn = [
       new BigNumber(snapshot.tokenMaxIn[0]),
       new BigNumber(snapshot.tokenMaxIn[1]),
@@ -232,6 +280,8 @@ export class PairMentoV2 extends Pair {
       new BigNumber(snapshot.tokenMaxOut[1]),
     ]
     this.tradingEnabled = snapshot.tradingEnabled
+    this.reserveBalanceA = snapshot.reserveBalanceA
+    this.reserveBalanceB = snapshot.reserveBalanceB
   }
 
   private mentoBucketsAfterUpdate = async () => {
@@ -369,3 +419,4 @@ const GET_AMOUNT_IN: Record<PricingFunctionType, TGetAmountIn> = {
     return inputAmount
   },
 };
+
