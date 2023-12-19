@@ -140,7 +140,6 @@ export const mainnetRegistryStCelo = (kit: ContractKit) => {
 // overall higher TVL.
 export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	new RegistryMentoV2(kit),
-	new RegistryMento(kit),
 	// Curve forks:
 	mainnetRegistryCurve(kit),
 	// UniswapV3 forks:
