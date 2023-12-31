@@ -65,6 +65,7 @@ async function main() {
 	let passedN = 0
 	let failedN = 0
 	let highN = 0
+	let passedInputN = 0
 	let failedInputN = 0
 	let refreshTotalMs = 0
 	for (const pair of pairs) {
@@ -123,13 +124,15 @@ async function main() {
 				if (
 					(!inputA.eq(0) && !newExpectedOutputB.eq(expectedOutputB)) ||
 					(!inputB.eq(0) && !newExpectedOutputA.eq(expectedOutputA))) { failedInputN += 1 }
+			} else {
+				passedInputN += 1
 			}
 		}
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)
 	console.info(
-		`PASSED: ${passedN}, FAILED: ${failedN}, HIGH?: ${highN}, FAILED INPUT: ${failedInputN}, ` +
+		`PASSED: ${passedN}, FAILED: ${failedN}, HIGH?: ${highN}, INPUT: P:${passedInputN}, F:${failedInputN}, ` +
 		`Elapsed: ${Date.now()-testT0}ms / Refresh: ${refreshTotalMs}ms`)
 	kit.stop()
 }

@@ -108,6 +108,29 @@ export class PairCurve extends Pair {
 		return outputAmount
 	}
 
+	public inputAmount(outputToken: Address, outputAmount: BigNumber): BigNumber {
+		if (this.paused) {
+			return new BigNumber(0)
+		}
+
+		// https://github.com/curvefi/curve-pool-registry/blob/master/contracts/CurveCalc.vy#L146
+		const [tokenIndexFrom, tokenIndexTo] = outputToken === this.tokenB ?
+			[this.token0Idx, this.token1Idx] : [this.token1Idx, this.token0Idx]
+		const yAfterTrade =
+			this.balancesWithAdjustedPrecision[tokenIndexTo].minus(
+				outputAmount
+					.multipliedBy(this.tokenPrecisionMultipliers[tokenIndexTo])
+					.multipliedBy(SWAP_FEE_DENOM).div(SWAP_FEE_DENOM.minus(this.swapFee)))
+		const _x = this.getY(
+			tokenIndexTo,
+			tokenIndexFrom,
+			yAfterTrade,
+			this.balancesWithAdjustedPrecision,
+			this.preciseA)
+		const inputAmount = _x.minus(this.balancesWithAdjustedPrecision[tokenIndexFrom]).idiv(this.tokenPrecisionMultipliers[tokenIndexFrom])
+		return inputAmount
+	}
+
 	private getY = (fromIdx: number, toIdx: number, x: BigNumber, xp: BigNumber[], a: BigNumber) => {
 		// See: https://github.com/mobiusAMM/mobiusV1/blob/master/contracts/SwapUtils.sol#L531
 		const d = this.getD(xp, a)

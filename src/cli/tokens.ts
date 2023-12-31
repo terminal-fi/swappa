@@ -42,6 +42,16 @@ export async function initAllTokens(chainId: number) {
 			address: "0x061cc5a2C863E0C1Cb404006D559dB18A34C762d",
 			symbol: "axlEUROC",
 			decimals: 6,
+		}, {
+			chainId: 42220,
+			address: "0x061cc5a2C863E0C1Cb404006D559dB18A34C762d",
+			symbol: "axlEUROC",
+			decimals: 6,
+		}, {
+			chainId: 42220,
+			address: "0x73F93dcc49cB8A239e2032663e9475dd5ef29A08",
+			symbol: "eXOF",
+			decimals: 18,
 		},
 	]
 	return _ALL_TOKENS
