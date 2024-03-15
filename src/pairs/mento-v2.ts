@@ -38,6 +38,8 @@ interface PairMentoV2Snapshot extends Snapshot {
   tradingEnabled: boolean,
   reserveBalanceA: string,
   reserveBalanceB: string,
+  errAtoB: boolean,
+  errBtoA: boolean,
 }
 
 export class PairMentoV2 extends Pair {
@@ -58,6 +60,8 @@ export class PairMentoV2 extends Pair {
   private tradingEnabled: boolean = false
   private reserveBalanceA: string = ""
   private reserveBalanceB: string = ""
+  private errAtoB: boolean = false
+  private errBtoA: boolean = false
 
   private provider: ethers.providers.Provider;
   private biPoolManager: IBiPoolManager
@@ -115,6 +119,8 @@ export class PairMentoV2 extends Pair {
   }
 
   public async refresh() {
+    const checkAtoB = this.outputAmountAsync(this.tokenA, new BigNumber(1))
+    const checkBtoA = this.outputAmountAsync(this.tokenB, new BigNumber(1))
     const [
       poolExchange,
       tradingLimits,
@@ -128,6 +134,13 @@ export class PairMentoV2 extends Pair {
       this.erc20A.methods.balanceOf(this.reserve.options.address).call(),
       this.erc20B.methods.balanceOf(this.reserve.options.address).call(),
     ])
+    // MentoV2 can have some unexpected errors, thus we first perform a check
+    // for a very small amount to make sure any kind of trading is possible in the
+    // first place.
+    // Example Err: https://github.com/mento-protocol/mento-core/blob/d174c8a9810514e0ea0ddd67463854a2bfe80b32/contracts/swap/BiPoolManager.sol#L514
+    try { await checkAtoB;  this.errAtoB = false } catch { this.errAtoB = true }
+    try { await checkBtoA;  this.errBtoA = false } catch { this.errBtoA = true }
+
     this.poolExchange = poolExchange
     this.spread = new BigNumber(this.poolExchange.config.spread.value._hex);
     this.updateFrequency = new BigNumber(this.poolExchange.config.referenceRateResetFrequency._hex);
@@ -173,7 +186,8 @@ export class PairMentoV2 extends Pair {
   public outputAmount(inputToken: Address, inputAmount: BigNumber) {
     const [tokenMaxIn, tokenMaxOut] =
       (inputToken === this.tokenA) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
-    if (!this.tradingEnabled || inputAmount.gt(tokenMaxIn)) {
+    const canTrade = (inputToken === this.tokenA) ? this.errAtoB : this.errBtoA
+    if (!this.tradingEnabled || inputAmount.gt(tokenMaxIn) || !canTrade) {
       return new BigNumber(0)
     }
     const getAmountOut = GET_AMOUNT_OUT[this.pricingModule];
@@ -205,7 +219,8 @@ export class PairMentoV2 extends Pair {
   public inputAmount(outputToken: Address, outputAmount: BigNumber) {
     const [tokenMaxIn, tokenMaxOut] =
       (outputToken === this.tokenB) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
-    if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut)) {
+    const canTrade = (outputToken === this.tokenB) ? this.errAtoB : this.errBtoA
+    if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut) || !canTrade) {
       return new BigNumber(0)
     }
     const [isOutputCollateral, reserveBalance] =
@@ -254,6 +269,8 @@ export class PairMentoV2 extends Pair {
       tradingEnabled: this.tradingEnabled,
       reserveBalanceA: this.reserveBalanceA,
       reserveBalanceB: this.reserveBalanceB,
+      errAtoB: this.errAtoB,
+      errBtoA: this.errBtoA,
     };
   }
 
@@ -282,6 +299,8 @@ export class PairMentoV2 extends Pair {
     this.tradingEnabled = snapshot.tradingEnabled
     this.reserveBalanceA = snapshot.reserveBalanceA
     this.reserveBalanceB = snapshot.reserveBalanceB
+    this.errAtoB = snapshot.errAtoB
+    this.errBtoA = snapshot.errBtoA
   }
 
   private mentoBucketsAfterUpdate = async () => {
