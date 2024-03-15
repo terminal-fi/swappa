@@ -119,27 +119,29 @@ export class PairMentoV2 extends Pair {
   }
 
   public async refresh() {
-    const checkAtoB = this.outputAmountAsync(this.tokenA, new BigNumber(1))
-    const checkBtoA = this.outputAmountAsync(this.tokenB, new BigNumber(1))
     const [
       poolExchange,
       tradingLimits,
       tradingEnabled,
       reserveBalanceA,
       reserveBalanceB,
+      checkAtoB,
+      checkBtoA,
     ] = await Promise.all([
       this.biPoolManager.getPoolExchange(this.exchange.id),
       this.mento.getTradingLimits(this.exchange.id),
       this.mento.isTradingEnabled(this.exchange.id),
       this.erc20A.methods.balanceOf(this.reserve.options.address).call(),
       this.erc20B.methods.balanceOf(this.reserve.options.address).call(),
+      this.outputAmountAsync(this.tokenA, new BigNumber(1)).catch(() => { return new BigNumber(-1) }),
+      this.outputAmountAsync(this.tokenB, new BigNumber(1)).catch(() => { return new BigNumber(-1) }),
     ])
     // MentoV2 can have some unexpected errors, thus we first perform a check
     // for a very small amount to make sure any kind of trading is possible in the
     // first place.
     // Example Err: https://github.com/mento-protocol/mento-core/blob/d174c8a9810514e0ea0ddd67463854a2bfe80b32/contracts/swap/BiPoolManager.sol#L514
-    try { await checkAtoB;  this.errAtoB = false } catch { this.errAtoB = true }
-    try { await checkBtoA;  this.errBtoA = false } catch { this.errBtoA = true }
+    this.errAtoB = checkAtoB.eq(-1)
+    this.errBtoA = checkBtoA.eq(-1)
 
     this.poolExchange = poolExchange
     this.spread = new BigNumber(this.poolExchange.config.spread.value._hex);
@@ -186,8 +188,8 @@ export class PairMentoV2 extends Pair {
   public outputAmount(inputToken: Address, inputAmount: BigNumber) {
     const [tokenMaxIn, tokenMaxOut] =
       (inputToken === this.tokenA) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
-    const canTrade = (inputToken === this.tokenA) ? this.errAtoB : this.errBtoA
-    if (!this.tradingEnabled || inputAmount.gt(tokenMaxIn) || !canTrade) {
+    const errTrade = (inputToken === this.tokenA) ? this.errAtoB : this.errBtoA
+    if (!this.tradingEnabled || inputAmount.gt(tokenMaxIn) || errTrade) {
       return new BigNumber(0)
     }
     const getAmountOut = GET_AMOUNT_OUT[this.pricingModule];
@@ -219,8 +221,8 @@ export class PairMentoV2 extends Pair {
   public inputAmount(outputToken: Address, outputAmount: BigNumber) {
     const [tokenMaxIn, tokenMaxOut] =
       (outputToken === this.tokenB) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
-    const canTrade = (outputToken === this.tokenB) ? this.errAtoB : this.errBtoA
-    if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut) || !canTrade) {
+    const errTrade = (outputToken === this.tokenB) ? this.errAtoB : this.errBtoA
+    if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut) || errTrade) {
       return new BigNumber(0)
     }
     const [isOutputCollateral, reserveBalance] =
