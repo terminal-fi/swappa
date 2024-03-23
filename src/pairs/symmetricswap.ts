@@ -2,7 +2,7 @@ import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
 import { ISymmetricSwap, newISymmetricSwap } from "../../types/web3-v1-contracts/ISymmetricSwap"
-import { Ierc20, newIerc20 } from '../../types/web3-v1-contracts/IERC20';
+import { IERC20, newIERC20 } from '../../types/web3-v1-contracts/IERC20';
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
 import { address as pairSymmetricSwapAddress } from "../../tools/deployed/mainnet.PairSymmetricSwap.addr.json"
@@ -20,8 +20,8 @@ export class PairSymmetricSwap extends Pair {
 	private swapPool: ISymmetricSwap
 
 	private paused: boolean = false
-	private ercA: Ierc20
-	private ercB: Ierc20
+	private ercA: IERC20
+	private ercB: IERC20
 	private balanceA: BigNumber = ZERO
 	private balanceB: BigNumber = ZERO
 
@@ -37,8 +37,8 @@ export class PairSymmetricSwap extends Pair {
 		// thus they have to be hardcoded in the constructor and can't be fetched from swapPool
 		// directly.
 		this.swapPool = newISymmetricSwap(web3, swapPoolAddr)
-		this.ercA = newIerc20(web3, tokenA)
-		this.ercB = newIerc20(web3, tokenB)
+		this.ercA = newIERC20(web3, tokenA)
+		this.ercB = newIERC20(web3, tokenB)
 	}
 
 	protected async _init() {

@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js"
 import Web3 from "web3"
 
-import { IbPool, newIbPool } from "../../types/web3-v1-contracts/IBPool"
+import { IBPool, newIBPool } from "../../types/web3-v1-contracts/IBPool"
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { address as pairBPoolAddress } from "../../tools/deployed/mainnet.PairBPool.addr.json"
 import { selectAddress } from "../utils"
@@ -17,7 +17,7 @@ interface PairBPoolSnapshot extends Snapshot {
 
 export class PairBPool extends Pair {
 	allowRepeats = false
-	private bPool: IbPool
+	private bPool: IBPool
 	private swapFee: BigNumber = ZERO
 	private weightA: BigNumber = ZERO
 	private weightB: BigNumber = ZERO
@@ -32,7 +32,7 @@ export class PairBPool extends Pair {
 		public tokenB: Address,
 	) {
 		super(web3, selectAddress(chainId, {mainnet: pairBPoolAddress}))
-		this.bPool = newIbPool(web3, poolAddr)
+		this.bPool = newIBPool(web3, poolAddr)
 	}
 
 	protected async _init() {

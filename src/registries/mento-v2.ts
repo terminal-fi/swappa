@@ -17,7 +17,7 @@ export class RegistryMentoV2 extends Registry {
     const chainId = await this.kit.web3.eth.getChainId();
     const sortedOracelsAddress = await this.kit.registry.addressFor(CeloContract.SortedOracles)
     const mento = await Mento.create(new providers.Web3Provider(this.kit.web3.currentProvider as any));
-    const brokerAddr = (await mento.getBroker()).address
+    const brokerAddr = mento.getBroker().address
     const broker = newIBrokerV2(this.kit.web3 as any, brokerAddr)
     const reserveAddr = await broker.methods.reserve().call()
 

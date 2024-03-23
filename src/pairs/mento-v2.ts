@@ -13,7 +13,7 @@ import { newIBiPoolManager } from "../../types/web3-v1-contracts/IBiPoolManager"
 import { Address, Pair, Snapshot, BigNumberString } from "../pair";
 import { selectAddress } from "../utils";
 import { address as mainnetPairMentoV2Address } from "../../tools/deployed/mainnet.PairMentoV2.addr.json";
-import { Erc20, newErc20 } from "../../types/web3-v1-contracts/ERC20";
+import { ERC20, newERC20 } from "../../types/web3-v1-contracts/ERC20";
 import { IReserve, newIReserve } from "../../types/web3-v1-contracts/IReserve";
 
 enum PricingFunctionType {
@@ -63,11 +63,11 @@ export class PairMentoV2 extends Pair {
   private errAtoB: boolean = false
   private errBtoA: boolean = false
 
-  private provider: ethers.providers.Provider;
+  private provider: providers.Provider;
   private biPoolManager: IBiPoolManager
   private reserve: IReserve
-  private erc20A: Erc20
-  private erc20B: Erc20
+  private erc20A: ERC20
+  private erc20B: ERC20
 
   constructor(
     chainId: number,
@@ -78,11 +78,11 @@ export class PairMentoV2 extends Pair {
     reserveAddress: string,
   ) {
     super(web3, selectAddress(chainId, {mainnet: mainnetPairMentoV2Address }))
-    this.provider = new providers.Web3Provider(web3.currentProvider as any);
+    this.provider = new ethers.providers.Web3Provider(web3.currentProvider as any);
     this.biPoolManager = IBiPoolManager__factory.connect(this.exchange.providerAddr, this.provider);
     this.reserve = newIReserve(this.web3 as any, reserveAddress)
-    this.erc20A = newErc20(this.web3, this.exchange.assets[0])
-    this.erc20B = newErc20(this.web3, this.exchange.assets[1])
+    this.erc20A = newERC20(this.web3, this.exchange.assets[0])
+    this.erc20B = newERC20(this.web3, this.exchange.assets[1])
   }
 
   protected async _init(): Promise<{
@@ -181,8 +181,7 @@ export class PairMentoV2 extends Pair {
   }
 
   public swapExtraData(): string {
-    const broker = this.mento.getBroker();
-    return `${broker.address}${this.exchange.providerAddr.substring(2)}${this.exchange.id.substring(2)}`;
+    return `${this.mento.getBroker().address}${this.exchange.providerAddr.substring(2)}${this.exchange.id.substring(2)}`;
   }
 
   public outputAmount(inputToken: Address, inputAmount: BigNumber) {

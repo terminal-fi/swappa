@@ -4,7 +4,7 @@ import { newKit } from '@celo/contractkit';
 import BigNumber from 'bignumber.js';
 import { toTransactionObject } from '@celo/connect';
 
-import { newIerc20 } from '../../types/web3-v1-contracts/IERC20';
+import { newIERC20 } from '../../types/web3-v1-contracts/IERC20';
 import { address as swappaRouterV1Address} from '../../tools/deployed/mainnet.SwappaRouterV1.addr.json';
 
 import { SwappaManager } from '../swappa-manager';
@@ -106,7 +106,7 @@ async function main() {
 	const from = opts.from
 	if (from && routes.length > 0) {
 		const route = routes[0]
-		const inputTKN = newIerc20(kit.web3 as any, route.path[0])
+		const inputTKN = newIERC20(kit.web3 as any, route.path[0])
 
 		const allowance = await inputTKN.methods.allowance(from, manager.routerAddr).call()
 		if (inputAmount.gt(allowance)) {

@@ -2,7 +2,7 @@ import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
 import { ICurve, newICurve } from "../../types/web3-v1-contracts/ICurve"
-import { newErc20 } from '../../types/web3-v1-contracts/ERC20';
+import { newERC20 } from '../../types/web3-v1-contracts/ERC20';
 
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
@@ -54,7 +54,7 @@ export class PairCurve extends Pair {
 		for (let i = 0; i < this.nCoins; i += 1) {
 			const coin = await this.curvePool.methods.coins(i).call()
 			coins.push(coin)
-			const erc20 = newErc20(this.web3, coin)
+			const erc20 = newERC20(this.web3, coin)
 			const decimals = await erc20.methods.decimals().call()
 			this.tokenPrecisionMultipliers.push(
 				new BigNumber(10).pow(PairCurve.POOL_PRECISION_DECIMALS - Number.parseInt(decimals)),

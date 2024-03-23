@@ -1,6 +1,6 @@
 import Web3 from 'web3'
 
-import { IbRegistry, newIbRegistry } from "../../types/web3-v1-contracts/IBRegistry"
+import { IBRegistry, newIBRegistry } from "../../types/web3-v1-contracts/IBRegistry"
 import { Address, Pair } from "../pair"
 import { PairBPool } from "../pairs/bpool"
 import { Registry } from "../registry"
@@ -8,7 +8,7 @@ import { initPairsAndFilterByWhitelist } from "../utils"
 import { fastConcurrentMap } from '../utils/async'
 
 export class RegistryBalancer extends Registry {
-	private registry: IbRegistry
+	private registry: IBRegistry
 
 	constructor(
 		name: string,
@@ -16,7 +16,7 @@ export class RegistryBalancer extends Registry {
 		registryAddr: Address
 	) {
 		super(name)
-		this.registry = newIbRegistry(web3, registryAddr)
+		this.registry = newIBRegistry(web3, registryAddr)
 	}
 
 	findPairsWithoutInitialzing = async (tokenWhitelist: Address[]): Promise<Pair[]> =>  {

@@ -2,7 +2,7 @@ import Web3 from "web3"
 import BigNumber from "bignumber.js"
 
 import { ISwap, newISwap } from "../../types/web3-v1-contracts/ISwap"
-import { newErc20 } from '../../types/web3-v1-contracts/ERC20';
+import { newERC20 } from '../../types/web3-v1-contracts/ERC20';
 
 import { Address, Pair, Snapshot, BigNumberString } from "../pair"
 import { selectAddress } from "../utils"
@@ -48,8 +48,8 @@ export class PairStableSwap extends Pair {
 			this.swapPool.methods.getToken(0).call(),
 			this.swapPool.methods.getToken(1).call(),
 		])
-		const erc20A = newErc20(this.web3, tokenA)
-		const erc20B = newErc20(this.web3, tokenB)
+		const erc20A = newERC20(this.web3, tokenA)
+		const erc20B = newERC20(this.web3, tokenB)
 		const [
 			decimalsA,
 			decimalsB,
