@@ -188,7 +188,7 @@ export class PairMentoV2 extends Pair {
     const [tokenMaxIn, tokenMaxOut] =
       (inputToken === this.tokenA) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
     const errTrade = (inputToken === this.tokenA) ? this.errAtoB : this.errBtoA
-    if (!this.tradingEnabled || inputAmount.gt(tokenMaxIn) || errTrade) {
+    if (!this.tradingEnabled || inputAmount.gt(tokenMaxIn) || this.bucket0.eq(0) || errTrade) {
       return new BigNumber(0)
     }
     const getAmountOut = GET_AMOUNT_OUT[this.pricingModule];
@@ -221,7 +221,7 @@ export class PairMentoV2 extends Pair {
     const [tokenMaxIn, tokenMaxOut] =
       (outputToken === this.tokenB) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
     const errTrade = (outputToken === this.tokenB) ? this.errAtoB : this.errBtoA
-    if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut) || errTrade) {
+    if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut) || this.bucket0.eq(0) || errTrade) {
       return new BigNumber(0)
     }
     const [isOutputCollateral, reserveBalance] =
@@ -306,6 +306,50 @@ export class PairMentoV2 extends Pair {
 
   private mentoBucketsAfterUpdate = async () => {
     /*
+    https://github.com/mento-protocol/mento-core/blob/fa21cb57dc0bc28c2a54b184f4355f53b84521f9/contracts/swap/BiPoolManager.sol#L526C12-L526C32
+    function oracleHasValidMedian(PoolExchange memory exchange) internal view returns (bool) {
+      (bool isReportExpired, ) = sortedOracles.isOldestReportExpired(exchange.config.referenceRateFeedID);
+      bool enoughReports = (sortedOracles.numRates(exchange.config.referenceRateFeedID) >=
+        exchange.config.minimumReports);
+      bool medianReportRecent = sortedOracles.medianTimestamp(exchange.config.referenceRateFeedID) >
+        now.sub(exchange.config.referenceRateResetFrequency);
+      return !isReportExpired && enoughReports && medianReportRecent;
+    }
+    */
+    const sortedOracles = ISortedOracles__factory.connect(
+      this.sortedOraclesAddress,
+      this.provider
+    );
+
+    const [
+      isOldestReportExpired,
+      numRates,
+      medianTimestamp,
+      medianRate,
+    ] = await Promise.all([
+      sortedOracles.isOldestReportExpired(this.poolExchange.config.referenceRateFeedID),
+      sortedOracles.numRates(this.poolExchange.config.referenceRateFeedID),
+      sortedOracles.medianTimestamp(this.poolExchange.config.referenceRateFeedID),
+      sortedOracles.medianRate(this.poolExchange.config.referenceRateFeedID),
+    ])
+
+    const isReportExpired = isOldestReportExpired[0];
+    const enoughReports = numRates.gte(this.poolExchange.config.minimumReports)
+    const medianReportRecent = medianTimestamp.gt(
+      Math.floor((Date.now() / 1000) - this.poolExchange.config.referenceRateResetFrequency.toNumber()))
+    const hasValidMedian = !isReportExpired && enoughReports && medianReportRecent
+
+    if (!hasValidMedian) {
+      if (this.pricingModule === PricingFunctionType.ConstantSum) {
+        return {bucket0: new BigNumber(0), bucket1: new BigNumber(0)}
+      }
+      return {
+        bucket0: new BigNumber(this.poolExchange.bucket0._hex),
+        bucket1: new BigNumber(this.poolExchange.bucket1._hex),
+      }
+    }
+
+    /*
     ## From BiPoolManager.sol:
     https://github.com/mento-protocol/mento-core/blob/c843b386ae12a6987022842e6b52cc23340555f2/contracts/BiPoolManager.sol#L461
     function getUpdatedBuckets(PoolExchange memory exchange) internal view returns (uint256 bucket0, uint256 bucket1) {
@@ -318,30 +362,12 @@ export class PairMentoV2 extends Pair {
     }
     */
     const bucket0 = new BigNumber(this.poolExchange.config.stablePoolResetSize._hex)
-    const [exchangeRateNumerator, exchangeRateDenominator] =
-      await this.getOracleExchangeRate(this.poolExchange.config.referenceRateFeedID)
-    const bucket1 = exchangeRateDenominator
-      .multipliedBy(bucket0)
-      .idiv(exchangeRateNumerator)
-    return { bucket0, bucket1 }
-  };
-
-  protected getOracleExchangeRate = async (
-    rateFeedID: Address
-  ): Promise<[BigNumber, BigNumber]> => {
-    // https://github.com/mento-protocol/mento-core/blob/c843b386ae12a6987022842e6b52cc23340555f2/contracts/BiPoolManager.sol#L477C4-L477C4
-    const sortedOracles = ISortedOracles__factory.connect(
-      this.sortedOraclesAddress,
-      this.provider
-    );
-    const [rateNumerator, rateDenominator] = await sortedOracles.medianRate(rateFeedID)
+    const [rateNumerator, rateDenominator] = medianRate
     if (rateDenominator.lte(0)){
       throw new Error("exchange rate denominator must be greater than 0")
     }
-    return [
-      new BigNumber(rateNumerator._hex),
-      new BigNumber(rateDenominator._hex),
-    ];
+    const bucket1 = bucket0.multipliedBy(rateDenominator._hex).idiv(rateNumerator._hex)
+    return { bucket0, bucket1 }
   };
 
   private async getPricingModuleName(
