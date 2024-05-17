@@ -10,7 +10,6 @@ import RegistryHelperUniswapV2 from "../build/contracts/RegistryHelperUniswapV2.
 import PairUniswapV2 from "../build/contracts/PairUniswapV2.json"
 import PairAToken from "../build/contracts/PairAToken.json"
 import PairStableSwap from "../build/contracts/PairStableSwap.json"
-import PairSavingsCELO from "../build/contracts/PairSavingsCELO.json"
 import PairATokenV2 from "../build/contracts/PairATokenV2.json"
 import PairBPool from "../build/contracts/PairBPool.json"
 import PairOpenSumSwap from "../build/contracts/PairOpenSumSwap.json"
@@ -109,8 +108,6 @@ async function main() {
 		kit, opts.network, "PairAToken", PairAToken.bytecode)
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairStableSwap", PairStableSwap.bytecode)
-	await readAddressOrDeployContract(
-		kit, opts.network, "PairSavingsCELO", PairSavingsCELO.bytecode)
 	await readAddressOrDeployContract(
 		kit, opts.network, "PairATokenV2", PairATokenV2.bytecode)
 	await readAddressOrDeployContract(

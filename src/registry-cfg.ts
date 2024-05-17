@@ -1,7 +1,5 @@
 import Web3 from "web3"
 import { ContractKit } from "@celo/contractkit"
-import { SavingsCELOAddressMainnet } from "@terminal-fi/savingscelo"
-import { PairSavingsCELO } from "./pairs/savingscelo"
 import { PairStableSwap } from "./pairs/stableswap"
 import { PairOpenSumSwap } from "./pairs/opensumswap"
 import { PairSymmetricSwap } from "./pairs/symmetricswap"
@@ -70,10 +68,6 @@ export const mainnetRegistryMisc =
 				"0xF21150EC57c360dA61cE7900dbaFdE9884198026", "0x7c64aD5F9804458B8c9F93f7300c15D55956Ac2a", "0x8427bD503dd3169cCC9aFF7326c15258Bc305478")
 		]))
 	}
-export const mainnetRegistrySavingsCELO =
-	(kit: ContractKit) => new RegistryStatic("savingscelo", kit.web3.eth.getChainId().then(chainId => [
-		new PairSavingsCELO(chainId, kit, SavingsCELOAddressMainnet),
-	]))
 export const mainnetRegistryMoolaV2 =
 	(kit: ContractKit) => new RegistryAaveV2("moola-v2", kit.web3 as unknown as Web3, "0xD1088091A174d33412a968Fa34Cb67131188B332")
 export const mainnetRegistryCeloDex =
@@ -153,6 +147,5 @@ export const mainnetRegistriesWhitelist = (kit: ContractKit) => ([
 	mainnetRegistryMisc(kit),
 
 	// DEPRECATED stuff that is very cheap to maintain:
-	mainnetRegistrySavingsCELO(kit),
 	mainnetRegistryMoola(kit),
 ])

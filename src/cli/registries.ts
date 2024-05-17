@@ -6,7 +6,6 @@ import {
 	mainnetRegistryMobius,
 	mainnetRegistryMoola,
 	mainnetRegistryMoolaV2,
-	mainnetRegistrySavingsCELO,
 	mainnetRegistryStCelo,
 	mainnetRegistrySushiswap,
 	mainnetRegistrySymmetric,
@@ -29,7 +28,6 @@ export const registriesByName: {[name: string]: (kit: ContractKit) => Registry} 
 	"misc":        mainnetRegistryMisc,
 
 	// DEPRECATED stuff:
-	"savingscelo": mainnetRegistrySavingsCELO,
 	"moola":       mainnetRegistryMoola,
 	"celodex":     mainnetRegistryCeloDex,
 	"symmetric":   mainnetRegistrySymmetric,
