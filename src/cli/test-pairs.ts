@@ -58,6 +58,7 @@ async function main() {
 	while (true) {
 		const blockN = await kit.web3.eth.getBlockNumber()
 		if (blockN > initBlockN) {
+			console.info(`BLOCK: ${blockN}...`)
 			break
 		}
 		await new Promise(resolve => setTimeout(resolve, 100))
@@ -134,9 +135,10 @@ async function main() {
 	}
 
 	console.info(`--------------------------------------------------------------------------------`)
+	const blockN = await kit.web3.eth.getBlockNumber()
 	console.info(
 		`PASSED: ${passedN}, FAILED: ${failedN}, HIGH?: ${highN}, INPUT: P:${passedInputN}, F:${failedInputN}, ` +
-		`Elapsed: ${Date.now()-testT0}ms / Refresh: ${refreshTotalMs}ms`)
+		`Elapsed: ${Date.now()-testT0}ms / Refresh: ${refreshTotalMs}ms, BLOCK: ${blockN}`)
 	kit.stop()
 }
 
