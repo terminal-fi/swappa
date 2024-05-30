@@ -11,8 +11,8 @@ import { registriesByName } from './registries';
 
 const program = commander.program
 	.option("--network <network>", "Celo client URL to connect to.", "http://localhost:8545")
-	.option("--registry <registry>", "Registry to use for testing.", "")
-	.option("--amount <amount>", "Input amount.", "0.01")
+	.option("--registry <registry>", `Registry to use for testing: ${Object.keys(registriesByName).join(", ")}`, "all")
+	.option("--amount <amount>", "Input amount.", "1")
 	.option("--pair <pair>", "Specific pair to test")
 	.parse(process.argv)
 
@@ -29,7 +29,10 @@ async function main() {
 	const allTokens = await initAllTokens(chainId)
 
 
-	const registries = [registriesByName[opts.registry](kit)]
+	const registries =
+		opts.registry === "all" ?
+		Object.values(registriesByName).map((f) => f(kit)) :
+		[registriesByName[opts.registry](kit)]
 	const manager = new SwappaManager(kit, swappaRouterV1Address, registries)
 	console.info(`Finding & initializing pairs...`)
 	let tokenWhitelist

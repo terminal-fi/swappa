@@ -45,7 +45,10 @@
     "build": "yarn compile:contracts && yarn compile:ts",
     "clean": "rm -rf ./build ./dist ./types",
     "prepublishOnly": "yarn clean && yarn build",
-    "deploy": "yarn ts-node ./tools/deployer.ts"
+    "deploy": "yarn ts-node ./tools/deployer.ts",
+
+    "cli": "yarn ts-node src/cli/cli.ts",
+    "test": "yarn ts-node src/cli/test-pairs.ts"
   },
   "author": "Zviad Metreveli",
   "license": "MIT"
