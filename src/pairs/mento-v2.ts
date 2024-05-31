@@ -4,6 +4,7 @@ import {
   IBiPoolManager__factory,
   IBiPoolManager,
   ISortedOracles__factory,
+  Broker__factory,
 } from "@mento-protocol/mento-core-ts";
 import { BigNumber } from "bignumber.js";
 import { ethers, providers } from "ethers";
@@ -15,6 +16,8 @@ import { selectAddress } from "../utils";
 import { address as mainnetPairMentoV2Address } from "../../tools/deployed/mainnet.PairMentoV2.addr.json";
 import { ERC20, newERC20 } from "../../types/web3-v1-contracts/ERC20";
 import { IReserve, newIReserve } from "../../types/web3-v1-contracts/IReserve";
+
+import { getLimits } from "@mento-protocol/mento-sdk/dist/cjs/limits"
 
 enum PricingFunctionType {
   ConstantProduct = "ConstantProduct",
@@ -119,9 +122,15 @@ export class PairMentoV2 extends Pair {
   }
 
   public async refresh() {
+    const broker = Broker__factory.connect(
+      this.mento.getBroker().address,
+      this.provider,
+    )
+
     const [
       poolExchange,
-      tradingLimits,
+      tradingLimitsA,
+      tradingLimitsB,
       tradingEnabled,
       reserveBalanceA,
       reserveBalanceB,
@@ -129,13 +138,18 @@ export class PairMentoV2 extends Pair {
       checkBtoA,
     ] = await Promise.all([
       this.biPoolManager.getPoolExchange(this.exchange.id),
-      this.mento.getTradingLimits(this.exchange.id),
+      // NOTE: @mento-sdk getTradingLimits function only returns limits for assetA, which
+      // is incorrect. Fetch Limits for both assets manually. Once @mento-sdk is fixed,
+      // we can go back to using the getTradingLimits function.
+      getLimits(broker, this.exchange.id, this.tokenA),
+      getLimits(broker, this.exchange.id, this.tokenB),
       this.mento.isTradingEnabled(this.exchange.id),
       this.erc20A.methods.balanceOf(this.reserve.options.address).call(),
       this.erc20B.methods.balanceOf(this.reserve.options.address).call(),
       this.outputAmountAsync(this.tokenA, new BigNumber(1)).catch(() => { return new BigNumber(-1) }),
       this.outputAmountAsync(this.tokenB, new BigNumber(1)).catch(() => { return new BigNumber(-1) }),
     ])
+
     // MentoV2 can have some unexpected errors, thus we first perform a check
     // for a very small amount to make sure any kind of trading is possible in the
     // first place.
@@ -164,7 +178,7 @@ export class PairMentoV2 extends Pair {
     const maxU256 = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     this.tokenMaxIn = [new BigNumber(maxU256), new BigNumber(maxU256)]
     this.tokenMaxOut = [new BigNumber(maxU256), new BigNumber(maxU256)]
-    tradingLimits.forEach((l) => {
+    ;[...tradingLimitsA, ...tradingLimitsB].forEach((l) => {
       const idx = l.asset === this.tokenA ? 0 : 1
       const maxIn = new BigNumber(l.maxIn).shiftedBy(this.decimals[idx])
       const maxOut = new BigNumber(l.maxOut).shiftedBy(this.decimals[idx])

@@ -801,9 +801,9 @@
   integrity sha512-jrJdglXnTecveV0AUp9qoENXL0c7x/deNp4Abkyy7Flm0ChhyGd7qWd7W5djDIYpnPM5xzeQnsGg2b8jyNf2Xw==
 
 "@mento-protocol/mento-sdk@^0.2.4":
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/@mento-protocol/mento-sdk/-/mento-sdk-0.2.4.tgz#b54a70b71cb7b091ced679a82d98af8445f5aaa7"
-  integrity sha512-T/FVJhc8npsb3Fm62xNcEr9HTTSo0uXalv4S9GdIAut6ppoQ3IdVONVSeGgD7VAEnP6G5/Km9WvcYpDDXnrfuQ==
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@mento-protocol/mento-sdk/-/mento-sdk-0.2.7.tgz#84b3b213eb43e0e0fca38223f938d7a9ad16e0ca"
+  integrity sha512-E3mWqwuDadRHM6XEq5AY7lXYoK+WjvOu86we0CXzF7F3T7RV5MXhpqNqsOJCyb44C1ybO44e8BIcqZ1HsnBvMA==
   dependencies:
     "@mento-protocol/mento-core-ts" "^0.2.0"
 
