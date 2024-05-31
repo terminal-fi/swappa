@@ -223,6 +223,18 @@ export class PairMentoV2 extends Pair {
     if (outputAmount.gt(tokenMaxOut)) {
       return new BigNumber(0)
     }
+    if (
+      outputAmount.lt(new BigNumber(1).shiftedBy(this.decimals[inputToken === this.tokenA ? 1 : 0])) &&
+      this.tokenMaxIn[inputToken === this.tokenA ? 1 : 0].eq(0)
+      ) {
+      // NOTE(zviad): You might be wondering wtf is going on here?
+      // Well, there happens to be a bug in Mento-v2 tradingLimits smart contract:
+      // https://github.com/mento-protocol/mento-core/blob/a3965badcfd94e3a9e3bf3ecfa342bbe0452677c/contracts/libraries/TradingLimits.sol#L161
+      // When `deltaFlow` is negative and small, deltaFlowUnits are incorrectly rounded up to "1". Thus it contributes
+      // to "tokenMaxIn" instead of "tokenMaxOut". Hence this crazy extra check is necessary here.
+      // Once the smart contract bug is fixed, this can be removed.
+      return new BigNumber(0)
+    }
     const [isOutputCollateral, reserveBalance] =
       inputToken === this.tokenA ? [this.isCollateralB, this.reserveBalanceB] : [this.isCollateralA, this.reserveBalanceA]
     if (isOutputCollateral && outputAmount.gte(reserveBalance)) {
@@ -236,6 +248,13 @@ export class PairMentoV2 extends Pair {
       (outputToken === this.tokenB) ? [this.tokenMaxIn[0], this.tokenMaxOut[1]] : [this.tokenMaxIn[1], this.tokenMaxOut[0]]
     const errTrade = (outputToken === this.tokenB) ? this.errAtoB : this.errBtoA
     if (!this.tradingEnabled || outputAmount.gt(tokenMaxOut) || this.bucket0.eq(0) || errTrade) {
+      return new BigNumber(0)
+    }
+    if (
+      outputAmount.lt(new BigNumber(1).shiftedBy(this.decimals[outputToken === this.tokenB ? 1 : 0])) &&
+      this.tokenMaxIn[outputToken === this.tokenB ? 1 : 0].eq(0)
+      ) {
+      // NOTE(zviad): see note in `outputAmount` function for similar check.
       return new BigNumber(0)
     }
     const [isOutputCollateral, reserveBalance] =
