@@ -126,7 +126,7 @@ export const swapTX = (
 	): CeloTransactionObject<unknown> => {
 	const router = newSwappaRouterV1(kit.web3 as any, routerAddr)
 	const routeData = route.pairs.map((p, idx) => p.swapData(route.path[idx]))
-	const deadlineMs = opts?.deadlineMs || (Date.now() / 1000 + 60)
+	const deadlineMs = opts?.deadlineMs || (Date.now() + 60 * 1000)
 	const swapF = opts?.precheckOutputAmount ? router.methods.swapExactInputForOutputWithPrecheck : router.methods.swapExactInputForOutput
 	const tx = toTransactionObject(
 		kit.connection,
@@ -137,7 +137,7 @@ export const swapTX = (
 			inputAmount.toFixed(0),
 			minOutputAmount.toFixed(0),
 			to,
-			deadlineMs.toFixed(0),
+			(deadlineMs / 1000).toFixed(0),
 		))
 	return tx
 }
