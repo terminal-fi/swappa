@@ -5,8 +5,8 @@
     "url": "https://github.com/terminal-fi/swappa"
   },
   "dependencies": {
-    "@celo/connect": "^5.0.0",
-    "@celo/contractkit": "^7.0.0",
+    "@celo/connect": "^6.0.0",
+    "@celo/contractkit": "^8.0.0",
     "@mento-protocol/mento-core-ts": "^0.2.2",
     "@mento-protocol/mento-sdk": "^0.2.4",
     "@ubeswap/default-token-list": "^4.0.11",
@@ -18,8 +18,8 @@
     "web3": "1.10.0"
   },
   "resolutions": {
-    "@celo/connect": "^5.0.0",
-    "@celo/contractkit": "^7.0.0",
+    "@celo/connect": "^6.0.0",
+    "@celo/contractkit": "^8.0.0",
     "web3": "1.10.0"
   },
   "devDependencies": {
