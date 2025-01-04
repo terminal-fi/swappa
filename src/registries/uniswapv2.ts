@@ -33,7 +33,7 @@ const cachedDataGlobal: {[key: number]: {[key: string]: CachedData | undefined} 
 }
 
 const cacheDataFileName = (chainId: number, factoryAddr: Address) => {
-	return path.join("/tmp", `swappa.uniswapv2.${chainId}.${factoryAddr}.pairs.json`)
+	return path.join("/var/tmp", `swappa.uniswapv2.${chainId}.${factoryAddr}.pairs.json`)
 }
 
 export class RegistryUniswapV2 extends Registry {
