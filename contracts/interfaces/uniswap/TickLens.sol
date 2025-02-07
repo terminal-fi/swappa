@@ -15,7 +15,10 @@ library TickLens {
     // getPoolTicks returns populated ticks from the Uniswapv3 pool.
     // To keep things reasonably performant it only tries to fetch 5 populated tick words.
     // populatedTicks are not sorted, thus it is up to the user to sort them appropriately.
-    function getPoolTicks(IUniswapV3Pool pool, int16 maxLoopN)
+    function getPoolTicks(
+        IUniswapV3Pool pool,
+        int16 maxLoopN
+    )
         internal
         view
         returns (
@@ -31,12 +34,16 @@ library TickLens {
     {
         (
             sqrtPriceX96,
-            tick,
-            , // uint16 observationIndex
-            , // uint16 observationCardinality
-            , // uint16 observationCardinalityNext
-            , // uint8 feeProtocol
+            tick, // uint16 observationIndex
+            // uint16 observationCardinality
+            // uint16 observationCardinalityNext
+            // uint8 feeProtocol
             // bool unlocked
+            ,
+            ,
+            ,
+            ,
+
         ) = pool.slot0();
         liquidity = pool.liquidity();
 
@@ -50,20 +57,41 @@ library TickLens {
         // get the populated ticks near current tick.
         int16 boundTickBitmapIndex = tickBitmapIndex + maxLoopN / 2;
         int16 nextBitmapIndex = tickBitmapIndex;
-        (populatedTicks0, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
-        (populatedTicks1, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
-        (populatedTicks2, nextBitmapIndex) = nextPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
+        (populatedTicks0, nextBitmapIndex) = nextPopulatedTick(
+            pool,
+            nextBitmapIndex,
+            boundTickBitmapIndex
+        );
+        (populatedTicks1, nextBitmapIndex) = nextPopulatedTick(
+            pool,
+            nextBitmapIndex,
+            boundTickBitmapIndex
+        );
+        (populatedTicks2, nextBitmapIndex) = nextPopulatedTick(
+            pool,
+            nextBitmapIndex,
+            boundTickBitmapIndex
+        );
 
         boundTickBitmapIndex = tickBitmapIndex - maxLoopN / 2;
         nextBitmapIndex = tickBitmapIndex - 1;
-        (populatedTicks3, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
-        (populatedTicks4, nextBitmapIndex) = prevPopulatedTick(pool, nextBitmapIndex, boundTickBitmapIndex);
+        (populatedTicks3, nextBitmapIndex) = prevPopulatedTick(
+            pool,
+            nextBitmapIndex,
+            boundTickBitmapIndex
+        );
+        (populatedTicks4, nextBitmapIndex) = prevPopulatedTick(
+            pool,
+            nextBitmapIndex,
+            boundTickBitmapIndex
+        );
     }
 
     function nextPopulatedTick(
         IUniswapV3Pool pool,
         int16 tickBitmapIndex,
-        int16 maxTickBitmapIndex)
+        int16 maxTickBitmapIndex
+    )
         internal
         view
         returns (PopulatedTick[] memory populatedTicks, int16 nextBitmapIndex)
@@ -71,15 +99,24 @@ library TickLens {
         for (
             nextBitmapIndex = tickBitmapIndex;
             nextBitmapIndex <= maxTickBitmapIndex && populatedTicks.length == 0;
-            nextBitmapIndex += 1) {
-            populatedTicks = getPopulatedTicksInWord(pool, nextBitmapIndex);
+            nextBitmapIndex += 1
+        ) {
+            uint256 bitmap = pool.tickBitmap(nextBitmapIndex);
+            if (bitmap > 0) {
+                populatedTicks = getPopulatedTicksInWord(
+                    pool,
+                    nextBitmapIndex,
+                    bitmap
+                );
+            }
         }
     }
 
     function prevPopulatedTick(
         IUniswapV3Pool pool,
         int16 tickBitmapIndex,
-        int16 minTickBitmapIndex)
+        int16 minTickBitmapIndex
+    )
         internal
         view
         returns (PopulatedTick[] memory populatedTicks, int16 nextBitmapIndex)
@@ -87,19 +124,24 @@ library TickLens {
         for (
             nextBitmapIndex = tickBitmapIndex;
             nextBitmapIndex >= minTickBitmapIndex && populatedTicks.length == 0;
-            nextBitmapIndex -= 1) {
-            populatedTicks = getPopulatedTicksInWord(pool, nextBitmapIndex);
+            nextBitmapIndex -= 1
+        ) {
+            uint256 bitmap = pool.tickBitmap(nextBitmapIndex);
+            if (bitmap > 0) {
+                populatedTicks = getPopulatedTicksInWord(
+                    pool,
+                    nextBitmapIndex,
+                    bitmap
+                );
+            }
         }
     }
 
-    function getPopulatedTicksInWord(IUniswapV3Pool pool, int16 tickBitmapIndex)
-        internal
-        view
-        returns (PopulatedTick[] memory populatedTicks)
-    {
-        // fetch bitmap
-        uint256 bitmap = pool.tickBitmap(tickBitmapIndex);
-
+    function getPopulatedTicksInWord(
+        IUniswapV3Pool pool,
+        int16 tickBitmapIndex,
+        uint256 bitmap
+    ) internal view returns (PopulatedTick[] memory populatedTicks) {
         // calculate the number of populated ticks
         uint256 numberOfPopulatedTicks;
         for (uint256 i = 0; i < 256; i++) {
@@ -111,8 +153,10 @@ library TickLens {
         populatedTicks = new PopulatedTick[](numberOfPopulatedTicks);
         for (uint256 i = 0; i < 256; i++) {
             if (bitmap & (1 << i) > 0) {
-                int24 populatedTick = ((int24(tickBitmapIndex) << 8) + int24(i)) * tickSpacing;
-                (uint128 liquidityGross, int128 liquidityNet, , , , , , ) = pool.ticks(populatedTick);
+                int24 populatedTick = ((int24(tickBitmapIndex) << 8) +
+                    int24(i)) * tickSpacing;
+                (uint128 liquidityGross, int128 liquidityNet, , , , , , ) = pool
+                    .ticks(populatedTick);
                 populatedTicks[--numberOfPopulatedTicks] = PopulatedTick({
                     tick: populatedTick,
                     liquidityNet: liquidityNet,
